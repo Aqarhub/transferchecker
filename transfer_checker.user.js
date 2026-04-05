@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FAAST Transfer Checker v5
 // @namespace    http://tampermonkey.net/
-// @version      5.0
+// @version      5.1
 // @description  Transfer pick task order checker - auto-updates from GitHub
 // @author       Abdullah Al Otaibi (abdualot) — https://atoz.amazon.work/phonetool/users/abdualot
 // @match        *://faast.amazon.co.uk/web/picktasks/*
