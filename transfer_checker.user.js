@@ -57,7 +57,7 @@
     const CURRENT_VERSION = '6.1';
     const UPDATE_URL = 'https://raw.githubusercontent.com/Aqarhub/transferchecker/main/transfer_checker.user.js';
     const DOWNLOAD_URL = UPDATE_URL;
-    const CHECK_INTERVAL = 30 * 60 * 1000; // check every 30 minutes
+    const CHECK_INTERVAL = 1 * 60 * 1000; // check every 1 minute
     const LAST_CHECK_KEY = 'tc_last_update_check';
     const SKIPPED_KEY = 'tc_skipped_version';
 
