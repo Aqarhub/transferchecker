@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FAAST Transfer Checker
 // @namespace    http://tampermonkey.net/
-// @version      6.0
+// @version      6.1
 // @description  Transfer pick task order checker with forced auto-update
 // @author       Abdullah Al Otaibi (abdualot) — https://atoz.amazon.work/phonetool/users/abdualot
 // @match        *://faast.amazon.co.uk/web/picktasks/*
@@ -54,7 +54,7 @@
 (function () {
     'use strict';
 
-    const CURRENT_VERSION = '6.0';
+    const CURRENT_VERSION = '6.1';
     const UPDATE_URL = 'https://raw.githubusercontent.com/Aqarhub/transferchecker/main/transfer_checker.user.js';
     const DOWNLOAD_URL = UPDATE_URL;
     const CHECK_INTERVAL = 30 * 60 * 1000; // check every 30 minutes
