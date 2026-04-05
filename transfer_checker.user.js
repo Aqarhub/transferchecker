@@ -1,28 +1,24 @@
 // ==UserScript==
-// @name         FAAST Transfer Checker v5
+// @name         FAAST Transfer Checker
 // @namespace    http://tampermonkey.net/
-// @version      5.1
-// @description  Transfer pick task order checker - auto-updates from GitHub
+// @version      6.0
+// @description  Transfer pick task order checker with forced auto-update
 // @author       Abdullah Al Otaibi (abdualot) — https://atoz.amazon.work/phonetool/users/abdualot
 // @match        *://faast.amazon.co.uk/web/picktasks/*
 // @include      *faast.amazon.co.uk/web/picktasks/*
 // @run-at       document-idle
-// @grant        none
-// @license      Proprietary — All rights reserved
+// @grant        GM_xmlhttpRequest
+// @connect      raw.githubusercontent.com
 // @updateURL    https://raw.githubusercontent.com/Aqarhub/transferchecker/main/transfer_checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/Aqarhub/transferchecker/main/transfer_checker.user.js
+// @license      Proprietary — All rights reserved
 // ==/UserScript==
 
 // ============================================================================
-//  FAAST Transfer Checker v5
+//  FAAST Transfer Checker
 //  Author:  Abdullah Al Otaibi (abdualot)
 //  Phone:   https://atoz.amazon.work/phonetool/users/abdualot
 //  License: Proprietary — All rights reserved
-//
-//  AUTO-UPDATE:
-//    This script updates automatically via Tampermonkey.
-//    When the author pushes a new version to GitHub, Tampermonkey
-//    will detect the version change and prompt to update.
 //
 //  WHAT IT DOES:
 //    Checks all orders in a TRANSFER pick task and shows:
@@ -32,17 +28,16 @@
 //
 //  HOW TO INSTALL:
 //    1. Install Tampermonkey extension in Chrome or Firefox
-//    2. Click Tampermonkey icon > Create a new script
-//    3. Delete everything in the editor
-//    4. Paste this entire file
-//    5. Press Ctrl+S to save
+//    2. Open the raw GitHub link for this script
+//    3. Tampermonkey will prompt to install — click Install
+//    4. The script auto-updates when a new version is pushed
 //
 //  HOW TO USE:
 //    1. Open any TRANSFER pick task page on FAAST
 //    2. The panel appears at the bottom-right corner
 //    3. Click "Start Check" to begin
 //    4. Use filter buttons to view specific order types
-//    5. Click the CSV button to export results
+//    5. Click CSV to export results
 //
 //  COLUMNS:
 //    STATUS  - ACCEPTED / PACKED / SHIPPED / CANCELLED
@@ -59,6 +54,140 @@
 (function () {
     'use strict';
 
+    const CURRENT_VERSION = '6.0';
+    const UPDATE_URL = 'https://raw.githubusercontent.com/Aqarhub/transferchecker/main/transfer_checker.user.js';
+    const DOWNLOAD_URL = UPDATE_URL;
+    const CHECK_INTERVAL = 30 * 60 * 1000; // check every 30 minutes
+    const LAST_CHECK_KEY = 'tc_last_update_check';
+    const SKIPPED_KEY = 'tc_skipped_version';
+
+    // ===== Update Checker =====
+    function checkForUpdate(callback) {
+        try {
+            if (typeof GM_xmlhttpRequest !== 'undefined') {
+                GM_xmlhttpRequest({
+                    method: 'GET',
+                    url: UPDATE_URL + '?t=' + Date.now(),
+                    onload: function(resp) {
+                        const match = resp.responseText.match(/@version\s+([\d.]+)/);
+                        if (match) callback(match[1]);
+                        else callback(null);
+                    },
+                    onerror: function() { callback(null); }
+                });
+            } else {
+                // Fallback: fetch (may be blocked by CORS on some setups)
+                fetch(UPDATE_URL + '?t=' + Date.now(), { cache: 'no-store' })
+                    .then(r => r.text())
+                    .then(text => {
+                        const match = text.match(/@version\s+([\d.]+)/);
+                        callback(match ? match[1] : null);
+                    })
+                    .catch(() => callback(null));
+            }
+        } catch(e) {
+            callback(null);
+        }
+    }
+
+    function compareVersions(v1, v2) {
+        const a = v1.split('.').map(Number);
+        const b = v2.split('.').map(Number);
+        for (let i = 0; i < Math.max(a.length, b.length); i++) {
+            const x = a[i] || 0, y = b[i] || 0;
+            if (x < y) return -1;
+            if (x > y) return 1;
+        }
+        return 0;
+    }
+
+    function showUpdateOverlay(remoteVersion) {
+        const overlay = document.createElement('div');
+        overlay.id = 'tc-update-overlay';
+        overlay.innerHTML = `
+        <style>
+            #tc-update-overlay {
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,.7); z-index: 9999999;
+                display: flex; align-items: center; justify-content: center;
+                font-family: Consolas, 'Courier New', monospace;
+                backdrop-filter: blur(4px);
+            }
+            .tc-update-box {
+                background: #0c1222; border: 1px solid rgba(88,166,255,.2);
+                border-radius: 16px; padding: 32px; max-width: 400px;
+                text-align: center; color: #ffffff;
+                box-shadow: 0 24px 80px rgba(0,0,0,.6);
+            }
+            .tc-update-box h2 { margin: 0 0 8px; font-size: 16px; color: #58a6ff; }
+            .tc-update-box p { margin: 8px 0; font-size: 12px; color: #b0b8c4; line-height: 1.6; }
+            .tc-update-box .versions {
+                margin: 16px 0; padding: 12px; background: rgba(255,255,255,.03);
+                border-radius: 8px; border: 1px solid rgba(255,255,255,.05);
+                display: flex; justify-content: center; gap: 24px; font-size: 12px;
+            }
+            .tc-update-box .ver-old { color: #f85149; }
+            .tc-update-box .ver-new { color: #3fb950; }
+            .tc-update-box .ver-label { font-size: 9px; color: #484f58; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+            .tc-update-box .ver-num { font-size: 18px; font-weight: 700; }
+            .tc-update-btn {
+                display: inline-block; margin: 8px 6px 0; padding: 10px 28px;
+                border: none; border-radius: 8px; cursor: pointer;
+                font-size: 12px; font-weight: 700; font-family: inherit;
+                transition: all .2s; text-decoration: none;
+            }
+            .tc-update-btn-go {
+                background: #238636; color: #fff;
+                box-shadow: 0 2px 12px rgba(35,134,54,.3);
+            }
+            .tc-update-btn-go:hover { background: #2ea043; }
+        </style>
+        <div class="tc-update-box">
+            <h2>Update Available</h2>
+            <p>A new version of Transfer Checker is available.<br>Please update to continue using the tool.</p>
+            <div class="versions">
+                <div class="ver-old">
+                    <span class="ver-label">CURRENT</span>
+                    <span class="ver-num">${CURRENT_VERSION}</span>
+                </div>
+                <div style="color:#484f58;font-size:20px;align-self:center;">→</div>
+                <div class="ver-new">
+                    <span class="ver-label">NEW</span>
+                    <span class="ver-num">${remoteVersion}</span>
+                </div>
+            </div>
+            <a class="tc-update-btn tc-update-btn-go" href="${DOWNLOAD_URL}" target="_blank">Update Now</a>
+            <p style="margin-top:16px;font-size:10px;color:#30363d;">The tool is locked until you update.</p>
+        </div>`;
+        document.body.appendChild(overlay);
+    }
+
+    function shouldCheck() {
+        const last = parseInt(localStorage.getItem(LAST_CHECK_KEY) || '0', 10);
+        return (Date.now() - last) > CHECK_INTERVAL;
+    }
+
+    function initWithUpdateCheck() {
+        if (!shouldCheck()) {
+            // No need to check yet, just run
+            tryInit();
+            return;
+        }
+
+        checkForUpdate(function(remoteVersion) {
+            localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
+
+            if (remoteVersion && compareVersions(CURRENT_VERSION, remoteVersion) < 0) {
+                // Outdated — block and show update
+                showUpdateOverlay(remoteVersion);
+            } else {
+                // Up to date — run normally
+                tryInit();
+            }
+        });
+    }
+
+    // ===== Main Script =====
     function tryInit() {
         const bodyText = document.body.innerText;
         if (!bodyText.includes('TRANSFER')) return;
@@ -134,7 +263,7 @@
             #tc5 ::-webkit-scrollbar{width:3px;}#tc5 ::-webkit-scrollbar-track{background:transparent;}#tc5 ::-webkit-scrollbar-thumb{background:rgba(88,166,255,.12);border-radius:3px;}
         </style>
         <div class="tc5-h">
-            <div class="tl"><div class="dot"></div>Transfer Checker — #${taskId}</div>
+            <div class="tl"><div class="dot"></div>Transfer Checker v${CURRENT_VERSION} — #${taskId}</div>
             <div class="cr"><button id="t5min" title="Minimize">-</button><button id="t5csv" title="Export CSV">CSV</button></div>
         </div>
         <div class="tc5-b">
@@ -183,10 +312,8 @@
         async function fetchTask(){
             const r=await fetch(`https://faast.amazon.co.uk/web/picktasks/${taskId}`,{credentials:'same-origin'});
             if(!r.ok) throw new Error('HTTP '+r.status);
-            const html=await r.text();
-            const doc=new DOMParser().parseFromString(html,'text/html');
-            const obs={accepted:[],packed:[],shipped:[],cancelled:[]};
-            let cur='';
+            const html=await r.text();const doc=new DOMParser().parseFromString(html,'text/html');
+            const obs={accepted:[],packed:[],shipped:[],cancelled:[]};let cur='';
             doc.querySelectorAll('h3,h4,a').forEach(el=>{
                 const t=el.textContent.trim();
                 if(t.includes('Accepted Orders')) cur='accepted';
@@ -200,8 +327,7 @@
                 const ths=Array.from(t.querySelectorAll('th')).map(h=>h.textContent.trim());
                 if(!ths.some(h=>h.includes('Quantity Picked'))) return;
                 t.querySelectorAll('tbody tr, tr').forEach((r,i)=>{
-                    if(i===0&&r.querySelector('th')) return;
-                    const c=Array.from(r.querySelectorAll('td'));
+                    if(i===0&&r.querySelector('th')) return;const c=Array.from(r.querySelectorAll('td'));
                     if(c.length>=7){const sku=c[1].textContent.trim();skus[sku]={ordered:parseInt(c[4].textContent)||0,picked:parseInt(c[5].textContent)||0,canceled:parseInt(c[6].textContent)||0};}
                 });
             });
@@ -307,6 +433,7 @@
         };
     }
 
-    if(document.readyState==='complete') setTimeout(tryInit,1500);
-    else window.addEventListener('load',()=>setTimeout(tryInit,1500));
+    // ===== Start with update check =====
+    if(document.readyState==='complete') setTimeout(initWithUpdateCheck,1500);
+    else window.addEventListener('load',()=>setTimeout(initWithUpdateCheck,1500));
 })();
