@@ -1,9 +1,8 @@
 """
 🤖 بوت إدارة وحماية القنوات والمجموعات
 ==========================================
-مطور بواسطة: مساعد ذكي
-المنصة: Telegram Bot API
-الاستضافة: Render.com
+قاعدة البيانات: SQLite على Persistent Disk
+الاستضافة: Render.com ($1/شهر للـ Disk)
 """
 
 import os
@@ -11,7 +10,6 @@ import re
 import logging
 import asyncio
 import sqlite3
-import json
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 from contextlib import contextmanager
@@ -21,7 +19,6 @@ from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     ChatPermissions,
-    ChatMember,
     BotCommand,
 )
 from telegram.ext import (
@@ -29,21 +26,26 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     CallbackQueryHandler,
-    ChatMemberHandler,
     ContextTypes,
     filters,
 )
 from telegram.constants import ChatType, ParseMode
-from telegram.error import BadRequest, Forbidden
 
 from aiohttp import web
 
 # ================== الإعدادات ==================
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-OWNER_ID = int(os.getenv("OWNER_ID", "0"))  # معرف المالك
+OWNER_ID = int(os.getenv("OWNER_ID", "0"))
 PORT = int(os.getenv("PORT", "10000"))
-WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")  # مثال: https://your-app.onrender.com
-DB_PATH = os.getenv("DB_PATH", "bot_data.db")
+
+# 💾 مسار قاعدة البيانات على Persistent Disk
+# Render يربط الـ Disk على المسار المحدد في render.yaml
+# نستخدم /var/data كمسار افتراضي (يمكن تغييره بمتغير DATA_DIR)
+DATA_DIR = os.getenv("DATA_DIR", "/var/data")
+DB_PATH = os.path.join(DATA_DIR, "bot_data.db")
+
+# إنشاء المجلد إذا لم يكن موجوداً (للتشغيل المحلي)
+os.makedirs(DATA_DIR, exist_ok=True)
 
 # ================== التسجيل ==================
 logging.basicConfig(
@@ -51,17 +53,27 @@ logging.basicConfig(
     level=logging.INFO,
 )
 logger = logging.getLogger(__name__)
+logger.info(f"💾 مسار قاعدة البيانات: {DB_PATH}")
 
-# ================== قاعدة البيانات ==================
+
+# ================== قاعدة البيانات SQLite ==================
 
 @contextmanager
 def get_db():
     """مدير اتصال قاعدة البيانات"""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.row_factory = sqlite3.Row
+    # تفعيل WAL mode لتحسين الأداء والتوازي
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA foreign_keys=ON")
     try:
         yield conn
         conn.commit()
+    except Exception as e:
+        conn.rollback()
+        logger.error(f"خطأ في قاعدة البيانات: {e}")
+        raise
     finally:
         conn.close()
 
@@ -71,7 +83,6 @@ def init_database():
     with get_db() as conn:
         cur = conn.cursor()
 
-        # جدول المجموعات
         cur.execute("""
             CREATE TABLE IF NOT EXISTS chats (
                 chat_id INTEGER PRIMARY KEY,
@@ -88,7 +99,6 @@ def init_database():
             )
         """)
 
-        # جدول الردود السريعة
         cur.execute("""
             CREATE TABLE IF NOT EXISTS quick_replies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -102,7 +112,6 @@ def init_database():
             )
         """)
 
-        # جدول التحذيرات
         cur.execute("""
             CREATE TABLE IF NOT EXISTS warnings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -114,7 +123,6 @@ def init_database():
             )
         """)
 
-        # جدول المستخدمين المحظورة كلماتهم
         cur.execute("""
             CREATE TABLE IF NOT EXISTS banned_words (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,7 +133,6 @@ def init_database():
             )
         """)
 
-        # جدول الإحصائيات
         cur.execute("""
             CREATE TABLE IF NOT EXISTS user_stats (
                 chat_id INTEGER,
@@ -138,7 +145,6 @@ def init_database():
             )
         """)
 
-        # جدول القواعد
         cur.execute("""
             CREATE TABLE IF NOT EXISTS rules (
                 chat_id INTEGER PRIMARY KEY,
@@ -146,17 +152,6 @@ def init_database():
             )
         """)
 
-        # جدول مكافحة الفيضان
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS flood_tracker (
-                chat_id INTEGER,
-                user_id INTEGER,
-                message_time REAL,
-                message_text TEXT
-            )
-        """)
-
-        # جدول الملاحظات (Notes)
         cur.execute("""
             CREATE TABLE IF NOT EXISTS notes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -168,7 +163,6 @@ def init_database():
             )
         """)
 
-        # جدول الكتم المؤقت
         cur.execute("""
             CREATE TABLE IF NOT EXISTS muted_users (
                 chat_id INTEGER,
@@ -177,6 +171,11 @@ def init_database():
                 PRIMARY KEY (chat_id, user_id)
             )
         """)
+
+        # فهارس لتسريع الاستعلامات
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_warnings_chat_user ON warnings(chat_id, user_id)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_replies_chat ON quick_replies(chat_id)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_chat ON user_stats(chat_id, message_count DESC)")
 
         logger.info("✅ تم تهيئة قاعدة البيانات بنجاح")
 
@@ -205,11 +204,14 @@ async def is_user_admin(update: Update, user_id: Optional[int] = None) -> bool:
 
 def register_chat(chat_id: int, title: str, chat_type: str):
     """تسجيل المجموعة في قاعدة البيانات"""
-    with get_db() as conn:
-        conn.execute(
-            "INSERT OR IGNORE INTO chats (chat_id, title, type) VALUES (?, ?, ?)",
-            (chat_id, title, chat_type),
-        )
+    try:
+        with get_db() as conn:
+            conn.execute(
+                "INSERT OR IGNORE INTO chats (chat_id, title, type) VALUES (?, ?, ?)",
+                (chat_id, title, chat_type),
+            )
+    except Exception as e:
+        logger.error(f"خطأ تسجيل المجموعة: {e}")
 
 
 def parse_time(time_str: str) -> Optional[timedelta]:
@@ -217,10 +219,8 @@ def parse_time(time_str: str) -> Optional[timedelta]:
     pattern = re.match(r"(\d+)\s*([smhdwSMHDW])", time_str.strip())
     if not pattern:
         return None
-
     amount = int(pattern.group(1))
     unit = pattern.group(2).lower()
-
     units = {
         "s": timedelta(seconds=amount),
         "m": timedelta(minutes=amount),
@@ -240,12 +240,8 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if chat.type == ChatType.PRIVATE:
         keyboard = [
-            [
-                InlineKeyboardButton(
-                    "➕ أضفني إلى مجموعتك",
-                    url=f"https://t.me/{context.bot.username}?startgroup=true",
-                )
-            ],
+            [InlineKeyboardButton("➕ أضفني إلى مجموعتك",
+                url=f"https://t.me/{context.bot.username}?startgroup=true")],
             [
                 InlineKeyboardButton("📚 الأوامر", callback_data="help_main"),
                 InlineKeyboardButton("🛡️ الحماية", callback_data="help_protect"),
@@ -265,14 +261,17 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "⚡ <b>ردود سريعة</b> ذكية للأسئلة المتكررة\n"
             "👮 <b>إدارة كاملة</b> (حظر، كتم، تحذير)\n"
             "📊 <b>إحصائيات</b> تفصيلية للمجموعة\n"
-            "🌙 <b>الوضع الليلي</b> لإغلاق الدردشة ليلاً\n"
+            "💾 <b>تخزين دائم</b> على Persistent Disk\n"
             "📝 <b>ملاحظات وقواعد</b> للمجموعة\n"
             "👋 <b>رسائل ترحيب</b> مخصصة\n\n"
             "اضغط على الأزرار أدناه لاستكشاف ميزاتي 👇"
         )
-        await update.message.reply_html(
-            welcome_text, reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+        if update.callback_query:
+            await update.callback_query.edit_message_text(
+                welcome_text, parse_mode=ParseMode.HTML,
+                reply_markup=InlineKeyboardMarkup(keyboard))
+        else:
+            await update.message.reply_html(welcome_text, reply_markup=InlineKeyboardMarkup(keyboard))
     else:
         register_chat(chat.id, chat.title, chat.type)
         await update.message.reply_text(
@@ -287,42 +286,44 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "<b>🛡️ أوامر الإدارة:</b>\n"
         "<code>/ban</code> - حظر مستخدم (بالرد)\n"
         "<code>/unban</code> - إلغاء الحظر\n"
-        "<code>/mute [مدة]</code> - كتم مستخدم (مثال: 1h, 30m, 2d)\n"
+        "<code>/mute [مدة]</code> - كتم (1h, 30m, 2d)\n"
         "<code>/unmute</code> - إلغاء الكتم\n"
         "<code>/kick</code> - طرد مستخدم\n"
-        "<code>/warn [سبب]</code> - تحذير مستخدم\n"
-        "<code>/warns</code> - عرض تحذيرات المستخدم\n"
+        "<code>/warn [سبب]</code> - تحذير\n"
+        "<code>/warns</code> - عرض التحذيرات\n"
         "<code>/resetwarns</code> - مسح التحذيرات\n"
         "<code>/pin</code> - تثبيت رسالة\n"
         "<code>/unpin</code> - إلغاء التثبيت\n"
         "<code>/purge</code> - حذف الرسائل (بالرد)\n\n"
         "<b>⚡ الردود السريعة:</b>\n"
-        "<code>/addreply [كلمة] [رد]</code> - إضافة رد\n"
-        "<code>/delreply [كلمة]</code> - حذف رد\n"
-        "<code>/replies</code> - عرض كل الردود\n"
-        "<code>/topreplies</code> - أكثر الردود استخداماً\n\n"
+        "<code>/addreply [كلمة] [رد]</code>\n"
+        "<code>/delreply [كلمة]</code>\n"
+        "<code>/replies</code> - عرض الكل\n"
+        "<code>/topreplies</code> - الأكثر تداولاً\n\n"
         "<b>📝 الملاحظات والقواعد:</b>\n"
-        "<code>/save [اسم] [محتوى]</code> - حفظ ملاحظة\n"
-        "<code>/get [اسم]</code> أو <code>#اسم</code> - استرجاع\n"
+        "<code>/save [اسم] [محتوى]</code>\n"
+        "<code>/get [اسم]</code> أو <code>#اسم</code>\n"
         "<code>/notes</code> - قائمة الملاحظات\n"
-        "<code>/delnote [اسم]</code> - حذف ملاحظة\n"
-        "<code>/setrules [نص]</code> - تعيين القواعد\n"
-        "<code>/rules</code> - عرض القواعد\n\n"
+        "<code>/delnote [اسم]</code>\n"
+        "<code>/setrules [نص]</code>\n"
+        "<code>/rules</code>\n\n"
         "<b>🚫 الفلترة:</b>\n"
-        "<code>/addword [كلمة]</code> - إضافة كلمة محظورة\n"
-        "<code>/delword [كلمة]</code> - حذف كلمة محظورة\n"
-        "<code>/words</code> - الكلمات المحظورة\n\n"
+        "<code>/addword [كلمة]</code>\n"
+        "<code>/delword [كلمة]</code>\n"
+        "<code>/words</code>\n\n"
         "<b>⚙️ الإعدادات:</b>\n"
-        "<code>/setwelcome [نص]</code> - رسالة الترحيب\n"
-        "<code>/welcome on/off</code> - تفعيل الترحيب\n"
-        "<code>/antilink on/off</code> - حماية الروابط\n"
-        "<code>/antiflood on/off</code> - مكافحة الفيضان\n"
-        "<code>/nightmode on/off</code> - الوضع الليلي\n\n"
+        "<code>/setwelcome [نص]</code>\n"
+        "<code>/welcome on/off</code>\n"
+        "<code>/antilink on/off</code>\n"
+        "<code>/antiflood on/off</code>\n\n"
         "<b>📊 الإحصائيات:</b>\n"
         "<code>/stats</code> - إحصائيات المجموعة\n"
         "<code>/top</code> - أنشط الأعضاء\n"
         "<code>/info</code> - معلومات المستخدم\n"
-        "<code>/id</code> - معرف المستخدم\n\n"
+        "<code>/id</code> - المعرفات\n\n"
+        "<b>💾 النسخ الاحتياطي (للمالك فقط):</b>\n"
+        "<code>/backup</code> - تحميل نسخة احتياطية\n"
+        "<code>/dbinfo</code> - معلومات قاعدة البيانات\n\n"
         "💡 <i>متغيرات الترحيب: {name}, {username}, {chat}, {count}</i>"
     )
     await update.message.reply_html(help_text)
@@ -332,11 +333,14 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """معالج أزرار الواجهة"""
     query = update.callback_query
     await query.answer()
-
     data = query.data
 
-    if data == "help_main":
-        text = (
+    if data == "back_main":
+        await cmd_start(update, context)
+        return
+
+    texts = {
+        "help_main": (
             "📚 <b>الأوامر الأساسية</b>\n\n"
             "<code>/start</code> - بدء البوت\n"
             "<code>/help</code> - المساعدة الكاملة\n"
@@ -344,104 +348,163 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "<code>/info</code> - معلومات حسابك\n"
             "<code>/rules</code> - قواعد المجموعة\n"
             "<code>/stats</code> - إحصائيات المجموعة"
-        )
-    elif data == "help_protect":
-        text = (
+        ),
+        "help_protect": (
             "🛡️ <b>ميزات الحماية</b>\n\n"
-            "✅ <b>مكافحة الروابط</b> - حذف الروابط المشبوهة تلقائياً\n"
-            "✅ <b>مكافحة الفيضان</b> - منع إغراق المجموعة بالرسائل\n"
-            "✅ <b>الكلمات المحظورة</b> - فلترة الكلمات السيئة\n"
-            "✅ <b>الوضع الليلي</b> - إغلاق الدردشة في أوقات محددة\n"
-            "✅ <b>نظام التحذيرات</b> - 3 تحذيرات = حظر تلقائي\n"
-            "✅ <b>كشف الحسابات الجديدة</b> - حماية من البوتات"
-        )
-    elif data == "help_replies":
-        text = (
+            "✅ <b>مكافحة الروابط</b> - حذف تلقائي\n"
+            "✅ <b>مكافحة الفيضان</b> - منع إغراق المجموعة\n"
+            "✅ <b>الكلمات المحظورة</b> - فلترة\n"
+            "✅ <b>نظام التحذيرات</b> - 3 = حظر\n"
+            "✅ <b>كشف الحسابات الجديدة</b>"
+        ),
+        "help_replies": (
             "⚡ <b>الردود السريعة</b>\n\n"
             "أضف ردوداً تلقائية للأسئلة المتكررة!\n\n"
-            "<b>كيفية الاستخدام:</b>\n"
-            "<code>/addreply اسعار اسعارنا تبدأ من 100 ريال</code>\n\n"
-            "عند كتابة كلمة <code>اسعار</code> سيرد البوت تلقائياً.\n\n"
-            "<b>أوامر إضافية:</b>\n"
+            "<b>مثال:</b>\n"
+            "<code>/addreply اسعار اسعارنا تبدأ من 100</code>\n\n"
+            "عند كتابة <code>اسعار</code> يرد البوت تلقائياً.\n\n"
             "<code>/replies</code> - كل الردود\n"
             "<code>/topreplies</code> - الأكثر استخداماً\n"
             "<code>/delreply</code> - حذف رد"
-        )
-    elif data == "help_stats":
-        text = (
+        ),
+        "help_stats": (
             "📊 <b>الإحصائيات</b>\n\n"
             "<code>/stats</code> - إحصائيات شاملة\n"
             "<code>/top</code> - أنشط 10 أعضاء\n"
             "<code>/info</code> - معلوماتك التفصيلية\n\n"
-            "يتم تتبع:\n"
-            "• عدد الرسائل لكل عضو\n"
-            "• آخر ظهور\n"
-            "• الردود الأكثر استخداماً\n"
-            "• نمو المجموعة"
-        )
-    elif data == "about":
-        text = (
+            "يتم تتبع: عدد الرسائل، آخر ظهور،\n"
+            "الردود الأكثر استخداماً، نمو المجموعة"
+        ),
+        "about": (
             "ℹ️ <b>حول البوت</b>\n\n"
-            "🤖 بوت إدارة احترافي للقنوات والمجموعات\n"
-            "🔧 مبني بـ Python + python-telegram-bot\n"
-            "☁️ مستضاف على Render.com\n"
-            "💾 قاعدة بيانات SQLite\n\n"
+            "🤖 بوت إدارة احترافي\n"
+            "🔧 Python + python-telegram-bot\n"
+            "☁️ Render.com\n"
+            "💾 SQLite على Persistent Disk\n\n"
             "✨ مفتوح المصدر وقابل للتطوير"
-        )
-    else:
-        text = "❓ خيار غير معروف"
+        ),
+    }
+    text = texts.get(data, "❓ خيار غير معروف")
 
     keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="back_main")]]
-    if data == "back_main":
-        await cmd_start(update, context)
-        return
-
     await query.edit_message_text(
         text, parse_mode=ParseMode.HTML, reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 
+# ================== أوامر النسخ الاحتياطي (للمالك) ==================
+
+async def cmd_backup(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """تحميل نسخة احتياطية من قاعدة البيانات (للمالك فقط)"""
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("❌ هذا الأمر للمالك فقط.")
+        return
+
+    if not os.path.exists(DB_PATH):
+        await update.message.reply_text("❌ ملف قاعدة البيانات غير موجود.")
+        return
+
+    try:
+        # إنشاء نسخة آمنة باستخدام SQLite Backup API
+        backup_path = os.path.join(DATA_DIR, f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db")
+        src = sqlite3.connect(DB_PATH)
+        dst = sqlite3.connect(backup_path)
+        src.backup(dst)
+        src.close()
+        dst.close()
+
+        # إرسال الملف للمالك
+        with open(backup_path, "rb") as f:
+            await context.bot.send_document(
+                chat_id=update.effective_user.id,
+                document=f,
+                filename=f"bot_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db",
+                caption=f"💾 نسخة احتياطية كاملة\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            )
+
+        # حذف الملف المؤقت
+        os.remove(backup_path)
+        await update.message.reply_text("✅ تم إرسال النسخة الاحتياطية في الخاص.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ فشل النسخ: {e}")
+
+
+async def cmd_dbinfo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """معلومات قاعدة البيانات (للمالك فقط)"""
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("❌ هذا الأمر للمالك فقط.")
+        return
+
+    try:
+        # حجم الملف
+        size_bytes = os.path.getsize(DB_PATH)
+        size_mb = size_bytes / (1024 * 1024)
+
+        # إحصائيات
+        with get_db() as conn:
+            chats = conn.execute("SELECT COUNT(*) as c FROM chats").fetchone()["c"]
+            replies = conn.execute("SELECT COUNT(*) as c FROM quick_replies").fetchone()["c"]
+            users = conn.execute("SELECT COUNT(*) as c FROM user_stats").fetchone()["c"]
+            warns = conn.execute("SELECT COUNT(*) as c FROM warnings").fetchone()["c"]
+            notes = conn.execute("SELECT COUNT(*) as c FROM notes").fetchone()["c"]
+            words = conn.execute("SELECT COUNT(*) as c FROM banned_words").fetchone()["c"]
+
+        # المساحة المتاحة
+        statvfs = os.statvfs(DATA_DIR)
+        free_mb = (statvfs.f_bavail * statvfs.f_frsize) / (1024 * 1024)
+        total_mb = (statvfs.f_blocks * statvfs.f_frsize) / (1024 * 1024)
+        used_mb = total_mb - free_mb
+
+        text = (
+            f"💾 <b>معلومات قاعدة البيانات</b>\n\n"
+            f"📂 المسار: <code>{DB_PATH}</code>\n"
+            f"📦 حجم الملف: <b>{size_mb:.2f} MB</b>\n\n"
+            f"💽 <b>مساحة Disk:</b>\n"
+            f"  • المستخدم: <b>{used_mb:.0f} MB</b>\n"
+            f"  • المتاح: <b>{free_mb:.0f} MB</b>\n"
+            f"  • الإجمالي: <b>{total_mb:.0f} MB</b>\n\n"
+            f"📊 <b>محتويات قاعدة البيانات:</b>\n"
+            f"  • المجموعات: <b>{chats}</b>\n"
+            f"  • الردود السريعة: <b>{replies}</b>\n"
+            f"  • المستخدمين: <b>{users}</b>\n"
+            f"  • التحذيرات: <b>{warns}</b>\n"
+            f"  • الملاحظات: <b>{notes}</b>\n"
+            f"  • الكلمات المحظورة: <b>{words}</b>"
+        )
+        await update.message.reply_html(text)
+    except Exception as e:
+        await update.message.reply_text(f"❌ خطأ: {e}")
+
+
 # ================== أوامر الإدارة ==================
 
 async def cmd_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """حظر مستخدم"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not update.message.reply_to_message:
-        await update.message.reply_text("⚠️ يجب الرد على رسالة المستخدم المراد حظره.")
+        await update.message.reply_text("⚠️ يجب الرد على رسالة المستخدم.")
         return
 
     target = update.message.reply_to_message.from_user
-    chat = update.effective_chat
-
     try:
-        await chat.ban_member(target.id)
+        await update.effective_chat.ban_member(target.id)
         reason = " ".join(context.args) if context.args else "بدون سبب"
-        await update.message.reply_html(
-            f"🔨 تم حظر <b>{target.full_name}</b>\n📝 السبب: {reason}"
-        )
+        await update.message.reply_html(f"🔨 تم حظر <b>{target.full_name}</b>\n📝 السبب: {reason}")
     except Exception as e:
         await update.message.reply_text(f"❌ فشل الحظر: {e}")
 
 
 async def cmd_unban(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """إلغاء حظر مستخدم"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not update.message.reply_to_message and not context.args:
         await update.message.reply_text("⚠️ ردّ على المستخدم أو أرسل معرفه.")
         return
 
-    user_id = (
-        update.message.reply_to_message.from_user.id
-        if update.message.reply_to_message
-        else int(context.args[0])
-    )
-
+    user_id = (update.message.reply_to_message.from_user.id
+               if update.message.reply_to_message else int(context.args[0]))
     try:
         await update.effective_chat.unban_member(user_id)
         await update.message.reply_text("✅ تم إلغاء الحظر.")
@@ -450,18 +513,14 @@ async def cmd_unban(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_mute(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """كتم مستخدم"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not update.message.reply_to_message:
-        await update.message.reply_text("⚠️ ردّ على رسالة المستخدم المراد كتمه.")
+        await update.message.reply_text("⚠️ ردّ على رسالة المستخدم.")
         return
 
     target = update.message.reply_to_message.from_user
-    chat = update.effective_chat
-
     duration = None
     until_date = None
     if context.args:
@@ -470,46 +529,34 @@ async def cmd_mute(update: Update, context: ContextTypes.DEFAULT_TYPE):
             until_date = datetime.now() + duration
 
     try:
-        await chat.restrict_member(
+        await update.effective_chat.restrict_member(
             target.id,
             permissions=ChatPermissions(can_send_messages=False),
             until_date=until_date,
         )
         time_text = f" لمدة {context.args[0]}" if duration else " بشكل دائم"
-        await update.message.reply_html(
-            f"🔇 تم كتم <b>{target.full_name}</b>{time_text}"
-        )
+        await update.message.reply_html(f"🔇 تم كتم <b>{target.full_name}</b>{time_text}")
     except Exception as e:
         await update.message.reply_text(f"❌ فشل الكتم: {e}")
 
 
 async def cmd_unmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """إلغاء كتم مستخدم"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not update.message.reply_to_message:
         await update.message.reply_text("⚠️ ردّ على رسالة المستخدم.")
         return
 
     target = update.message.reply_to_message.from_user
-    chat = update.effective_chat
-
     try:
-        await chat.restrict_member(
+        await update.effective_chat.restrict_member(
             target.id,
             permissions=ChatPermissions(
-                can_send_messages=True,
-                can_send_audios=True,
-                can_send_documents=True,
-                can_send_photos=True,
-                can_send_videos=True,
-                can_send_video_notes=True,
-                can_send_voice_notes=True,
-                can_send_polls=True,
-                can_send_other_messages=True,
-                can_add_web_page_previews=True,
+                can_send_messages=True, can_send_audios=True, can_send_documents=True,
+                can_send_photos=True, can_send_videos=True, can_send_video_notes=True,
+                can_send_voice_notes=True, can_send_polls=True,
+                can_send_other_messages=True, can_add_web_page_previews=True,
             ),
         )
         await update.message.reply_html(f"🔊 تم إلغاء كتم <b>{target.full_name}</b>")
@@ -518,32 +565,26 @@ async def cmd_unmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_kick(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """طرد مستخدم"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not update.message.reply_to_message:
         await update.message.reply_text("⚠️ ردّ على رسالة المستخدم.")
         return
 
     target = update.message.reply_to_message.from_user
-    chat = update.effective_chat
-
     try:
-        await chat.ban_member(target.id)
-        await chat.unban_member(target.id)
+        await update.effective_chat.ban_member(target.id)
+        await update.effective_chat.unban_member(target.id)
         await update.message.reply_html(f"👢 تم طرد <b>{target.full_name}</b>")
     except Exception as e:
         await update.message.reply_text(f"❌ خطأ: {e}")
 
 
 async def cmd_warn(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """تحذير مستخدم"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not update.message.reply_to_message:
         await update.message.reply_text("⚠️ ردّ على رسالة المستخدم.")
         return
@@ -557,22 +598,18 @@ async def cmd_warn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "INSERT INTO warnings (chat_id, user_id, reason, warned_by) VALUES (?, ?, ?, ?)",
             (chat.id, target.id, reason, update.effective_user.id),
         )
-        cur = conn.execute(
+        warn_count = conn.execute(
             "SELECT COUNT(*) as cnt FROM warnings WHERE chat_id = ? AND user_id = ?",
             (chat.id, target.id),
-        )
-        warn_count = cur.fetchone()["cnt"]
+        ).fetchone()["cnt"]
 
-    msg = (
-        f"⚠️ تم تحذير <b>{target.full_name}</b>\n"
-        f"📝 السبب: {reason}\n"
-        f"🔢 عدد التحذيرات: {warn_count}/3"
-    )
+    msg = (f"⚠️ تم تحذير <b>{target.full_name}</b>\n"
+           f"📝 السبب: {reason}\n🔢 عدد التحذيرات: {warn_count}/3")
 
     if warn_count >= 3:
         try:
             await chat.ban_member(target.id)
-            msg += "\n\n🔨 <b>تم الحظر تلقائياً (وصل لـ 3 تحذيرات)</b>"
+            msg += "\n\n🔨 <b>تم الحظر تلقائياً (3 تحذيرات)</b>"
             with get_db() as conn:
                 conn.execute(
                     "DELETE FROM warnings WHERE chat_id = ? AND user_id = ?",
@@ -585,19 +622,14 @@ async def cmd_warn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_warns(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """عرض تحذيرات المستخدم"""
-    target = (
-        update.message.reply_to_message.from_user
-        if update.message.reply_to_message
-        else update.effective_user
-    )
+    target = (update.message.reply_to_message.from_user
+              if update.message.reply_to_message else update.effective_user)
 
     with get_db() as conn:
-        cur = conn.execute(
-            "SELECT reason, warned_at FROM warnings WHERE chat_id = ? AND user_id = ?",
+        warnings_list = conn.execute(
+            "SELECT reason, warned_at FROM warnings WHERE chat_id = ? AND user_id = ? ORDER BY warned_at",
             (update.effective_chat.id, target.id),
-        )
-        warnings_list = cur.fetchall()
+        ).fetchall()
 
     if not warnings_list:
         await update.message.reply_html(f"✅ <b>{target.full_name}</b> ليس لديه تحذيرات.")
@@ -606,16 +638,13 @@ async def cmd_warns(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = f"⚠️ <b>تحذيرات {target.full_name}</b> ({len(warnings_list)}/3):\n\n"
     for i, w in enumerate(warnings_list, 1):
         text += f"{i}. {w['reason']} - <i>{w['warned_at'][:16]}</i>\n"
-
     await update.message.reply_html(text)
 
 
 async def cmd_resetwarns(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """مسح تحذيرات المستخدم"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not update.message.reply_to_message:
         await update.message.reply_text("⚠️ ردّ على رسالة المستخدم.")
         return
@@ -630,15 +659,12 @@ async def cmd_resetwarns(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_pin(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """تثبيت رسالة"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not update.message.reply_to_message:
         await update.message.reply_text("⚠️ ردّ على الرسالة المراد تثبيتها.")
         return
-
     try:
         await update.message.reply_to_message.pin()
         await update.message.reply_text("📌 تم التثبيت.")
@@ -647,11 +673,9 @@ async def cmd_pin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_unpin(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """إلغاء تثبيت رسالة"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     try:
         if update.message.reply_to_message:
             await update.message.reply_to_message.unpin()
@@ -663,11 +687,9 @@ async def cmd_unpin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_purge(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """حذف عدة رسائل"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not update.message.reply_to_message:
         await update.message.reply_text("⚠️ ردّ على الرسالة لبدء الحذف منها.")
         return
@@ -675,7 +697,6 @@ async def cmd_purge(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     start_id = update.message.reply_to_message.message_id
     end_id = update.message.message_id
-
     deleted = 0
     for msg_id in range(start_id, end_id + 1):
         try:
@@ -695,11 +716,9 @@ async def cmd_purge(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ================== الردود السريعة ==================
 
 async def cmd_addreply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """إضافة رد سريع"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if len(context.args) < 2:
         await update.message.reply_html(
             "⚠️ الاستخدام: <code>/addreply [كلمة] [الرد]</code>\n"
@@ -725,11 +744,9 @@ async def cmd_addreply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_delreply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """حذف رد سريع"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not context.args:
         await update.message.reply_text("⚠️ الاستخدام: /delreply [الكلمة]")
         return
@@ -749,14 +766,12 @@ async def cmd_delreply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_replies(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """عرض كل الردود السريعة"""
     chat_id = update.effective_chat.id
     with get_db() as conn:
-        cur = conn.execute(
+        replies = conn.execute(
             "SELECT trigger, use_count FROM quick_replies WHERE chat_id = ? ORDER BY use_count DESC",
             (chat_id,),
-        )
-        replies = cur.fetchall()
+        ).fetchall()
 
     if not replies:
         await update.message.reply_text("📭 لا توجد ردود سريعة محفوظة.")
@@ -765,19 +780,16 @@ async def cmd_replies(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = f"⚡ <b>الردود السريعة ({len(replies)}):</b>\n\n"
     for r in replies:
         text += f"• <code>{r['trigger']}</code> — استُخدم {r['use_count']} مرة\n"
-
     await update.message.reply_html(text)
 
 
 async def cmd_topreplies(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """أكثر الردود استخداماً"""
     chat_id = update.effective_chat.id
     with get_db() as conn:
-        cur = conn.execute(
+        replies = conn.execute(
             "SELECT trigger, response, use_count FROM quick_replies WHERE chat_id = ? AND use_count > 0 ORDER BY use_count DESC LIMIT 10",
             (chat_id,),
-        )
-        replies = cur.fetchall()
+        ).fetchall()
 
     if not replies:
         await update.message.reply_text("📭 لم يتم استخدام أي ردود بعد.")
@@ -788,22 +800,17 @@ async def cmd_topreplies(update: Update, context: ContextTypes.DEFAULT_TYPE):
         emoji = ["🥇", "🥈", "🥉"][i - 1] if i <= 3 else f"{i}."
         preview = r["response"][:50] + ("..." if len(r["response"]) > 50 else "")
         text += f"{emoji} <code>{r['trigger']}</code> ({r['use_count']}x)\n   ↳ {preview}\n\n"
-
     await update.message.reply_html(text)
 
 
 # ================== الملاحظات ==================
 
 async def cmd_save(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """حفظ ملاحظة"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if len(context.args) < 2:
-        await update.message.reply_html(
-            "⚠️ الاستخدام: <code>/save [اسم] [محتوى]</code>"
-        )
+        await update.message.reply_html("⚠️ الاستخدام: <code>/save [اسم] [محتوى]</code>")
         return
 
     name = context.args[0].lower()
@@ -814,26 +821,21 @@ async def cmd_save(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "INSERT OR REPLACE INTO notes (chat_id, note_name, content, created_by) VALUES (?, ?, ?, ?)",
             (update.effective_chat.id, name, content, update.effective_user.id),
         )
-
     await update.message.reply_html(
         f"✅ تم حفظ الملاحظة <code>#{name}</code>\nاستدعها بكتابة <code>#{name}</code>"
     )
 
 
 async def cmd_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """استرجاع ملاحظة"""
     if not context.args:
         await update.message.reply_text("⚠️ الاستخدام: /get [اسم]")
         return
-
     name = context.args[0].lower()
     with get_db() as conn:
-        cur = conn.execute(
+        note = conn.execute(
             "SELECT content FROM notes WHERE chat_id = ? AND note_name = ?",
             (update.effective_chat.id, name),
-        )
-        note = cur.fetchone()
-
+        ).fetchone()
     if note:
         await update.message.reply_text(note["content"])
     else:
@@ -841,13 +843,11 @@ async def cmd_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_notes(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """قائمة الملاحظات"""
     with get_db() as conn:
-        cur = conn.execute(
-            "SELECT note_name FROM notes WHERE chat_id = ?",
+        notes_list = conn.execute(
+            "SELECT note_name FROM notes WHERE chat_id = ? ORDER BY note_name",
             (update.effective_chat.id,),
-        )
-        notes_list = cur.fetchall()
+        ).fetchall()
 
     if not notes_list:
         await update.message.reply_text("📭 لا توجد ملاحظات محفوظة.")
@@ -859,11 +859,9 @@ async def cmd_notes(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_delnote(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """حذف ملاحظة"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not context.args:
         await update.message.reply_text("⚠️ الاستخدام: /delnote [اسم]")
         return
@@ -874,8 +872,9 @@ async def cmd_delnote(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "DELETE FROM notes WHERE chat_id = ? AND note_name = ?",
             (update.effective_chat.id, name),
         )
+        deleted = cur.rowcount
 
-    if cur.rowcount:
+    if deleted:
         await update.message.reply_html(f"✅ تم حذف <code>#{name}</code>")
     else:
         await update.message.reply_text("❌ الملاحظة غير موجودة.")
@@ -884,11 +883,9 @@ async def cmd_delnote(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ================== القواعد ==================
 
 async def cmd_setrules(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """تعيين قواعد المجموعة"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not context.args:
         await update.message.reply_text("⚠️ الاستخدام: /setrules [نص القواعد]")
         return
@@ -903,13 +900,11 @@ async def cmd_setrules(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """عرض القواعد"""
     with get_db() as conn:
-        cur = conn.execute(
+        row = conn.execute(
             "SELECT rules_text FROM rules WHERE chat_id = ?",
             (update.effective_chat.id,),
-        )
-        row = cur.fetchone()
+        ).fetchone()
 
     if row and row["rules_text"]:
         await update.message.reply_html(f"📜 <b>قواعد المجموعة:</b>\n\n{row['rules_text']}")
@@ -920,11 +915,9 @@ async def cmd_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ================== الكلمات المحظورة ==================
 
 async def cmd_addword(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """إضافة كلمة محظورة"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not context.args:
         await update.message.reply_text("⚠️ الاستخدام: /addword [كلمة]")
         return
@@ -942,11 +935,9 @@ async def cmd_addword(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_delword(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """حذف كلمة من المحظورة"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not context.args:
         await update.message.reply_text("⚠️ الاستخدام: /delword [كلمة]")
         return
@@ -957,25 +948,23 @@ async def cmd_delword(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "DELETE FROM banned_words WHERE chat_id = ? AND word = ?",
             (update.effective_chat.id, word),
         )
+        deleted = cur.rowcount
 
-    if cur.rowcount:
+    if deleted:
         await update.message.reply_html(f"✅ تم إلغاء حظر: <code>{word}</code>")
     else:
         await update.message.reply_text("❌ الكلمة غير موجودة.")
 
 
 async def cmd_words(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """قائمة الكلمات المحظورة"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     with get_db() as conn:
-        cur = conn.execute(
-            "SELECT word FROM banned_words WHERE chat_id = ?",
+        words_list = conn.execute(
+            "SELECT word FROM banned_words WHERE chat_id = ? ORDER BY word",
             (update.effective_chat.id,),
-        )
-        words_list = cur.fetchall()
+        ).fetchall()
 
     if not words_list:
         await update.message.reply_text("📭 لا توجد كلمات محظورة.")
@@ -989,11 +978,9 @@ async def cmd_words(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ================== الإعدادات ==================
 
 async def cmd_setwelcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """تعيين رسالة الترحيب"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
-
     if not context.args:
         await update.message.reply_html(
             "⚠️ الاستخدام: <code>/setwelcome [النص]</code>\n\n"
@@ -1015,7 +1002,6 @@ async def cmd_setwelcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_toggle_setting(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """تفعيل/تعطيل إعداد"""
     if not await is_user_admin(update):
         await update.message.reply_text("❌ هذا الأمر للمشرفين فقط.")
         return
@@ -1051,15 +1037,14 @@ async def cmd_toggle_setting(update: Update, context: ContextTypes.DEFAULT_TYPE)
 # ================== الإحصائيات ==================
 
 async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """إحصائيات المجموعة"""
     chat = update.effective_chat
     chat_id = chat.id
 
     with get_db() as conn:
         total_msgs = conn.execute(
-            "SELECT SUM(message_count) as total FROM user_stats WHERE chat_id = ?",
+            "SELECT COALESCE(SUM(message_count), 0) as total FROM user_stats WHERE chat_id = ?",
             (chat_id,),
-        ).fetchone()["total"] or 0
+        ).fetchone()["total"]
 
         total_users = conn.execute(
             "SELECT COUNT(*) as cnt FROM user_stats WHERE chat_id = ?", (chat_id,)
@@ -1090,14 +1075,12 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_top(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """أنشط الأعضاء"""
     chat_id = update.effective_chat.id
     with get_db() as conn:
-        cur = conn.execute(
+        top_users = conn.execute(
             "SELECT first_name, username, message_count FROM user_stats WHERE chat_id = ? ORDER BY message_count DESC LIMIT 10",
             (chat_id,),
-        )
-        top_users = cur.fetchall()
+        ).fetchall()
 
     if not top_users:
         await update.message.reply_text("📭 لا توجد بيانات بعد.")
@@ -1109,17 +1092,12 @@ async def cmd_top(update: Update, context: ContextTypes.DEFAULT_TYPE):
         emoji = medals[i] if i < 3 else f"{i+1}."
         name = u["first_name"] or "Unknown"
         text += f"{emoji} <b>{name}</b> — {u['message_count']:,} رسالة\n"
-
     await update.message.reply_html(text)
 
 
 async def cmd_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """معلومات المستخدم"""
-    target = (
-        update.message.reply_to_message.from_user
-        if update.message.reply_to_message
-        else update.effective_user
-    )
+    target = (update.message.reply_to_message.from_user
+              if update.message.reply_to_message else update.effective_user)
 
     with get_db() as conn:
         stats = conn.execute(
@@ -1143,7 +1121,6 @@ async def cmd_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """معرفات المستخدم والمجموعة"""
     user = update.effective_user
     chat = update.effective_chat
 
@@ -1153,16 +1130,14 @@ async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.reply_to_message:
         target = update.message.reply_to_message.from_user
         text += f"\n👤 معرف المستخدم: <code>{target.id}</code>"
-
     await update.message.reply_html(text)
 
 
 # ================== المعالجات التلقائية ==================
 
-# تتبع آخر رسائل المستخدمين لمكافحة الفيضان
 flood_cache: Dict[tuple, List[float]] = {}
-FLOOD_THRESHOLD = 5  # 5 رسائل
-FLOOD_WINDOW = 7  # خلال 7 ثواني
+FLOOD_THRESHOLD = 5
+FLOOD_WINDOW = 7
 
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1180,30 +1155,30 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = chat.id
     register_chat(chat_id, chat.title or "", chat.type)
 
-    # تحديث الإحصائيات
-    with get_db() as conn:
-        conn.execute(
-            """
-            INSERT INTO user_stats (chat_id, user_id, username, first_name, message_count, last_seen)
-            VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
-            ON CONFLICT(chat_id, user_id) DO UPDATE SET
-                message_count = message_count + 1,
-                last_seen = CURRENT_TIMESTAMP,
-                username = excluded.username,
-                first_name = excluded.first_name
-            """,
-            (chat_id, user.id, user.username or "", user.first_name or ""),
-        )
-
-        # جلب إعدادات المجموعة
-        settings = conn.execute(
-            "SELECT * FROM chats WHERE chat_id = ?", (chat_id,)
-        ).fetchone()
+    try:
+        with get_db() as conn:
+            conn.execute(
+                """
+                INSERT INTO user_stats (chat_id, user_id, username, first_name, message_count, last_seen)
+                VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
+                ON CONFLICT(chat_id, user_id) DO UPDATE SET
+                    message_count = message_count + 1,
+                    last_seen = CURRENT_TIMESTAMP,
+                    username = excluded.username,
+                    first_name = excluded.first_name
+                """,
+                (chat_id, user.id, user.username or "", user.first_name or ""),
+            )
+            settings = conn.execute(
+                "SELECT * FROM chats WHERE chat_id = ?", (chat_id,)
+            ).fetchone()
+    except Exception as e:
+        logger.error(f"Stats error: {e}")
+        return
 
     if not settings:
         return
 
-    # تجاهل المشرفين في الفلاتر
     is_admin = await is_user_admin(update)
 
     # === مكافحة الفيضان ===
@@ -1248,10 +1223,13 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
     # === الكلمات المحظورة ===
-    with get_db() as conn:
-        banned = conn.execute(
-            "SELECT word FROM banned_words WHERE chat_id = ?", (chat_id,)
-        ).fetchall()
+    try:
+        with get_db() as conn:
+            banned = conn.execute(
+                "SELECT word FROM banned_words WHERE chat_id = ?", (chat_id,)
+            ).fetchall()
+    except Exception:
+        banned = []
 
     if banned and not is_admin:
         text_lower = text.lower()
@@ -1271,34 +1249,40 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
 
     # === الردود السريعة ===
-    if text and not text.startswith("/"):
+    if text and not text.startswith("/") and not text.startswith("#"):
         text_lower = text.lower().strip()
-        with get_db() as conn:
-            # البحث عن تطابق
-            replies = conn.execute(
-                "SELECT trigger, response FROM quick_replies WHERE chat_id = ?",
-                (chat_id,),
-            ).fetchall()
+        try:
+            with get_db() as conn:
+                replies = conn.execute(
+                    "SELECT trigger, response FROM quick_replies WHERE chat_id = ?",
+                    (chat_id,),
+                ).fetchall()
 
-            for r in replies:
-                if r["trigger"] in text_lower:
-                    await update.message.reply_text(r["response"])
-                    conn.execute(
-                        "UPDATE quick_replies SET use_count = use_count + 1 WHERE chat_id = ? AND trigger = ?",
-                        (chat_id, r["trigger"]),
-                    )
-                    break
+                for r in replies:
+                    if r["trigger"] in text_lower:
+                        await update.message.reply_text(r["response"])
+                        conn.execute(
+                            "UPDATE quick_replies SET use_count = use_count + 1 WHERE chat_id = ? AND trigger = ?",
+                            (chat_id, r["trigger"]),
+                        )
+                        break
+        except Exception as e:
+            logger.error(f"Reply error: {e}")
 
     # === استرجاع الملاحظات بـ # ===
     if text.startswith("#"):
-        note_name = text[1:].split()[0].lower()
-        with get_db() as conn:
-            note = conn.execute(
-                "SELECT content FROM notes WHERE chat_id = ? AND note_name = ?",
-                (chat_id, note_name),
-            ).fetchone()
-        if note:
-            await update.message.reply_text(note["content"])
+        note_name = text[1:].split()[0].lower() if len(text) > 1 else ""
+        if note_name:
+            try:
+                with get_db() as conn:
+                    note = conn.execute(
+                        "SELECT content FROM notes WHERE chat_id = ? AND note_name = ?",
+                        (chat_id, note_name),
+                    ).fetchone()
+                if note:
+                    await update.message.reply_text(note["content"])
+            except Exception as e:
+                logger.error(f"Note error: {e}")
 
 
 async def welcome_new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1309,11 +1293,14 @@ async def welcome_new_member(update: Update, context: ContextTypes.DEFAULT_TYPE)
     chat = update.effective_chat
     chat_id = chat.id
 
-    with get_db() as conn:
-        settings = conn.execute(
-            "SELECT welcome_enabled, welcome_message FROM chats WHERE chat_id = ?",
-            (chat_id,),
-        ).fetchone()
+    try:
+        with get_db() as conn:
+            settings = conn.execute(
+                "SELECT welcome_enabled, welcome_message FROM chats WHERE chat_id = ?",
+                (chat_id,),
+            ).fetchone()
+    except Exception:
+        return
 
     if not settings or not settings["welcome_enabled"]:
         return
@@ -1331,7 +1318,8 @@ async def welcome_new_member(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if custom_msg:
             msg = (
                 custom_msg.replace("{name}", new_member.full_name)
-                .replace("{username}", f"@{new_member.username}" if new_member.username else new_member.full_name)
+                .replace("{username}",
+                    f"@{new_member.username}" if new_member.username else new_member.full_name)
                 .replace("{chat}", chat.title or "")
                 .replace("{count}", str(member_count))
             )
@@ -1353,45 +1341,34 @@ async def goodbye_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """وداع المغادرين"""
     if not update.message or not update.message.left_chat_member:
         return
-
     member = update.message.left_chat_member
     if member.is_bot:
         return
-
     try:
-        await update.message.reply_html(
-            f"👋 وداعاً <b>{member.full_name}</b>"
-        )
+        await update.message.reply_html(f"👋 وداعاً <b>{member.full_name}</b>")
     except Exception:
         pass
 
 
-# ================== ويب سيرفر للحفاظ على البوت نشطاً ==================
+# ================== ويب سيرفر ==================
 
 async def health_check(request):
     """نقطة فحص صحة البوت"""
-    return web.json_response({"status": "alive", "bot": "running"})
+    db_size = os.path.getsize(DB_PATH) if os.path.exists(DB_PATH) else 0
+    return web.json_response({
+        "status": "alive",
+        "bot": "running",
+        "storage": "persistent_disk",
+        "db_path": DB_PATH,
+        "db_size_kb": round(db_size / 1024, 2)
+    })
 
 
-async def webhook_handler(request, application):
-    """معالج webhook من تيليجرام"""
-    data = await request.json()
-    update = Update.de_json(data, application.bot)
-    await application.process_update(update)
-    return web.Response(text="OK")
-
-
-async def start_web_server(application: Application):
+async def start_web_server():
     """تشغيل خادم الويب"""
     app = web.Application()
     app.router.add_get("/", health_check)
     app.router.add_get("/health", health_check)
-
-    if WEBHOOK_URL:
-        async def handler(request):
-            return await webhook_handler(request, application)
-        app.router.add_post(f"/webhook/{BOT_TOKEN}", handler)
-
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", PORT)
@@ -1412,7 +1389,7 @@ async def setup_commands(application: Application):
         BotCommand("info", "👤 معلومات المستخدم"),
         BotCommand("id", "🆔 المعرفات"),
         BotCommand("replies", "⚡ الردود السريعة"),
-        BotCommand("topreplies", "🔥 الأكثر استخداماً"),
+        BotCommand("topreplies", "🔥 الأكثر تداولاً"),
         BotCommand("notes", "📝 الملاحظات"),
     ]
     await application.bot.set_my_commands(commands)
@@ -1421,37 +1398,35 @@ async def setup_commands(application: Application):
 async def post_init(application: Application):
     """يعمل بعد تهيئة البوت"""
     await setup_commands(application)
-    await start_web_server(application)
-
-    if WEBHOOK_URL:
-        webhook_url = f"{WEBHOOK_URL}/webhook/{BOT_TOKEN}"
-        await application.bot.set_webhook(url=webhook_url, drop_pending_updates=True)
-        logger.info(f"✅ Webhook مضبوط: {webhook_url}")
-    else:
-        logger.info("ℹ️ يعمل في وضع Polling")
+    await start_web_server()
+    logger.info("✅ البوت جاهز ويعمل!")
 
 
 def main():
     """نقطة البداية"""
     if not BOT_TOKEN:
-        logger.error("❌ BOT_TOKEN غير معرّف! ضعه في متغيرات البيئة.")
+        logger.error("❌ BOT_TOKEN غير معرّف!")
         return
+
+    # التحقق من وجود مجلد التخزين
+    if not os.path.exists(DATA_DIR):
+        logger.warning(f"⚠️ مجلد التخزين غير موجود: {DATA_DIR}")
+        logger.warning("⚠️ تأكد من ربط Persistent Disk على هذا المسار في Render")
+        os.makedirs(DATA_DIR, exist_ok=True)
 
     init_database()
 
-    application = (
-        Application.builder()
-        .token(BOT_TOKEN)
-        .post_init(post_init)
-        .build()
-    )
+    application = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
     # === تسجيل الأوامر ===
-    # أوامر البداية
     application.add_handler(CommandHandler("start", cmd_start))
     application.add_handler(CommandHandler("help", cmd_help))
 
-    # أوامر الإدارة
+    # النسخ الاحتياطي
+    application.add_handler(CommandHandler("backup", cmd_backup))
+    application.add_handler(CommandHandler("dbinfo", cmd_dbinfo))
+
+    # الإدارة
     application.add_handler(CommandHandler("ban", cmd_ban))
     application.add_handler(CommandHandler("unban", cmd_unban))
     application.add_handler(CommandHandler("mute", cmd_mute))
@@ -1505,36 +1480,17 @@ def main():
 
     # المعالجات التلقائية
     application.add_handler(
-        MessageHandler(
-            filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_member
-        )
+        MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_member)
     )
     application.add_handler(
         MessageHandler(filters.StatusUpdate.LEFT_CHAT_MEMBER, goodbye_member)
     )
     application.add_handler(
-        MessageHandler(
-            filters.TEXT & ~filters.COMMAND, message_handler
-        )
+        MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler)
     )
 
     logger.info("🚀 البوت يبدأ العمل...")
-
-    if WEBHOOK_URL:
-        # في وضع Webhook نتركه يعمل بشكل مستمر
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(application.initialize())
-        loop.run_until_complete(application.start())
-        loop.run_until_complete(post_init(application))
-        try:
-            loop.run_forever()
-        except KeyboardInterrupt:
-            loop.run_until_complete(application.stop())
-            loop.run_until_complete(application.shutdown())
-    else:
-        # وضع Polling - الأنسب لـ Render Free
-        application.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
+    application.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
