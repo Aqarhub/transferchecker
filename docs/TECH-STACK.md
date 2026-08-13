@@ -13,9 +13,20 @@
 | react-native-fast-opencv | 1.0.1 | v1 أعيدت كتابته لـNew Architecture، صيانة نشطة | اعتماد مع حذر (مطوّر واحد) |
 | @shopify/react-native-skia | 2.11.0 | نشط جداً (Shopify) | اعتماد عبر SkiaCamera |
 | react-native-worklets (SWM) | 0.11.x | المعيار الجديد للـworklets | اعتماد، **ليس** worklets-core |
+| expo-sqlite | 57.x مع useSQLCipher | دعم SQLCipher رسمي أولى الطرف | اعتماد بدل op-sqlite |
 | Supabase | Postgres 17 مُدار | نشط، RLS + Auth ناضجة | اعتماد |
 | Drizzle ORM | 0.45.2 + drizzle-kit 0.31.10 | نشط، الإصدار 1.0 في مرحلة RC | اعتماد بتثبيت الإصدار |
 | PostgreSQL (Supabase) | 17 (لا يوجد 18 بعد) | uuidv7() الأصلية تحتاج PG18 | توليد UUIDv7 في التطبيق |
+| Next.js | 16.3.x | Turbopack افتراضي، React 19 | اعتماد بدل 15 |
+| Typst | 0.15.x | تشكيل عربي صحيح + دقة mm | اعتماد بدل pdf-lib |
+| TypeScript | 6.0.3 مثبّت | TS 7 صدر لكن typescript-eslint لا يدعمه | تثبيت 6.0.3 مؤقتاً |
+| Node.js | 24 (Active LTS) | type stripping مستقر | اعتماد |
+| Zod | 4.4.x | v3 متوقف نهائياً | اعتماد v4 |
+| i18next + react-i18next | 26.3.4+ / 17.x | حد أدنى أمني، جمع عربي أصلي | اعتماد بدون ICU |
+| pnpm | 11.21 | أمان سلسلة توريد افتراضي | اعتماد عبر packageManager |
+| Turborepo | 2.10.x | كاش بعيد مجاني، --affected | اعتماد |
+| Vitest | 4.1.x | Browser Mode مستقر | اعتماد، وjest-expo لمكونات RN |
+| ESLint + typescript-eslint | 10.x / 8.67+ | الفحص المعتمد على الأنواع | اعتماد كفاحص أساسي |
 
 ## تغييرات جوهرية عن الخطة الأصلية (مكتشفة بالتحقق)
 
@@ -127,7 +138,24 @@ react-native-fast-opencv@1.0.1
 
 ## 6) i18n والـMonorepo
 
-(قيد التحقق، تُستكمل عند وصول نتائج البحث.)
+**الترجمة والتعدد اللغوي:**
+- **i18next 26.3.4 كحد أدنى** (إصدار أمني يسد ثغرة prototype pollution صيف 2026) + react-i18next 17.x، ويُرقيان معاً دائماً.
+- **تصحيح عن الخطة، لا حاجة لـICU MessageFormat:** i18next الحديث يعالج صيغ الجمع الست للعربية أصلياً عبر `Intl.PluralRules` باللواحق `_zero` حتى `_other`. إضافة i18next-icu تستبدل صيغة i18next كلها بصيغة ثانية وتضعف أمان الأنواع بلا مكسب. القرار: بدون ICU.
+- **فخ حرج على Hermes:** محرك Hermes لا يطبق `Intl.PluralRules` حتى الآن. بدون polyfill يتدهور الجمع العربي بصمت إلى صيغتين فقط بلا أي خطأ. **إلزامي:** استيراد `intl-pluralrules` أول سطر في تطبيق الموبايل، مع اختبار وحدة يتحقق أن `new Intl.PluralRules('ar').select(3) === 'few'`.
+- أمان الأنواع للمفاتيح: `i18next.d.ts` لكل حزمة عبر واجهة `ResourceNamespaceMap` (جديدة في 26.3.0، مصممة للـmonorepo) مع `strictKeyChecks: true`، وتفعيل `enableSelector: "optimize"` من البداية لأن مفاتيح النصوص كسلاسل ستُهجر في v27.
+- **تصحيح عن الخطة، تبديل الاتجاه يحتاج إعادة تحميل:** تبديل النصوص فوري بـ`changeLanguage()`، لكن قلب الاتجاه RTL/LTR على الموبايل ما زال يتطلب `I18nManager.forceRTL` ثم `Updates.reloadAsync()` (إعادة تحميل واحدة، وليست إعادة تشغيل يدوية). التبديل بين لغتين بنفس الاتجاه لا يحتاج شيئاً.
+- expo-localization@57 مع `supportedLocales: ["en", "ar"]` في الإعداد.
+- فخ RN معروف: `textAlign` الافتراضي فيزيائي (يسار دائماً) ولا يقبل `start`. الحل مكوّن `<Text>` مشترك يضبط `textAlign: 'left'` صراحة (تعني start في RTL).
+
+**الـMonorepo وCI:**
+- **pnpm 11.21** (يتطلب Node >= 22.13)، يثبَّت عبر حقل `packageManager` بدون Corepack (pnpm نفسه صار ينصح بتركه). لا ترقية لـpnpm 12 (ما زال RC).
+- إعدادات أمان سلسلة التوريد الافتراضية في pnpm 11 تبقى مفعلة: `minimumReleaseAge` (24 ساعة تأخير لاعتماد الإصدارات الجديدة، ويفضل رفعها لثلاثة أيام)، حجب سكربتات البناء للتبعيات إلا عبر `allowBuilds`، و`trustPolicy: no-downgrade`.
+- **Catalogs في pnpm** لكل تبعية مشتركة (react، i18next، typescript، vitest) حتى لا تنجرف الإصدارات بين تطبيقي الموبايل والويب.
+- **Turborepo 2.10** ما زال الخيار الصحيح لهذا الحجم (الموقع انتقل لـturborepo.dev). الكاش البعيد من Vercel مجاني حتى بدون استضافة عندهم، مع توقيع القطع الأثرية (`signature: true`). فلترة التنفيذ بـ`--affected` مع `fetch-depth` كافٍ في checkout وإلا يشغّل كل شيء بصمت.
+- **Vitest 4.1** (وليس 3): إعداد `test.projects` بدل ملف workspace المحذوف، و`coverage.include` صراحة وإلا التقرير ناقص. Vitest 5 وصل RC فترقبه بعد الاستقرار.
+- اختبارات مكونات React Native تبقى على **jest-expo** (المسار الرسمي الوحيد الموثق من Expo). Vitest لكل ما عداها: الحزم الخالصة والويب.
+- **Renovate وليس Dependabot، قرار إجباري:** Dependabot لا يدعم pnpm 11 حتى الآن (الطلب مفتوح). Renovate يدعم الـcatalogs ويطبق `minimumReleaseAge` حتى على التبعيات المتعدية مع تنبيهات OSV.
+- كل GitHub Actions تثبَّت بالـcommit SHA الكامل وليس بالوسم.
 
 ## 7) قاعدة البيانات المحلية وأمان الموبايل
 

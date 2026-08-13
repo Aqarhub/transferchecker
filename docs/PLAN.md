@@ -183,12 +183,13 @@ export type Locale = (typeof locales)[number];
 export const rtl = ['ar', 'he', 'fa', 'ur'] as const;
 ```
 
-- i18next + react-i18next + expo-localization.
-- أنواع آمنة عبر declaration merging في `i18next.d.ts`. الـIDE يكمل المفاتيح ويكشف الأخطاء وقت البناء.
+- i18next 26+ + react-i18next 17+ + expo-localization (التفاصيل والإصدارات في `docs/TECH-STACK.md`).
+- أنواع آمنة عبر declaration merging في `i18next.d.ts` لكل حزمة (نمط `ResourceNamespaceMap`). الـIDE يكمل المفاتيح ويكشف الأخطاء وقت البناء.
 - مفاتيح دلالية (`exam.create.title`) وليس نصاً إنجليزياً كمفتاح.
-- Namespaces + lazy loading. ملفات الترجمة من CDN، وإضافة لغة جديدة بدون تحديث التطبيق.
-- ICU MessageFormat للجمع. العربية فيها 6 صيغ جمع.
-- RTL من اليوم الأول: خصائص منطقية فقط (`marginStart` وليس `marginLeft`)، وفي الويب `rtl:` variants.
+- Namespaces + lazy loading. ملفات الترجمة من CDN للويب، ومحزومة للموبايل (قيد Metro على الاستيراد الديناميكي).
+- الجمع العربي (6 صيغ) عبر لواحق i18next الأصلية `_zero` حتى `_other` المبنية على `Intl.PluralRules`. لا حاجة لـICU MessageFormat.
+- **إلزامي على الموبايل:** polyfill `intl-pluralrules` أول استيراد في التطبيق لأن Hermes لا يطبق `Intl.PluralRules`، مع اختبار وحدة يتحقق من صيغ الجمع العربية. بدونه تنكسر العربية بصمت.
+- RTL من اليوم الأول: خصائص منطقية فقط (`marginStart` وليس `marginLeft`)، ومكوّن `<Text>` مشترك يضبط `textAlign` صراحة، وفي الويب `rtl:` variants.
 - Intl الأصلية للأرقام والتواريخ، والهجري: `Intl.DateTimeFormat('ar-SA-u-ca-islamic')`.
 - خطوط Latin + Arabic الآن، وCJK subsets تُحمَّل عند اختيار اللغة فقط.
 - الترجمة ليست UI فقط: ورقة الإجابة PDF لها اتجاه وخط حسب اللغة.
@@ -230,7 +231,7 @@ export const rtl = ['ar', 'he', 'fa', 'ur'] as const;
 2. زمن المسح أقل من 400ms من ظهور الورقة للنتيجة.
 3. التطبيق يعمل كاملاً على وضع الطيران لمدة 7 أيام ثم يزامن بنجاح.
 4. محاولة قراءة بيانات org آخر تفشل في اختبار آلي.
-5. تبديل اللغة لا يحتاج إعادة تشغيل ولا يكسر أي شاشة.
+5. تبديل اللغة بين لغتين بنفس الاتجاه فوري بلا إعادة تحميل، وتبديل الاتجاه (عربي/إنجليزي) يتم بإعادة تحميل واحدة سلسة بدون فقدان بيانات، ولا يكسر أي شاشة. (قيد منصة موثق: قلب RTL/LTR على native يتطلب reload.)
 
 ## 12) نصيحة تنفيذية (ترتيب البدء)
 

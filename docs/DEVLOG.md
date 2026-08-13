@@ -16,6 +16,25 @@
 
 ---
 
+## [2026-08-13] تحديث الخطة بنتائج التحقق من الستاك (7 محاور بحث)
+
+- **النوع:** قرار تقني + أمان + توثيق.
+- **الوصف:** تحقق موسع من كل أدوات الستاك ضد مصادر أغسطس 2026 الرسمية (npm registry، مستودعات GitHub الرسمية، OWASP، NIST). كشف التحقق أن عدة اختيارات في الخطة الأصلية بُنيت على معلومات قديمة وتم تصحيحها.
+- **الملفات المتأثرة:** `docs/TECH-STACK.md` (جديد)، `docs/PLAN.md`، `docs/CODING-STANDARDS.md`.
+- **القرارات (مع البدائل المرفوضة):**
+  1. **PDF عبر Typst 0.15 بدل pdf-lib.** السبب: pdf-lib مهجور منذ 2021 ولا يشكّل الحروف العربية إطلاقاً، ولا توجد مكتبة JS تفعل ذلك بشكل صحيح في 2026. البدائل المرفوضة: satori وpdfmake (بلا RTL)، @react-pdf/renderer (دعم عربي مكسور)، Playwright/Chromium (يبقى احتياطاً).
+  2. **VisionCamera v5 (Nitro Modules) بدل v4 المؤرشف.** الرسم عبر `<SkiaCamera />` من حزمة `react-native-vision-camera-skia` لأن `useSkiaFrameProcessor` حُذف. worklets من Software Mansion بدل worklets-core.
+  3. **expo-sqlite مع useSQLCipher بدل op-sqlite.** أصبح دعم SQLCipher رسمياً أولى الطرف ويتحدث مع الـSDK. op-sqlite يبقى بديل أداء موثقاً.
+  4. **TypeScript 6.0.3 مثبّت بالضبط.** TS 7 (المحوّل بلغة Go) صدر لكن typescript-eslint يشترط أقل من 6.1، والفحص المعتمد على الأنواع أهم من سرعة المحوّل. يُراجع عند صدور TS 7.1.
+  5. **Next.js 16.3 بدل 15.** وTurbopack أصبح الافتراضي و`proxy.ts` بدل `middleware.ts`.
+  6. **كلمة السر 15 حرفاً حداً أدنى بدل 10.** NIST SP 800-63B المراجعة 4 (يوليو 2025) جعلتها SHALL للعامل الوحيد.
+  7. **إلغاء certificate pinning الافتراضي.** توصية OWASP وAndroid الحالية ضده. البديل: فرض Certificate Transparency على Android.
+  8. **حذف i18next-icu من الخطة.** i18next يعالج الجمع العربي الست صيغ أصلياً عبر Intl.PluralRules. إضافة إلزامية: polyfill `intl-pluralrules` على Hermes وإلا تنكسر العربية بصمت.
+  9. **تعديل معيار قبول تبديل اللغة.** قلب الاتجاه RTL/LTR على native يتطلب إعادة تحميل واحدة (قيد منصة)، النصوص وحدها تتبدل فورياً.
+  10. **Renovate إجباري وليس اختياراً.** Dependabot لا يدعم pnpm 11.
+  11. أدوات مثبتة: pnpm 11.21، Turborepo 2.10، Vitest 4.1 (وjest-expo لمكونات RN)، Zod 4.4، Node 24 LTS، Drizzle 0.45.2 (لا ترقية لـ1.0 RC).
+- **المراجع:** المصادر التفصيلية لكل قرار في `docs/TECH-STACK.md`.
+
 ## [2026-08-13] تأسيس المشروع وتوثيق الخطة
 
 - **النوع:** توثيق + قرار تقني.
