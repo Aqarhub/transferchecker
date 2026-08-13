@@ -12,8 +12,10 @@
 
 ## 2) tsconfig الصارم (الأساس المشترك لكل الحزم)
 
+إصدار TypeScript المعتمد: **6.0.3 مثبّت بالضبط** (بدون `^`). السبب موثق في `docs/TECH-STACK.md`: typescript-eslint لا يدعم TS 7 بعد، والأنواع متطابقة بين 6.0 و7.0 بالتصميم فالترقية لاحقاً آمنة.
+
 ```jsonc
-// tsconfig.base.json
+// tsconfig.base.json (verified against TypeScript 6.x, 2026-08-13)
 {
   "compilerOptions": {
     // Type safety
@@ -21,7 +23,9 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
+    "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "allowUnreachableCode": false,
@@ -30,21 +34,29 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "moduleDetection": "force",
+    "erasableSyntaxOnly": true,
 
-    // Environment
-    "target": "es2022",
-    "lib": ["es2023"],
-    "module": "preserve",
-    "moduleResolution": "bundler",
+    // Environment: target is pinned explicitly because TS 6 made it float yearly
+    "target": "es2024",
+    "lib": ["es2024"],
+    "types": [],
 
     // Speed without losing safety in our own code
+    "esModuleInterop": true,
     "skipLibCheck": true
   }
 }
 ```
 
+إعدادات الوحدات تختلف حسب نوع الحزمة (لا توضع في الأساس):
+- تطبيقات محزومة (mobile عبر Metro، web عبر Turbopack): `"module": "preserve"` + `"moduleResolution": "bundler"`.
+- حزم وأدوات تعمل على Node مباشرة: `"module": "nodenext"`.
+- ممنوعات حُذفت في TS 7 نهائياً: `baseUrl` (استخدم `imports` في package.json)، `moduleResolution: node/classic`، `target: es5`، `outFile`.
+
+ملاحظات:
 - `noUncheckedIndexedAccess` هو أهم علم لمحرك OMR: كل وصول لمصفوفة إحداثيات يُعامل كأنه قد يكون `undefined`، فيُجبرنا على معالجة الحالة بدل الانهيار وقت التشغيل.
-- الحزم الخالصة (`core-omr`, `sheet-spec`) تضيف `"exactOptionalPropertyTypes"` بلا استثناءات وتمنع أي تبعية runtime.
+- `erasableSyntaxOnly` يمنع enum وnamespace وparameter properties، وبه تعمل ملفاتنا مباشرة على Node 24 بدون أدوات (`node file.ts`).
+- الحزم الخالصة (`core-omr`, `sheet-spec`) تمنع أي تبعية runtime.
 
 ## 3) قواعد TypeScript لتقليل الأخطاء
 
@@ -74,13 +86,16 @@
 
 ## 4) الفحص الآلي (CI يرفض المخالفة)
 
-- **typescript-eslint** بإعداد flat config مع القواعد المعتمدة على الأنواع (`recommendedTypeChecked` + `strictTypeChecked` للحزم الخالصة).
-- `tsc --noEmit` لكل حزمة على حدة في CI، وليس فحصاً واحداً للجذر.
-- **Prettier** للتنسيق، بلا نقاش على الأسلوب في المراجعات.
-- **Knip** لكشف الكود والصادرات الميتة.
+- **typescript-eslint 8.67+** على ESLint 10 بإعداد flat config مع `projectService: true` والقواعد المعتمدة على الأنواع (`strictTypeChecked`). هذه القواعد (floating promises وأخواتها) هي أعلى الأدوات قدرة على اصطياد الأخطاء الحقيقية لأنها تعمل على الـchecker الفعلي.
+- `tsc -b --noEmit` بمراجع المشاريع (project references) لكل حزمة في CI، وليس فحصاً واحداً للجذر.
+- **Prettier** للتنسيق، بلا نقاش على الأسلوب في المراجعات. (Biome 2.5 بديل مقبول كمنسق وفاحص سريع، لكنه لا يغني عن typescript-eslint.)
+- **Knip 6** لكشف الكود والصادرات الميتة.
+- **publint + arethetypeswrong** على كل حزمة داخلية لكشف أخطاء الـexports والأنواع المغلوطة.
 - **Vitest** مع عتبة تغطية للحزم الخالصة، والمجموعة الذهبية كبوابة دقة (>=99.7%).
+- **tsx** أو Node 24 مباشرة لتشغيل السكربتات. ts-node ممنوع (مهجور منذ 2023).
 - فحص آلي لقاعدة الشرطة الطويلة: سكربت CI يرفض أي `—` في ملفات الترجمة ونصوص الواجهة.
-- **Renovate** لتحديث التبعيات مع فترة انتظار قبل اعتماد الإصدارات الجديدة (حماية من هجمات سلسلة التوريد).
+- **Renovate** لتحديث التبعيات مع فترة انتظار قبل اعتماد الإصدارات الجديدة (حماية من هجمات سلسلة التوريد). TypeScript وdrizzle-orm يثبَّتان بالضبط ويُرقيان بقرار موثق فقط.
+- **Zod 4** عند كل الحدود (v3 متوقف). الصيغ بالدوال المستقلة الجديدة: `z.email()` و`z.uuid()` بدل السلاسل المتصلة.
 
 ## 5) بنية الكود
 
