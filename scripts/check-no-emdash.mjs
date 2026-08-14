@@ -15,7 +15,7 @@ const EM_DASH = '—';
 // Source, translation catalogues and site content: everything a user can read.
 // Plain .md is developer documentation and stays out of scope, which also lets
 // the standards docs name the character they are banning.
-const SCANNED = /\.(ts|tsx|json|mdx)$/;
+const SCANNED = /\.(ts|tsx|json|mdx|html|css)$/;
 const SKIPPED = new Set(['node_modules', '.git', '.next', '.turbo', 'dist', 'build', 'coverage']);
 const EXEMPT = /(^|\/)scripts\/check-no-emdash\.mjs$/;
 
