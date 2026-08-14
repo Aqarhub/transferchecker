@@ -21,6 +21,9 @@ export interface SheetTheme {
   readonly questionSizeMm: number;
   readonly bandSizeMm: number;
   readonly warningSizeMm: number;
+  /** The line the teacher cuts along when a page carries several sheets. */
+  readonly cutStroke: string;
+  readonly cutStrokeMm: number;
 }
 
 export const DEFAULT_THEME: SheetTheme = {
@@ -42,4 +45,53 @@ export const DEFAULT_THEME: SheetTheme = {
   questionSizeMm: 2.8,
   bandSizeMm: 3.2,
   warningSizeMm: 2.4,
+  // Pale on purpose. It is a guide for scissors, not content, and half of it
+  // survives on the edge of each sheet after the cut.
+  cutStroke: '#b0b5ba',
+  cutStrokeMm: 0.15,
 };
+
+/**
+ * How heavily the sheet prints. Office printers vary more than anything else in
+ * this pipeline: the same file comes out faint on one and clogged on the next.
+ *
+ * 'light' is for a printer that lays down too much toner, where a normal
+ * outline closes up and the student cannot tell an empty bubble from a filled
+ * one. 'dark' is for a printer so faint that the bubbles are hard to aim at.
+ *
+ * **Only ink changes. No level moves a bubble.** The scanner measures centres
+ * and radii, so a teacher can reprint at any darkness and the papers from
+ * before and after still grade against the same geometry.
+ */
+export const DARKNESS_LEVELS = ['light', 'normal', 'dark'] as const;
+export type Darkness = (typeof DARKNESS_LEVELS)[number];
+
+const LIGHT: SheetTheme = {
+  ...DEFAULT_THEME,
+  bubbleStroke: '#b0b5ba',
+  bubbleStrokeMm: 0.2,
+  bubbleLabel: '#b0b5ba',
+  choiceLabel: '#5a6065',
+  frameStrokeMm: 0.25,
+  boxStrokeMm: 0.28,
+};
+
+const DARK: SheetTheme = {
+  ...DEFAULT_THEME,
+  bubbleStroke: '#6a7176',
+  bubbleStrokeMm: 0.32,
+  bubbleLabel: '#6a7176',
+  choiceLabel: '#22272b',
+  frameStrokeMm: 0.4,
+  boxStrokeMm: 0.45,
+};
+
+const THEMES: Readonly<Record<Darkness, SheetTheme>> = {
+  light: LIGHT,
+  normal: DEFAULT_THEME,
+  dark: DARK,
+};
+
+export function themeFor(darkness: Darkness): SheetTheme {
+  return THEMES[darkness];
+}

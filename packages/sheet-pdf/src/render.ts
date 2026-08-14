@@ -8,14 +8,18 @@
 import { GEOMETRY } from '@transferchecker/sheet-spec';
 import type {
   GridFieldLayout,
+  Point,
   QuestionColumn,
   QuestionRow,
   SheetCodeLayout,
   SheetLayout,
 } from '@transferchecker/sheet-spec';
 import { bubble, bubbleLabel, filledRect, strokedRect, textAt, textInBand } from './draw';
+import type { PagePlan } from './page';
 import { DEFAULT_THEME, type SheetTheme } from './theme';
-import { mm, strArray } from './typst-value';
+import { color, mm, strArray } from './typst-value';
+
+const ORIGIN: Point = { xMm: 0, yMm: 0 };
 
 export interface RenderOptions {
   /** Font stack. The first entry that contains a glyph wins, as in CSS. */
@@ -23,6 +27,8 @@ export interface RenderOptions {
   /** Printed at the foot of the sheet, one line per entry. */
   readonly warningLines: readonly string[];
   readonly theme?: SheetTheme;
+  /** Several sheets on one page. Omit for one sheet per page. */
+  readonly page?: PagePlan;
 }
 
 function renderCode(code: SheetCodeLayout, ink: string): string[] {
@@ -112,16 +118,11 @@ function renderGridField(field: GridFieldLayout, theme: SheetTheme): string[] {
   ];
 }
 
-export function renderSheetTypst(layout: SheetLayout, options: RenderOptions): string {
-  const theme = options.theme ?? DEFAULT_THEME;
-  const { widthMm, heightMm } = layout.paper;
+/** Every mark on one sheet, in the sheet's own coordinates. */
+function sheetBody(layout: SheetLayout, options: RenderOptions, theme: SheetTheme): string[] {
+  const { widthMm } = layout.paper;
 
-  const lines = [
-    '// Generated from a sheet layout. Do not edit by hand.',
-    `#set page(width: ${mm(widthMm)}, height: ${mm(heightMm)}, margin: 0pt, fill: white)`,
-    `#set text(font: ${strArray(options.fonts)}, size: 8pt, fill: black, hyphenate: false)`,
-    '',
-
+  return [
     ...layout.fiducials.map((box) => filledRect(box, theme.ink)),
     ...layout.timingMarks.map((box) => filledRect(box, theme.ink)),
     ...renderCode(layout.code, theme.ink),
@@ -165,6 +166,41 @@ export function renderSheetTypst(layout: SheetLayout, options: RenderOptions): s
         { align: 'center', widthMm: widthMm - 40 },
       ),
     ),
+  ];
+}
+
+function renderCuts(plan: PagePlan, theme: SheetTheme): string[] {
+  return plan.cuts.map((cut) => {
+    const vertical = cut.axis === 'vertical';
+    const lengthMm = vertical ? plan.carrier.heightMm : plan.carrier.widthMm;
+    const dxMm = vertical ? cut.atMm : 0;
+    const dyMm = vertical ? 0 : cut.atMm;
+    return `#place(dx: ${mm(dxMm)}, dy: ${mm(dyMm)}, line(length: ${mm(lengthMm)}, angle: ${vertical ? '90deg' : '0deg'}, stroke: ${mm(theme.cutStrokeMm)} + ${color(theme.cutStroke)}))`;
+  });
+}
+
+export function renderSheetTypst(layout: SheetLayout, options: RenderOptions): string {
+  const theme = options.theme ?? DEFAULT_THEME;
+  const { widthMm, heightMm } = layout.paper;
+  // One sheet per page unless the caller planned otherwise.
+  const plan = options.page ?? { carrier: layout.paper, origins: [ORIGIN], cuts: [] };
+
+  const lines = [
+    '// Generated from a sheet layout. Do not edit by hand.',
+    `#set page(width: ${mm(plan.carrier.widthMm)}, height: ${mm(plan.carrier.heightMm)}, margin: 0pt, fill: white)`,
+    `#set text(font: ${strArray(options.fonts)}, size: 8pt, fill: black, hyphenate: false)`,
+    '',
+    // The sheet is emitted once and laid on the page as many times as asked, so
+    // two copies on one page can never differ from each other.
+    '#let sheet = {',
+    ...sheetBody(layout, options, theme).map((line) => `  ${line}`),
+    '}',
+    '',
+    ...plan.origins.map(
+      (origin) =>
+        `#place(dx: ${mm(origin.xMm)}, dy: ${mm(origin.yMm)}, box(width: ${mm(widthMm)}, height: ${mm(heightMm)}, sheet))`,
+    ),
+    ...renderCuts(plan, theme),
   ];
 
   return `${lines.join('\n')}\n`;

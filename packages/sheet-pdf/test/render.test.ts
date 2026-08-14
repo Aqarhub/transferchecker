@@ -44,7 +44,7 @@ describe('renderSheetTypst', () => {
     // Typst positions by the top left corner, so a centre becomes centre minus radius.
     const left = Math.round((first.cxMm - first.rMm) * 1000) / 1000;
     const top = Math.round((first.cyMm - first.rMm) * 1000) / 1000;
-    expect(source).toContain(`#place(dx: ${String(left)}mm, dy: ${String(top)}mm, circle(`);
+    expect(source).toContain(`place(dx: ${String(left)}mm, dy: ${String(top)}mm, circle(`);
   });
 
   it('draws the four corner fiducials the scanner locks onto', () => {
@@ -52,7 +52,7 @@ describe('renderSheetTypst', () => {
     const source = renderSheetTypst(layout, makeOptions());
     for (const fiducial of layout.fiducials) {
       expect(source).toContain(
-        `#place(dx: ${String(fiducial.xMm)}mm, dy: ${String(fiducial.yMm)}mm, rect(`,
+        `place(dx: ${String(fiducial.xMm)}mm, dy: ${String(fiducial.yMm)}mm, rect(`,
       );
     }
   });
@@ -97,7 +97,7 @@ describe('renderSheetTypst', () => {
     const source = renderSheetTypst(layout, makeOptions());
 
     const drawn = modules.map((row) => row.map(() => false));
-    const place = /#place\(dx: ([\d.]+)mm, dy: ([\d.]+)mm, rect\(width: ([\d.]+)mm/g;
+    const place = /place\(dx: ([\d.]+)mm, dy: ([\d.]+)mm, rect\(width: ([\d.]+)mm/g;
     for (const match of source.matchAll(place)) {
       const [, dx, dy, width] = match;
       if (dx === undefined || dy === undefined || width === undefined) continue;
@@ -167,7 +167,7 @@ describe('renderSheetTypst', () => {
     if (label === undefined) return;
     // Centre alignment subtracts half the box width from the anchor.
     const left = Math.round((label.anchor.xMm - 3.2 / 2) * 1000) / 1000;
-    expect(source).toContain(`#place(dx: ${String(left)}mm,`);
+    expect(source).toContain(`place(dx: ${String(left)}mm,`);
   });
 
   it('rotates the branding and the template name into their edge bands', () => {

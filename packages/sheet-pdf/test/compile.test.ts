@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import { NodeCompiler } from '@myriaddreamin/typst-ts-node-compiler';
 import { arabicSymbols, digitSymbols, latinSymbols } from '@transferchecker/sheet-spec';
-import { renderSheetTypst } from '../src/index';
+import { DARKNESS_LEVELS, planPage, renderSheetTypst, themeFor } from '../src/index';
 import { choiceQuestions, makeLayout, makeOptions } from './helpers';
 
 const compiler = NodeCompiler.create();
@@ -73,6 +73,34 @@ describe('generated Typst', () => {
   it('compiles a sheet whose code carries an identifier alone', () => {
     const layout = makeLayout({ code: 'short' });
     expect(compile(renderSheetTypst(layout, makeOptions())).length).toBeGreaterThan(4000);
+  });
+
+  it('compiles two half page sheets on one page, and four quarter page ones', () => {
+    for (const [paper, copies] of [
+      ['A5', 2],
+      ['A6', 4],
+    ] as const) {
+      const page = planPage(paper, copies);
+      expect(page).not.toBeNull();
+      if (page === null) continue;
+      // A small sheet gets a small configuration: no id sidebar, and the
+      // column count left to the engine.
+      const layout = makeLayout({
+        paper,
+        columns: 'auto',
+        questions: choiceQuestions(10, latinSymbols(4)),
+        headerFields: [{ id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox' }],
+      });
+      const source = renderSheetTypst(layout, makeOptions({ page }));
+      expect(compile(source).length).toBeGreaterThan(4000);
+    }
+  });
+
+  it('compiles at every darkness', () => {
+    for (const level of DARKNESS_LEVELS) {
+      const source = renderSheetTypst(makeLayout(), makeOptions({ theme: themeFor(level) }));
+      expect(compile(source).length).toBeGreaterThan(4000);
+    }
   });
 
   it('treats a hostile template name as text rather than executing it', () => {

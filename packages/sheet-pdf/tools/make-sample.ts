@@ -16,7 +16,16 @@ import {
   layoutSheet,
 } from '@transferchecker/sheet-spec';
 import type { SheetSpecInput } from '@transferchecker/sheet-spec';
-import { renderSheetTypst } from '../src/index';
+import { planPage, renderSheetTypst, themeFor, withPhysicalSize } from '../src/index';
+import type { CopiesPerPage, Darkness } from '../src/index';
+
+interface Sample {
+  readonly name: string;
+  readonly input: SheetSpecInput;
+  readonly warnings: readonly string[];
+  readonly copies?: CopiesPerPage;
+  readonly darkness?: Darkness;
+}
 
 const OUT_DIR = resolve(process.cwd(), process.argv[2] ?? '../../docs/samples');
 const FONT_DIR = process.argv[3];
@@ -101,10 +110,48 @@ const external: SheetSpecInput = {
   questions: choiceRows(30, latinSymbols(4), 'external'),
 };
 
-const SHEETS = [
+// A half page sheet, laid two to a page. It is designed at half page size
+// rather than scaled down, because a scaled sheet has scaled bubbles and the
+// scanner measures in millimetres.
+const half: SheetSpecInput = {
+  ...english,
+  name: 'Half 20',
+  paper: 'A5',
+  // Four choices, not five: with an id grid a half page holds 36 of these and
+  // only 18 of the wider kind.
+  questions: choiceRows(20, latinSymbols(4)),
+  headerFields: [
+    { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'medium' },
+    {
+      id: 'studentId',
+      usage: 'studentId',
+      label: 'Student ID',
+      kind: 'bubbleGrid',
+      length: 4,
+      symbols: [...digitSymbols()],
+    },
+  ],
+};
+
+// A quarter page carries no bubbled id grid at any question count, so this one
+// identifies the student by hand.
+const quarter: SheetSpecInput = {
+  ...english,
+  name: 'Quick 10',
+  paper: 'A6',
+  questions: choiceRows(10, latinSymbols(4)),
+  headerFields: [
+    { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'small' },
+  ],
+};
+
+const SHEETS: readonly Sample[] = [
   { name: 'sheet-en', input: english, warnings: [WARNING_EN] },
   { name: 'sheet-ar', input: arabic, warnings: [WARNING_EN, WARNING_AR] },
   { name: 'sheet-external', input: external, warnings: [WARNING_EN] },
+  { name: 'sheet-2up', input: half, warnings: [WARNING_EN], copies: 2 as const },
+  { name: 'sheet-4up', input: quarter, warnings: [WARNING_EN], copies: 4 as const },
+  { name: 'sheet-dark', input: english, warnings: [WARNING_EN], darkness: 'dark' as const },
 ];
 
 const compiler = NodeCompiler.create(
@@ -120,9 +167,16 @@ for (const sheet of SHEETS) {
     throw new Error(`${sheet.name}: ${result.axis} overflow in ${result.area}`);
   }
 
+  const page = planPage(spec.paper, sheet.copies ?? 1);
+  if (page === null) {
+    throw new Error(`${sheet.name}: ${spec.paper} does not tile at ${String(sheet.copies)}`);
+  }
+
   const source = renderSheetTypst(result.layout, {
     fonts: ['IBM Plex Sans Arabic', 'IBM Plex Sans', 'DejaVu Sans'],
     warningLines: sheet.warnings,
+    theme: themeFor(sheet.darkness ?? 'normal'),
+    page,
   });
 
   writeFileSync(resolve(OUT_DIR, `${sheet.name}.typ`), source, 'utf8');
@@ -133,7 +187,12 @@ for (const sheet of SHEETS) {
 
   const svg = compiler.svg({ mainFileContent: source });
   if (typeof svg === 'string') {
-    writeFileSync(resolve(OUT_DIR, `${sheet.name}.svg`), svg, 'utf8');
+    // Stated in millimetres, or a browser prints it a quarter too small.
+    writeFileSync(
+      resolve(OUT_DIR, `${sheet.name}.svg`),
+      withPhysicalSize(svg, page.carrier),
+      'utf8',
+    );
   }
 
   process.stdout.write(`wrote ${sheet.name} (${String(pdf.length)} bytes)\n`);

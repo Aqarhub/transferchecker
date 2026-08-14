@@ -3,6 +3,10 @@
 // Typst places content by the top left corner of its box, so anything that is
 // specified by a centre or a baseline is converted here rather than at every
 // call site.
+//
+// Each line is emitted **without a leading hash**, because the sheet is built
+// as a Typst value inside a code block and placed from there. That is what lets
+// one sheet be laid on a page more than once without emitting it twice.
 
 import type { Rect } from '@transferchecker/sheet-spec';
 import { color, mm, pt, str } from './typst-value';
@@ -21,11 +25,11 @@ const PT_PER_MM = 72 / 25.4;
 export type HorizontalAlign = 'left' | 'center' | 'right';
 
 export function filledRect(box: Rect, fill: string): string {
-  return `#place(dx: ${mm(box.xMm)}, dy: ${mm(box.yMm)}, rect(width: ${mm(box.wMm)}, height: ${mm(box.hMm)}, fill: ${color(fill)}, stroke: none))`;
+  return `place(dx: ${mm(box.xMm)}, dy: ${mm(box.yMm)}, rect(width: ${mm(box.wMm)}, height: ${mm(box.hMm)}, fill: ${color(fill)}, stroke: none))`;
 }
 
 export function strokedRect(box: Rect, strokeMm: number, stroke: string): string {
-  return `#place(dx: ${mm(box.xMm)}, dy: ${mm(box.yMm)}, rect(width: ${mm(box.wMm)}, height: ${mm(box.hMm)}, fill: none, stroke: ${mm(strokeMm)} + ${color(stroke)}))`;
+  return `place(dx: ${mm(box.xMm)}, dy: ${mm(box.yMm)}, rect(width: ${mm(box.wMm)}, height: ${mm(box.hMm)}, fill: none, stroke: ${mm(strokeMm)} + ${color(stroke)}))`;
 }
 
 /** An unfilled bubble, positioned by its centre. */
@@ -36,7 +40,7 @@ export function bubble(
   strokeMm: number,
   stroke: string,
 ): string {
-  return `#place(dx: ${mm(cxMm - rMm)}, dy: ${mm(cyMm - rMm)}, circle(radius: ${mm(rMm)}, fill: none, stroke: ${mm(strokeMm)} + ${color(stroke)}))`;
+  return `place(dx: ${mm(cxMm - rMm)}, dy: ${mm(cyMm - rMm)}, circle(radius: ${mm(rMm)}, fill: none, stroke: ${mm(strokeMm)} + ${color(stroke)}))`;
 }
 
 /** A symbol centred inside a bubble, so the box matches the bubble exactly. */
@@ -50,7 +54,7 @@ export function bubbleLabel(
 ): string {
   const side = mm(rMm * 2);
   const content = `align(center + horizon, text(size: ${pt(sizeMm * PT_PER_MM)}, fill: ${color(fill)}, ${str(value)}))`;
-  return `#place(dx: ${mm(cxMm - rMm)}, dy: ${mm(cyMm - rMm)}, box(width: ${side}, height: ${side}, ${content}))`;
+  return `place(dx: ${mm(cxMm - rMm)}, dy: ${mm(cyMm - rMm)}, box(width: ${side}, height: ${side}, ${content}))`;
 }
 
 /**
@@ -72,9 +76,9 @@ export function textAt(
   const top = baselineYMm - sizeMm * ASCENT_RATIO;
   const body = `text(size: ${pt(sizeMm * PT_PER_MM)}, fill: ${color(fill)}, ${str(value)})`;
   if (boxWidthMm === 0) {
-    return `#place(dx: ${mm(left)}, dy: ${mm(top)}, ${body})`;
+    return `place(dx: ${mm(left)}, dy: ${mm(top)}, ${body})`;
   }
-  return `#place(dx: ${mm(left)}, dy: ${mm(top)}, box(width: ${mm(boxWidthMm)}, align(${align}, ${body})))`;
+  return `place(dx: ${mm(left)}, dy: ${mm(top)}, box(width: ${mm(boxWidthMm)}, align(${align}, ${body})))`;
 }
 
 /** Text rotated to run along a band, centred on the band's long axis. */
@@ -92,5 +96,5 @@ export function textInBand(
   const centreYMm = band.yMm + band.hMm / 2;
   const content = `align(center + horizon, text(size: ${pt(sizeMm * PT_PER_MM)}, fill: ${color(fill)}, ${str(value)}))`;
   const boxed = `box(width: ${mm(longMm)}, height: ${mm(shortMm)}, ${content})`;
-  return `#place(dx: ${mm(centreXMm - longMm / 2)}, dy: ${mm(centreYMm - shortMm / 2)}, rotate(${String(rotationDeg)}deg, origin: center, ${boxed}))`;
+  return `place(dx: ${mm(centreXMm - longMm / 2)}, dy: ${mm(centreYMm - shortMm / 2)}, rotate(${String(rotationDeg)}deg, origin: center, ${boxed}))`;
 }

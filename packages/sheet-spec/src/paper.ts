@@ -9,7 +9,8 @@
 // today must still scan correctly years later, so any change here is a breaking
 // change and requires bumping SheetSpec.version.
 
-export const PAPER_NAMES = ['A4', 'LETTER'] as const;
+// Order is part of the printed code, so names are only ever appended.
+export const PAPER_NAMES = ['A4', 'LETTER', 'A5', 'A6', 'HALF_LETTER', 'QUARTER_LETTER'] as const;
 
 export type PaperName = (typeof PAPER_NAMES)[number];
 
@@ -18,9 +19,20 @@ export interface PaperSize {
   readonly heightMm: number;
 }
 
+/**
+ * The small sizes exist so that several sheets fit one printed page **without
+ * being scaled**. Scaling a sheet down would shrink the bubbles and the corner
+ * squares with it, and the scanner works in millimetres, so a shrunk sheet is
+ * an unreadable sheet. A half page sheet is therefore designed at half page
+ * size and tiled at its true size.
+ */
 export const PAPER: Readonly<Record<PaperName, PaperSize>> = {
   A4: { widthMm: 210, heightMm: 297 },
   LETTER: { widthMm: 216, heightMm: 279 },
+  A5: { widthMm: 148, heightMm: 210 },
+  A6: { widthMm: 105, heightMm: 148 },
+  HALF_LETTER: { widthMm: 139, heightMm: 216 },
+  QUARTER_LETTER: { widthMm: 108, heightMm: 139 },
 };
 
 /** Fixed bands, marks and paddings shared by every sheet. */
