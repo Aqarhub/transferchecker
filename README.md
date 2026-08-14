@@ -12,6 +12,7 @@
 | [docs/CODING-STANDARDS.md](docs/CODING-STANDARDS.md) | معايير الكتابة والجودة الإلزامية                         |
 | [docs/SHEET-SPEC.md](docs/SHEET-SPEC.md)             | تصميم ورقة الإجابة وقواعد التخصيص واللغة                 |
 | [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)       | نظام التصميم والخطوط والحركة وقواعد الواجهة              |
+| [docs/samples/](docs/samples/)                       | أوراق إجابة مولَّدة فعلياً بـTypst، PDF وSVG             |
 | [docs/DISCOVERABILITY.md](docs/DISCOVERABILITY.md)   | SEO و GEO و AEO، وسياسة فتح الموقع لكل الزواحف           |
 | [docs/DEVLOG.md](docs/DEVLOG.md)                     | سجل التطوير الإلزامي، كل تغيير يوثَّق هنا                |
 
@@ -27,6 +28,7 @@
 
 ```
 packages/sheet-spec/   مواصفة الورقة ومحرك التخطيط (TypeScript خالص، مُختبر)
+packages/sheet-pdf/    توليد الورقة PDF عبر Typst، بتشكيل عربي صحيح
 scripts/               أدوات المستودع
 docs/                  التوثيق
 ```
