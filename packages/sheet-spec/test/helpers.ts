@@ -1,28 +1,62 @@
 // Shared fixtures for the layout tests.
 
-import { DEFAULT_BUBBLE, SheetSpecSchema, layoutSheet } from '../src/index';
+import {
+  DEFAULT_BUBBLE,
+  SheetSpecSchema,
+  arabicSymbols,
+  digitSymbols,
+  latinSymbols,
+  layoutSheet,
+} from '../src/index';
 import type { SheetLayout, SheetSpec, SheetSpecInput } from '../src/index';
+
+type QuestionInput = SheetSpecInput['questions'][number];
 
 const TEMPLATE_ID = '3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90';
 
-/** A sheet shaped like the reference design: 40 questions, two columns, ids. */
+/** `count` identical multiple choice questions, the common case. */
+export function choiceQuestions(
+  count: number,
+  choices = 5,
+  placement: 'internal' | 'external' = 'internal',
+): QuestionInput[] {
+  return Array.from({ length: count }, () => ({
+    kind: 'choice' as const,
+    symbols: [...latinSymbols(choices)],
+    placement,
+  }));
+}
+
+/** `count` Arabic labelled questions. */
+export function arabicQuestions(choices: number, count = 40): QuestionInput[] {
+  return Array.from({ length: count }, () => ({
+    kind: 'choice' as const,
+    symbols: [...arabicSymbols(choices)],
+    placement: 'internal' as const,
+  }));
+}
+
+/** A sheet shaped like the reference design: 40 questions, ids, one name box. */
 export function makeSpec(overrides: Partial<SheetSpecInput> = {}): SheetSpec {
   const base: SheetSpecInput = {
     templateId: TEMPLATE_ID,
-    version: 2,
-    paper: 'A4',
-    questions: 40,
-    choices: 5,
-    columns: 2,
-    choiceLabels: 'latin',
+    version: 3,
+    name: 'Standard 40',
     branding: 'TRANSFERCHECKER.COM',
-    title: 'Final Exam (2614)',
-    formCode: 'A',
+    paper: 'A4',
+    columns: 'auto',
+    questions: choiceQuestions(40),
     headerFields: [
-      { id: 'name', label: 'Name', kind: 'writtenBox', widthMm: 72 },
-      { id: 'section', label: 'Section', kind: 'writtenBox', widthMm: 46 },
-      { id: 'score', label: 'Score', kind: 'writtenBox', widthMm: 50 },
-      { id: 'studentId', label: 'Student ID', kind: 'bubbleGrid', length: 4, alphabet: 'digits' },
+      { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'large' },
+      { id: 'class', usage: 'class', label: 'Class', kind: 'writtenBox', width: 'medium' },
+      {
+        id: 'studentId',
+        usage: 'studentId',
+        label: 'Student ID',
+        kind: 'bubbleGrid',
+        length: 4,
+        symbols: [...digitSymbols()],
+      },
     ],
     bubble: DEFAULT_BUBBLE,
   };

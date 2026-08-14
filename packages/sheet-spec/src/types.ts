@@ -1,6 +1,8 @@
 // Geometry produced by the layout engine. Every coordinate is in millimeters
 // from the top-left corner of the page.
 
+import type { QrMatrix } from './code/matrix';
+
 export interface Point {
   readonly xMm: number;
   readonly yMm: number;
@@ -33,12 +35,23 @@ export interface BubbleGroup {
   readonly bubbles: readonly Bubble[];
 }
 
+export interface ChoiceLabel {
+  /** Centre of the slot the symbol is printed in, on the row's centre line. */
+  readonly anchor: Point;
+  readonly symbol: string;
+}
+
 export interface QuestionRow {
   /** One-based question number as printed on the sheet. */
   readonly question: number;
   /** Right-aligned anchor for the printed question number. */
   readonly numberAnchor: Point;
   readonly bubbles: readonly Bubble[];
+  /**
+   * Where each choice letter is printed when it sits beside its bubble. Empty
+   * for internal placement, where the symbol is drawn inside the bubble.
+   */
+  readonly choiceLabels: readonly ChoiceLabel[];
 }
 
 export interface QuestionColumn {
@@ -79,14 +92,26 @@ export interface VerticalText {
   readonly rotationDeg: number;
 }
 
+/**
+ * The printed code and where it sits. The modules come with the layout rather
+ * than from the renderer, because how many modules there are decides how large
+ * the code prints, and that moves the header. Geometry keeps one owner.
+ */
+export interface SheetCodeLayout {
+  readonly box: Rect;
+  readonly modules: QrMatrix;
+  /** The text the modules carry, so a caller can check a decode against it. */
+  readonly payload: string;
+}
+
 export interface SheetLayout {
-  readonly version: 2;
+  readonly version: 3;
   readonly paper: { readonly widthMm: number; readonly heightMm: number };
   /** Perspective reference points, in top-left, top-right, bottom-left, bottom-right order. */
   readonly fiducials: readonly Rect[];
   /** One mark per question row, used to recover the row index after warping. */
   readonly timingMarks: readonly Rect[];
-  readonly qr: Rect;
+  readonly code: SheetCodeLayout;
   readonly branding: VerticalText;
   readonly title: VerticalText;
   readonly writtenFields: readonly WrittenBoxLayout[];
@@ -96,7 +121,7 @@ export interface SheetLayout {
 }
 
 /** Which region could not accommodate the requested configuration. */
-export type OverflowArea = 'questions' | 'sidebar';
+export type OverflowArea = 'questions' | 'sidebar' | 'code';
 
 /**
  * Layout never throws for a configuration a teacher could plausibly request.

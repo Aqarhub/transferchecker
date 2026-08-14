@@ -4,7 +4,15 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  globalIgnores(['**/dist/**', '**/coverage/**', '**/.next/**', '**/.expo/**', '**/.turbo/**']),
+  globalIgnores([
+    '**/dist/**',
+    '**/coverage/**',
+    '**/.next/**',
+    '**/.expo/**',
+    '**/.turbo/**',
+    // Vendored reference material, not project source.
+    'SKILLS/**',
+  ]),
 
   {
     name: 'eslint/recommended',
@@ -57,5 +65,19 @@ export default defineConfig(
     name: 'project/javascript-untyped',
     files: [tseslint.globs.js],
     extends: [tseslint.configs.disableTypeChecked],
+  },
+
+  // Scripts that run in a browser rather than in Node.
+  {
+    name: 'project/browser-scripts',
+    files: ['docs/design/**/*.js'],
+    languageOptions: {
+      globals: {
+        Element: 'readonly',
+        IntersectionObserver: 'readonly',
+        document: 'readonly',
+        window: 'readonly',
+      },
+    },
   },
 );

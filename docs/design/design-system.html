@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>نظام التصميم: ورق وجرافيت</title>
+    <!--
+      Preview only. Production self-hosts these files on our own origin, WOFF2
+      only, one file per script. See tokens.css and docs/DESIGN-SYSTEM.md.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Devanagari:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="tokens.css" />
+    <link rel="stylesheet" href="design-system.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="mark">
+          <div class="glyph">
+            <i class="fid tl"></i><i class="fid tr"></i><i class="fid bl"></i><i class="fid br"></i>
+            <i class="dot"></i>
+          </div>
+          <h1>ورق وجرافيت</h1>
+        </div>
+        <p class="lede">
+          الاتجاه البصري مأخوذ من أداة المنتج نفسها: ورقة الإجابة. المربعات الركنية وشريط التوقيت
+          وشبكة الفقاعات عناصر حقيقية على الورقة صارت لغة الواجهة. خلفية لؤلؤية، نص جرافيتي، ولون
+          هوية واحد اختير ليبقى خارج نطاق ألوان النتيجة.
+        </p>
+        <div class="timing" style="margin-top: var(--s-5)"></div>
+      </header>
+
+      <h2><b>01</b> الألوان</h2>
+      <div class="swatches">
+        <div class="swatch">
+          <div class="chip" style="background: #f4f6f8"></div>
+          <p>لؤلؤي، الخلفية</p>
+          <code>#F4F6F8</code>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: #fff; box-shadow: inset 0 -1px 0 #e2e7ec"></div>
+          <p>سطح</p>
+          <code>#FFFFFF</code>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: #16181c"></div>
+          <p>جرافيت، النص</p>
+          <code>#16181C</code>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: #0f3d52"></div>
+          <p>حبر، الهوية</p>
+          <code>#0F3D52</code>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: #1f7a4d"></div>
+          <p>صحيح</p>
+          <code>#1F7A4D</code>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: #b3261e"></div>
+          <p>خطأ</p>
+          <code>#B3261E</code>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: #8a6410"></div>
+          <p>يحتاج مراجعة</p>
+          <code>#8A6410</code>
+        </div>
+      </div>
+      <p class="note" style="margin-top: var(--s-4)">
+        الثلاثة الأخيرة محجوزة للنتيجة ولا تظهر في زر ولا أيقونة ولا رابط. لهذا لون الهوية بترولي:
+        لا يُقرأ كحالة تصحيح. كل الأزواج تتجاوز نسبة تباين 4.5:1.
+      </p>
+
+      <h2><b>02</b> الخطوط</h2>
+      <div class="card specimen">
+        <div class="row">
+          <div class="label">IBM Plex Sans Arabic 600 · العناوين</div>
+          <div class="sample-display">اختبار الفصل الأول، رياضيات</div>
+        </div>
+        <div class="row">
+          <div class="label">IBM Plex Sans Arabic 400 · المتن</div>
+          <div>وجّه الكاميرا نحو الورقة. تظهر الدرجة في أقل من نصف ثانية، بدون إنترنت.</div>
+        </div>
+        <div class="row">
+          <div class="label">IBM Plex Mono 500 · الأرقام والمعرّفات والإجابات</div>
+          <div class="sample-num">42 / 50 · 84% · ID 100427 · ABDCA</div>
+        </div>
+      </div>
+
+      <p class="note" style="margin: var(--s-5) 0 var(--s-3)">
+        نفس العائلة تغطي كل لغة مدعومة، فلا يتبدل الطابع ولا ارتفاع السطر عند تبديل اللغة:
+      </p>
+      <div class="card specimen">
+        <div class="row">
+          <div class="label">Latin · en, fr, de, es, tr</div>
+          <div class="latin">
+            Point the camera at the sheet. The score appears in under half a second.
+          </div>
+        </div>
+        <div class="row">
+          <div class="label">Devanagari · hi</div>
+          <div class="hindi">कैमरे को शीट की ओर रखें। स्कोर आधे सेकंड से भी कम में दिखता है।</div>
+        </div>
+        <div class="row">
+          <div class="label">Han · zh, يُحمَّل على مسارات الصينية فقط</div>
+          <div class="han">将相机对准答题卡，半秒内即可显示分数。</div>
+        </div>
+      </div>
+
+      <h3 style="margin: var(--s-6) 0 var(--s-3)">القواعد التي تمنع الحروف المتقطعة</h3>
+      <p class="note" style="margin-bottom: var(--s-3)">
+        ثلاثة أسباب تقنية تجعل العربية تظهر حروفاً مفككة على بعض الأجهزة. كلها ناتجة عن إعداد الخطوط
+        لا عن الخط نفسه:
+      </p>
+      <pre><span class="c"># 1. Never split a joining script across subset files.</span>
+<span class="c">#    Half a word from file A and half from file B cannot be joined.</span>
+<span class="c">#    Arabic ships as ONE file. Devanagari ships as ONE file.</span>
+
+<span class="c"># 2. Never subset without keeping the OpenType layout tables.</span>
+<span class="c">#    Default settings drop GSUB, which is what picks the initial,</span>
+<span class="c">#    medial, final and isolated form of every Arabic letter.</span>
+pyftsubset IBMPlexSansArabic-Regular.ttf \
+  --unicodes="U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF" \
+  --layout-features='*' \
+  --flavor=woff2 --output-file=plex-ar-400.woff2
+
+<span class="c"># 3. Never subset to the characters on the page. Student names and</span>
+<span class="c">#    exam titles arrive at runtime. Subset by script block only.</span>
+
+<span class="c"># And every stack ends in a system font that has the script, so a</span>
+<span class="c"># failed download degrades to correct shaping instead of tofu:</span>
+--font-ar: 'IBM Plex Sans Arabic', 'Geeza Pro', 'Noto Naskh Arabic', sans-serif;</pre>
+      <p class="note" style="margin-top: var(--s-3)">
+        الاستضافة ذاتية على نفس النطاق (تقسيم الكاش بين المواقع ألغى فائدة الـCDN المشترك، فلم يبقَ
+        منه إلا جولة اتصال تعطّل العرض)، وWOFF2 فقط، ووزنان لا أكثر، وpreload لملفين فقط، والصينية
+        كسولة على مساراتها وحدها لأن حجمها بالميغابايتات.
+      </p>
+
+      <h2><b>03</b> صفحة الهبوط</h2>
+      <div class="hero">
+        <div>
+          <h3>صحّح خمسين ورقة قبل ما يبرد الشاي</h3>
+          <p class="lede">
+            اطبع نموذج الإجابة، وجّه الكاميرا، واقرأ الدرجة. المعالجة كلها على الجهاز، بدون إنترنت
+            وبدون رفع صور الطلاب.
+          </p>
+          <a class="cta" href="#">ابدأ مجاناً</a>
+        </div>
+        <div class="stage" data-scan>
+          <button class="replay" data-replay>أعد التشغيل</button>
+          <div class="frame">
+            <div class="sheet">
+              <i class="fid tl"></i><i class="fid tr"></i><i class="fid bl"></i
+              ><i class="fid br"></i>
+              <div class="ticks">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+              <div class="bubbles one">
+                <i class="f"></i><i></i><i></i><i></i><i></i> <i></i><i></i><i class="f"></i><i></i
+                ><i></i> <i></i><i class="f"></i><i></i><i></i><i></i> <i></i><i></i><i></i
+                ><i class="f"></i><i></i> <i class="f"></i><i></i><i></i><i></i><i></i> <i></i
+                ><i></i><i class="f"></i><i></i><i></i> <i></i><i></i><i></i><i></i
+                ><i class="f"></i> <i></i><i class="f"></i><i></i><i></i><i></i> <i></i><i></i
+                ><i></i><i class="f"></i><i></i> <i></i><i class="f"></i><i></i><i></i><i></i>
+              </div>
+              <div class="bubbles two">
+                <i></i><i></i><i class="f"></i><i></i><i></i> <i class="f"></i><i></i><i></i><i></i
+                ><i></i> <i></i><i></i><i></i><i></i><i class="f"></i> <i></i><i class="f"></i
+                ><i></i><i></i><i></i> <i></i><i></i><i></i><i class="f"></i><i></i> <i></i><i></i
+                ><i class="f"></i><i></i><i></i> <i class="f"></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i class="f"></i>
+              </div>
+              <div class="idgrid">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i> <i></i><i></i><i></i><i></i
+                ><i></i><i></i><i></i><i></i> <i></i><i></i><i></i><i></i><i></i><i></i><i></i
+                ><i></i>
+              </div>
+            </div>
+            <div class="bracket a"></div>
+            <div class="bracket b"></div>
+            <div class="bracket c"></div>
+            <div class="bracket d"></div>
+          </div>
+          <div class="result">
+            <div class="score">
+              42<span style="font-size: 14px; color: var(--graphite-2)">/50</span>
+            </div>
+            <div>
+              <div class="who">نورة العتيبي</div>
+              <div class="id">ID 100427 · 84%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="note" style="margin-top: var(--s-5)">
+        <b>العنصر المميز:</b> الورقة تظهر مائلة كما تُصوَّر فعلاً، ثم تلتقطها الأقواس، ثم تستوي
+        (تصحيح المنظور الذي يفعله المحرك حقاً)، ثم تُظلَّل الفقاعات، ثم تصعد الدرجة. هذه اللحظة
+        وحدها هي كل الحركة في الصفحة.
+      </p>
+
+      <h3 style="margin: var(--s-6) 0 0">ترتيب الأقسام</h3>
+      <ol class="order">
+        <li>
+          <span><b>المقدمة.</b> لحظة المسح، عنوان واحد، فعل واحد.</span>
+        </li>
+        <li>
+          <span><b>كيف يعمل.</b> ثلاث خطوات مرقّمة، والترقيم صحيح هنا لأن المحتوى تسلسل فعلي.</span>
+        </li>
+        <li>
+          <span><b>الدقة.</b> أرقامنا المقاسة على المجموعة الذهبية بمنهجيتها.</span>
+        </li>
+        <li>
+          <span><b>التخصيص.</b> بناء نموذج الإجابة.</span>
+        </li>
+        <li>
+          <span><b>بلا إنترنت وبلا رفع صور.</b> المعالجة على الجهاز.</span>
+        </li>
+        <li>
+          <span><b>الأسعار.</b></span>
+        </li>
+        <li>
+          <span><b>الأسئلة الشائعة.</b> عناوين على شكل أسئلة بإجابة مباشرة تحتها.</span>
+        </li>
+        <li>
+          <span><b>الخاتمة.</b> الدعوة الثانية والأخيرة للإجراء.</span>
+        </li>
+      </ol>
+      <p class="note" style="margin-top: var(--s-4)">
+        زر الدعوة للإجراء يظهر مرتين فقط: في المقدمة وفي الخاتمة. تكراره في كل قسم يُفقده معناه.
+      </p>
+
+      <h2><b>04</b> لوحة التحكم</h2>
+      <div class="desk">
+        <div class="desk-top">
+          <i></i><i></i><i></i>
+          <span class="url">app.transferchecker.com/exams/math-t1</span>
+        </div>
+        <div class="desk-body">
+          <aside class="side">
+            <div class="nav-item">
+              <a class="on" href="#">الاختبارات</a>
+              <span class="explain"
+                ><button>؟</button><span class="bubble">يعرض اختباراتك ونتائج أوراقها.</span></span
+              >
+            </div>
+            <div class="nav-item">
+              <a href="#">الطلاب</a>
+              <span class="explain"
+                ><button>؟</button><span class="bubble">يربط أرقام الطلاب بأسمائهم.</span></span
+              >
+            </div>
+            <div class="nav-item">
+              <a href="#">النماذج</a>
+              <span class="explain"
+                ><button>؟</button><span class="bubble">ينشئ أوراق الإجابة ويطبعها PDF.</span></span
+              >
+            </div>
+            <div class="nav-item">
+              <a href="#">الإعدادات</a>
+              <span class="explain"
+                ><button>؟</button><span class="bubble">يغيّر اللغة والحساب والمزامنة.</span></span
+              >
+            </div>
+          </aside>
+          <main class="main">
+            <div class="crumb">الاختبارات / رياضيات</div>
+            <h4>
+              رياضيات، الفصل الأول
+              <span class="explain"
+                ><button>؟</button
+                ><span class="bubble">يجمع كل أوراق هذا الاختبار ودرجاتها.</span></span
+              >
+            </h4>
+
+            <div class="kpis">
+              <div class="kpi">
+                <div class="k">
+                  الأوراق
+                  <span class="explain"
+                    ><button>؟</button
+                    ><span class="bubble">عدد الأوراق المصحّحة في هذا الاختبار.</span></span
+                  >
+                </div>
+                <div class="v">24</div>
+              </div>
+              <div class="kpi">
+                <div class="k">
+                  المتوسط
+                  <span class="explain"
+                    ><button>؟</button
+                    ><span class="bubble">متوسط درجات الأوراق المصحّحة.</span></span
+                  >
+                </div>
+                <div class="v">78%</div>
+              </div>
+              <div class="kpi">
+                <div class="k">
+                  الأعلى
+                  <span class="explain"
+                    ><button>؟</button><span class="bubble">أعلى درجة في هذا الاختبار.</span></span
+                  >
+                </div>
+                <div class="v">96%</div>
+              </div>
+              <div class="kpi">
+                <div class="k">
+                  تحتاج مراجعة
+                  <span class="explain"
+                    ><button>؟</button
+                    ><span class="bubble">أوراق فيها تظليل غامض تنتظر قرارك.</span></span
+                  >
+                </div>
+                <div class="v" style="color: var(--review)">2</div>
+              </div>
+            </div>
+
+            <div class="split">
+              <div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>الطالب</th>
+                      <th>الرقم</th>
+                      <th>الدرجة</th>
+                      <th>النسبة</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>نورة العتيبي</td>
+                      <td class="num">100427</td>
+                      <td class="num">42/50</td>
+                      <td class="num">84%</td>
+                    </tr>
+                    <tr>
+                      <td>سارة القحطاني</td>
+                      <td class="num">100431</td>
+                      <td class="num">48/50</td>
+                      <td class="num">96%</td>
+                    </tr>
+                    <tr>
+                      <td>ريم الدوسري</td>
+                      <td class="num">100402</td>
+                      <td class="num">31/50</td>
+                      <td class="num">62%</td>
+                    </tr>
+                    <tr>
+                      <td>لمى الشهري</td>
+                      <td class="num">100418</td>
+                      <td class="num">39/50</td>
+                      <td class="num">78%</td>
+                    </tr>
+                    <tr>
+                      <td>هيا المطيري</td>
+                      <td class="num">100440</td>
+                      <td class="num">44/50</td>
+                      <td class="num">88%</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="actions-row">
+                  <span class="action">
+                    <button class="btn pri" type="button">صدّر Excel</button>
+                    <span class="explain"
+                      ><button>؟</button
+                      ><span class="bubble">ينزّل نتائج هذا الاختبار ملف Excel.</span></span
+                    >
+                  </span>
+                  <span class="action">
+                    <button class="btn sec" type="button">اطبع النماذج</button>
+                    <span class="explain"
+                      ><button>؟</button
+                      ><span class="bubble">يفتح ملف PDF لأوراق إجابة هذا الاختبار.</span></span
+                    >
+                  </span>
+                </div>
+              </div>
+
+              <div class="panel">
+                <h5>
+                  تحليل الفقرات
+                  <span class="explain"
+                    ><button>؟</button
+                    ><span class="bubble">يعرض نسبة من أجاب كل سؤال إجابة صحيحة.</span></span
+                  >
+                </h5>
+                <p class="note" style="margin-bottom: var(--s-4)">
+                  الأسئلة تحت 40% مُعلَّمة، وغالباً سببها الصياغة لا المعرفة.
+                </p>
+                <div class="bar">
+                  <span class="q">1</span>
+                  <div class="track"><div class="fill" style="width: 92%"></div></div>
+                  <span class="pc">92%</span>
+                </div>
+                <div class="bar">
+                  <span class="q">2</span>
+                  <div class="track"><div class="fill" style="width: 88%"></div></div>
+                  <span class="pc">88%</span>
+                </div>
+                <div class="bar">
+                  <span class="q">3</span>
+                  <div class="track"><div class="fill low" style="width: 34%"></div></div>
+                  <span class="pc">34%</span>
+                </div>
+                <div class="bar">
+                  <span class="q">4</span>
+                  <div class="track"><div class="fill" style="width: 71%"></div></div>
+                  <span class="pc">71%</span>
+                </div>
+                <div class="bar">
+                  <span class="q">5</span>
+                  <div class="track"><div class="fill" style="width: 83%"></div></div>
+                  <span class="pc">83%</span>
+                </div>
+                <div class="bar">
+                  <span class="q">6</span>
+                  <div class="track"><div class="fill low" style="width: 28%"></div></div>
+                  <span class="pc">28%</span>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+      <p class="note" style="margin-top: var(--s-4)">
+        التنقل مستوى واحد بأربعة أقسام، بلا قوائم متداخلة. وكل زر وكل عنوان قسم تجاوره علامة استفهام
+        بجملة واحدة تقول ماذا يفعل، فيبقى القسم نظيفاً ويجد الشرح من يحتاجه.
+      </p>
+
+      <h2><b>05</b> التطبيق</h2>
+      <div class="phones">
+        <div class="phone">
+          <div class="cap">الاختبارات</div>
+          <div class="screen">
+            <div class="appbar">
+              <h6>الاختبارات</h6>
+              <div class="sub">٣ نشطة</div>
+            </div>
+            <div class="timing"></div>
+            <div class="screen-body">
+              <div class="exam">
+                <div class="t">رياضيات، الفصل الأول</div>
+                <div class="meta">٥٠ سؤالاً · نموذجان</div>
+                <div class="stats">
+                  <div class="n">24<span class="u">ورقة</span></div>
+                  <div class="n">78<span class="u">٪ متوسط</span></div>
+                </div>
+              </div>
+              <div class="exam">
+                <div class="t">علوم، اختبار قصير</div>
+                <div class="meta">٢٠ سؤالاً · نموذج واحد</div>
+                <div class="stats">
+                  <div class="n">31<span class="u">ورقة</span></div>
+                  <div class="n">91<span class="u">٪ متوسط</span></div>
+                </div>
+              </div>
+              <div class="exam">
+                <div class="t">لغة إنجليزية، الوحدة ٣</div>
+                <div class="meta">٤٠ سؤالاً · لم يُمسح بعد</div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab on">الاختبارات</div>
+              <div class="scan-cta">امسح</div>
+              <div class="tab">الإعدادات</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="phone">
+          <div class="cap">تظليل غامض، لا يخمّن أبداً</div>
+          <div class="screen">
+            <div class="appbar">
+              <h6>ورقة ١٢</h6>
+              <div class="sub">نورة العتيبي · ID 100427</div>
+            </div>
+            <div class="timing"></div>
+            <div class="screen-body">
+              <div class="flag">
+                <div class="h">السؤال ٢٣ غير واضح</div>
+                <div class="p">خياران مظلَّلان. اختر الإجابة المقصودة أو أعد المسح.</div>
+                <div class="opts"><b>A</b><b class="pick">B</b><b>C</b><b>D</b></div>
+              </div>
+              <div style="font-size: var(--t-xs); color: var(--graphite-2)">خريطة الأسئلة</div>
+              <div class="qmap">
+                <i></i><i></i><i class="w"></i><i></i><i></i><i></i><i></i><i></i><i class="w"></i
+                ><i></i> <i></i><i></i><i></i><i></i><i class="w"></i><i></i><i></i><i></i><i></i
+                ><i></i> <i></i><i></i><i class="r"></i><i></i><i></i><i></i><i class="w"></i><i></i
+                ><i></i><i></i> <i></i><i></i><i></i><i></i><i></i><i class="w"></i><i></i><i></i
+                ><i></i><i></i>
+              </div>
+              <div class="legend">
+                <em><i style="background: var(--correct)"></i>صحيح</em>
+                <em><i style="background: var(--wrong)"></i>خطأ</em>
+                <em><i style="background: var(--review)"></i>مراجعة</em>
+              </div>
+            </div>
+            <div class="sheet-actions">
+              <button class="btn sec">أعد المسح</button>
+              <button class="btn pri">اعتمد الدرجة</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2><b>06</b> القواعد</h2>
+      <div class="rules">
+        <div class="rule">
+          <div class="n">قاعدة ١</div>
+          <b>الدوائر للفقاعات وحدها</b>
+          <p>كل عنصر آخر مستطيل. الدائرة في الواجهة تعني «هذه فقاعة إجابة» ولا شيء غيرها.</p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ٢</div>
+          <b>ثلاثة ألوان محجوزة</b>
+          <p>
+            الأخضر والأحمر والكهرماني لا تظهر إلا في نتيجة تصحيح. زر أخضر واحد يربك المعلم لحظة
+            قراءة الدرجة.
+          </p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ٣</div>
+          <b>الأرقام أحادية المسافة</b>
+          <p>
+            الدرجات والمعرّفات بخط Mono وأرقام جدولية، فتتحاذى الأعمدة وتُقرأ بالمسح لا بالقراءة.
+          </p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ٤</div>
+          <b>لحظة حركة واحدة</b>
+          <p>تسلسل المسح في الهبوط، وصعود بطاقة الدرجة في التطبيق. ما عداهما ساكن.</p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ٥</div>
+          <b>لا إطار رمادي حول كل شيء</b>
+          <p>الفصل يجيء من فرق الخلفية: لؤلؤي مقابل أبيض.</p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ٦</div>
+          <b>العربية أولاً</b>
+          <p>ارتفاع سطر ١٫٧٥ وحد أدنى ١٦ بكسل. بلا تباعد أحرف ولا مائل ولا أحرف كبيرة.</p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ٧</div>
+          <b>عائلة خطوط واحدة لكل اللغات</b>
+          <p>
+            ولا تُجزَّأ الخطوط المتصلة الحروف على ملفات، ولا تُحذف جداول GSUB، وإلا تقطّعت الحروف.
+          </p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ٨</div>
+          <b>تنقل بمستوى واحد</b>
+          <p>لا قوائم متداخلة، وموضع التنقل ثابت في كل الصفحات.</p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ٩</div>
+          <b>فعل أساسي واحد لكل شاشة</b>
+          <p>والدعوة للإجراء مرتان في الهبوط: المقدمة والخاتمة، لا في كل قسم.</p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ١٠</div>
+          <b>علامة استفهام لكل زر وقسم</b>
+          <p>جملة واحدة تقول ماذا يفعل. بلا فلسفة، وبلا شرح داخل نص القسم.</p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ١١</div>
+          <b>الخلفية لؤلؤية</b>
+          <p>والبطاقات بيضاء نقية. لا خلفية كريمية.</p>
+        </div>
+        <div class="rule">
+          <div class="n">قاعدة ١٢</div>
+          <b>مساحة لمس ٤٤ بكسل</b>
+          <p>ولو صغرت الأيقونة تُوسَّع منطقة اللمس، وحلقة التركيز مرئية دائماً.</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="design-system.js"></script>
+  </body>
+</html>

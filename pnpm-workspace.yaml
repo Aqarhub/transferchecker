@@ -9,9 +9,11 @@ packages:
 # package.json so the mobile and web apps can never drift apart.
 catalog:
   '@eslint/js': '10.0.1'
+  '@myriaddreamin/typst-ts-node-compiler': '0.7.0'
   '@types/node': '24.13.3'
   eslint: '10.8.1'
   prettier: '3.9.6'
+  qrcode-generator: '2.0.4'
   tsx: '4.23.12'
   typescript: '6.0.3'
   typescript-eslint: '8.67.0'

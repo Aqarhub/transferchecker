@@ -1,54 +1,117 @@
 import { describe, expect, it } from 'vitest';
-import { SheetSpecSchema, alphabetSymbols, choiceSymbols } from '../src/index';
-import { makeSpec } from './helpers';
+import {
+  SheetSpecSchema,
+  arabicSymbols,
+  digitSymbols,
+  latinSymbols,
+  trueFalseSymbols,
+} from '../src/index';
+import { choiceQuestions, makeSpec } from './helpers';
+
+const reject = (overrides: Record<string, unknown>): boolean =>
+  !SheetSpecSchema.safeParse({ ...makeSpec(), ...overrides }).success;
 
 describe('SheetSpecSchema', () => {
-  it('applies the default written box width', () => {
+  it('defaults a written box to a medium width', () => {
     const spec = makeSpec({
-      headerFields: [{ id: 'name', label: 'Name', kind: 'writtenBox' }],
+      headerFields: [{ id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox' }],
     });
-    expect(spec.headerFields[0]).toMatchObject({ kind: 'writtenBox', widthMm: 60 });
+    expect(spec.headerFields[0]).toMatchObject({ kind: 'writtenBox', width: 'medium' });
   });
 
-  it('rejects a question count outside the supported range', () => {
-    expect(SheetSpecSchema.safeParse({ ...makeSpec(), questions: 0 }).success).toBe(false);
-    expect(SheetSpecSchema.safeParse({ ...makeSpec(), questions: 201 }).success).toBe(false);
+  it('defaults a question to an internal label', () => {
+    const spec = makeSpec({
+      questions: [{ kind: 'choice', symbols: ['A', 'B'] }],
+    });
+    expect(spec.questions[0]).toMatchObject({ placement: 'internal' });
   });
 
-  it('rejects more choices than any label style can express', () => {
-    expect(SheetSpecSchema.safeParse({ ...makeSpec(), choices: 7 }).success).toBe(false);
+  it('defaults the column count to auto', () => {
+    expect(makeSpec().columns).toBe('auto');
+  });
+
+  it('rejects a sheet with no questions', () => {
+    expect(reject({ questions: [] })).toBe(true);
+  });
+
+  it('rejects more than two hundred questions', () => {
+    expect(reject({ questions: choiceQuestions(201) })).toBe(true);
+  });
+
+  it('rejects fewer than two or more than ten symbols', () => {
+    expect(reject({ questions: [{ kind: 'choice', symbols: ['A'] }] })).toBe(true);
+    expect(reject({ questions: [{ kind: 'choice', symbols: [...latinSymbols(11)] }] })).toBe(true);
+  });
+
+  it('accepts any symbol set the teacher types, not just presets', () => {
+    const spec = makeSpec({ questions: [{ kind: 'choice', symbols: [...trueFalseSymbols()] }] });
+    expect(spec.questions[0]?.symbols).toEqual(['T', 'F']);
+  });
+
+  it('accepts a sheet that mixes symbol sets between questions', () => {
+    const spec = makeSpec({
+      questions: [
+        { kind: 'choice', symbols: [...latinSymbols(5)] },
+        { kind: 'choice', symbols: [...trueFalseSymbols()] },
+      ],
+    });
+    expect(spec.questions.map((question) => question.symbols.length)).toEqual([5, 2]);
   });
 
   it('rejects a template id that is not a uuid', () => {
-    expect(SheetSpecSchema.safeParse({ ...makeSpec(), templateId: 'not-a-uuid' }).success).toBe(
-      false,
-    );
+    expect(reject({ templateId: 'not-a-uuid' })).toBe(true);
   });
 
-  it('rejects a form code outside A to D', () => {
-    expect(SheetSpecSchema.safeParse({ ...makeSpec(), formCode: 'E' }).success).toBe(false);
+  it('requires a name so a printed sheet can be identified by eye', () => {
+    expect(reject({ name: '' })).toBe(true);
+  });
+
+  it('requires a usage so the system knows what a field means', () => {
+    expect(
+      reject({
+        headerFields: [{ id: 'name', label: 'Name', kind: 'writtenBox' }],
+      }),
+    ).toBe(true);
   });
 
   it('accepts field labels in any language', () => {
     const spec = makeSpec({
-      headerFields: [{ id: 'name', label: 'اسم الطالب', kind: 'writtenBox' }],
+      headerFields: [{ id: 'name', usage: 'studentName', label: 'اسم الطالب', kind: 'writtenBox' }],
     });
     expect(spec.headerFields[0]?.label).toBe('اسم الطالب');
   });
+
+  it('carries a key version as an ordinary bubble grid, with no special case', () => {
+    const spec = makeSpec({
+      headerFields: [
+        {
+          id: 'key',
+          usage: 'keyVersion',
+          label: 'Key',
+          kind: 'bubbleGrid',
+          length: 1,
+          symbols: ['A', 'B', 'C', 'D'],
+        },
+      ],
+    });
+    expect(spec.headerFields[0]).toMatchObject({ usage: 'keyVersion', length: 1 });
+  });
 });
 
-describe('alphabets', () => {
-  it('exposes ten digits, twenty six Latin letters and twenty eight Arabic letters', () => {
-    expect(alphabetSymbols('digits')).toHaveLength(10);
-    expect(alphabetSymbols('latin')).toHaveLength(26);
-    expect(alphabetSymbols('arabic')).toHaveLength(28);
+describe('symbol presets', () => {
+  it('offers ten digits', () => {
+    expect(digitSymbols()).toHaveLength(10);
   });
 
-  it('uses abjad ordering for Arabic answer choices', () => {
-    expect(choiceSymbols('arabic', 4)).toEqual(['أ', 'ب', 'ج', 'د']);
+  // I reads as 1 and O reads as 0 on a shaded sheet, so neither is ever printed.
+  it('skips the letters that are read as digits', () => {
+    const letters = latinSymbols(24);
+    expect(letters).not.toContain('I');
+    expect(letters).not.toContain('O');
+    expect(letters.slice(0, 10)).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K']);
   });
 
-  it('returns only as many choice symbols as requested', () => {
-    expect(choiceSymbols('latin', 3)).toEqual(['A', 'B', 'C']);
+  it('uses abjad ordering for Arabic choices', () => {
+    expect(arabicSymbols(4)).toEqual(['أ', 'ب', 'ج', 'د']);
   });
 });

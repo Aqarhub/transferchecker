@@ -1,15 +1,18 @@
-// Symbol sets printed inside bubbles.
+// Symbol sets printed inside or beside bubbles.
 //
 // A bubble always carries the symbol it represents, so the scanner never needs
 // to know what kind of field it is looking at: it reads a group of bubbles and
 // reports the symbol of the filled one.
-
-export const ALPHABET_NAMES = ['digits', 'latin', 'arabic'] as const;
-
-export type AlphabetName = (typeof ALPHABET_NAMES)[number];
+//
+// These are helpers, not constraints. A spec stores a plain list of symbols, so
+// a teacher can type any set they like.
 
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
 
+/**
+ * Latin letters with I and O removed, because they are read as 1 and 0 on a
+ * shaded sheet. Long standing practice on printed answer forms.
+ */
 const LATIN = [
   'A',
   'B',
@@ -19,13 +22,11 @@ const LATIN = [
   'F',
   'G',
   'H',
-  'I',
   'J',
   'K',
   'L',
   'M',
   'N',
-  'O',
   'P',
   'Q',
   'R',
@@ -39,62 +40,28 @@ const LATIN = [
   'Z',
 ] as const;
 
-// The 28 letters of the Arabic alphabet in standard order.
-const ARABIC = [
-  'ا',
-  'ب',
-  'ت',
-  'ث',
-  'ج',
-  'ح',
-  'خ',
-  'د',
-  'ذ',
-  'ر',
-  'ز',
-  'س',
-  'ش',
-  'ص',
-  'ض',
-  'ط',
-  'ظ',
-  'ع',
-  'غ',
-  'ف',
-  'ق',
-  'ك',
-  'ل',
-  'م',
-  'ن',
-  'ه',
-  'و',
-  'ي',
-] as const;
+// Abjad ordering, the convention on Arabic exam papers.
+const ARABIC = ['أ', 'ب', 'ج', 'د', 'ه', 'و', 'ز', 'ح', 'ط', 'ي'] as const;
 
-const ALPHABETS: Readonly<Record<AlphabetName, readonly string[]>> = {
-  digits: DIGITS,
-  latin: LATIN,
-  arabic: ARABIC,
-};
-
-/** Every symbol of an alphabet, in printed order from top to bottom. */
-export function alphabetSymbols(name: AlphabetName): readonly string[] {
-  return ALPHABETS[name];
+/** Digits zero to nine, for identity and numeric grids. */
+export function digitSymbols(): readonly string[] {
+  return DIGITS;
 }
 
-export const CHOICE_LABEL_NAMES = ['latin', 'arabic'] as const;
-
-export type ChoiceLabelName = (typeof CHOICE_LABEL_NAMES)[number];
-
-// Answer choices use the abjad ordering conventional on Arabic exam papers,
-// which is not the alphabetical order used by a bubbled name grid.
-const ARABIC_CHOICES = ['أ', 'ب', 'ج', 'د', 'ه', 'و'] as const;
-
-/** The first `count` answer-choice symbols for the requested label style. */
-export function choiceSymbols(labels: ChoiceLabelName, count: number): readonly string[] {
-  const source = labels === 'arabic' ? ARABIC_CHOICES : LATIN;
-  return source.slice(0, count);
+/** The first `count` Latin choice letters. */
+export function latinSymbols(count: number): readonly string[] {
+  return LATIN.slice(0, count);
 }
 
-/** Largest number of answer choices any label style can express. */
-export const MAX_CHOICES = ARABIC_CHOICES.length;
+/** The first `count` Arabic choice letters. */
+export function arabicSymbols(count: number): readonly string[] {
+  return ARABIC.slice(0, count);
+}
+
+/** True and false, the other common two-symbol set. */
+export function trueFalseSymbols(): readonly string[] {
+  return ['T', 'F'];
+}
+
+/** Largest symbol count a single group may carry. */
+export const MAX_SYMBOLS = 10;

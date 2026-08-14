@@ -3,35 +3,54 @@
 // of this object, so the two sides can never drift apart.
 
 import { z } from 'zod';
-import { ALPHABET_NAMES } from './alphabet';
-import { CHOICE_LABEL_NAMES, MAX_CHOICES } from './alphabet';
+import { MAX_SYMBOLS } from './alphabet';
 import { PAPER_NAMES } from './paper';
+
+/**
+ * What a field means to the system, kept separate from what it says to a
+ * reader. Without this the system cannot tell which box holds the student
+ * name, so a scan cannot be matched to a record or given a column heading.
+ */
+export const FIELD_USAGES = [
+  'studentName',
+  'studentId',
+  'class',
+  'subject',
+  'date',
+  'score',
+  'keyVersion',
+  'other',
+] as const;
+
+export const FIELD_WIDTHS = ['small', 'medium', 'large'] as const;
+
+/** Bubble symbols. Two to ten, each one or two characters. */
+const SymbolsSchema = z.array(z.string().min(1).max(2)).min(2).max(MAX_SYMBOLS);
 
 const fieldId = z.string().min(1).max(24);
 const fieldLabel = z.string().min(1).max(40);
 
-/**
- * A header field the student fills by hand. The label is free text in any
- * language; only the box position matters to the scanner, which never reads it.
- */
+/** A header field the student fills by hand. The scanner never reads it. */
 export const WrittenBoxFieldSchema = z.object({
   id: fieldId,
+  usage: z.enum(FIELD_USAGES),
   label: fieldLabel,
   kind: z.literal('writtenBox'),
-  widthMm: z.number().min(20).max(120).default(60),
+  width: z.enum(FIELD_WIDTHS).default('medium'),
 });
 
 /**
- * A header field the student fills by shading bubbles, one column per
- * character. A student id is just an instance of this with digit columns, so a
- * teacher can drop it, resize it, or replace it with a bubbled name.
+ * A field the student fills by shading, one column per character. A student
+ * id and a key version are both instances of this, which is why neither needs
+ * a special case anywhere downstream.
  */
 export const BubbleGridFieldSchema = z.object({
   id: fieldId,
+  usage: z.enum(FIELD_USAGES),
   label: fieldLabel,
   kind: z.literal('bubbleGrid'),
   length: z.number().int().min(1).max(12),
-  alphabet: z.enum(ALPHABET_NAMES),
+  symbols: SymbolsSchema,
 });
 
 export const HeaderFieldSchema = z.discriminatedUnion('kind', [
@@ -39,37 +58,93 @@ export const HeaderFieldSchema = z.discriminatedUnion('kind', [
   BubbleGridFieldSchema,
 ]);
 
-export const BubbleMetricsSchema = z.object({
-  radiusMm: z.number().min(1.6).max(3.5),
-  pitchXMm: z.number().min(5).max(12),
-  /** Row spacing in the question grid. */
-  pitchYMm: z.number().min(6).max(14),
-  /** Row spacing inside sidebar grids, which are usually tighter. */
-  gridPitchYMm: z.number().min(5).max(14),
+export const LABEL_PLACEMENTS = ['internal', 'external'] as const;
+
+/**
+ * How many bubbles a student may fill. 'one' is the ordinary case, where a
+ * second filled bubble means the answer is ambiguous. 'many' is check all that
+ * apply, where several filled bubbles are the answer.
+ *
+ * This lives on the question rather than only on the answer key so that a
+ * sheet stays self describing: the scanner can tell a genuine multi answer
+ * from an ambiguous one without holding the key.
+ */
+export const SELECT_MODES = ['one', 'many'] as const;
+
+/**
+ * A multiple choice question. `placement` decides whether the letter sits
+ * inside the bubble or beside it, which roughly doubles the row width and is
+ * the teacher's trade between density and legibility.
+ */
+export const ChoiceQuestionSchema = z.object({
+  kind: z.literal('choice'),
+  symbols: SymbolsSchema,
+  placement: z.enum(LABEL_PLACEMENTS).default('internal'),
+  select: z.enum(SELECT_MODES).default('one'),
 });
+
+// A union of one today. Verbose, numeric and short response questions are
+// designed in docs/SHEET-SPEC-V3.md and join here without a migration.
+export const QuestionSchema = z.discriminatedUnion('kind', [ChoiceQuestionSchema]);
+
+/**
+ * Every metric is a whole number of tenths of a millimetre. Consumer printers
+ * cannot hold finer than that, and the tenth is also the unit the printed code
+ * carries, so a sheet rebuilt from its own code has exactly the geometry it was
+ * printed with rather than a rounded copy of it.
+ */
+const metricMm = (min: number, max: number): z.ZodNumber =>
+  z.number().min(min).max(max).multipleOf(0.1);
+
+export const BubbleMetricsSchema = z.object({
+  radiusMm: metricMm(1.6, 3.5),
+  pitchXMm: metricMm(5, 12),
+  /** Row spacing in the question grid. */
+  pitchYMm: metricMm(6, 14),
+  /** Row spacing inside bubble grids, which are usually tighter. */
+  gridPitchYMm: metricMm(5, 14),
+});
+
+/**
+ * How much the printed code carries.
+ *
+ * 'full' makes the sheet self describing: the code holds the whole geometry, so
+ * a device that has never seen the template can still grade the paper, with no
+ * network, no account and nobody sharing anything. That is the right default.
+ *
+ * 'short' carries the template id alone. The code is smaller on the page, and
+ * the paper is only readable by a device that already holds the template. It
+ * stays available because the trade is a real one and the teacher owns it.
+ */
+export const SHEET_CODES = ['full', 'short'] as const;
 
 export const SheetSpecSchema = z.object({
   templateId: z.uuid(),
-  version: z.literal(2),
-  paper: z.enum(PAPER_NAMES),
-  questions: z.number().int().min(1).max(200),
-  choices: z.number().int().min(2).max(MAX_CHOICES),
-  columns: z.number().int().min(1).max(4),
-  /** Script used for the answer-choice letters printed inside the bubbles. */
-  choiceLabels: z.enum(CHOICE_LABEL_NAMES),
-  /** Vertical text on the left edge, typically the site name. */
+  version: z.literal(3),
+  /** Printed on the right edge, so a teacher can identify a sheet by eye. */
+  name: z.string().min(1).max(40),
+  /** Vertical text on the left edge, typically the product name. */
   branding: z.string().max(30),
-  /** Vertical text on the right edge, free text in any language. */
-  title: z.string().max(60),
-  /** Distinguishes shuffled variants of the same exam. */
-  formCode: z.string().regex(/^[A-D]$/),
+  paper: z.enum(PAPER_NAMES),
+  /** 'auto' derives the count from row width and the space available. */
+  columns: z.union([z.literal('auto'), z.number().int().min(1).max(6)]).default('auto'),
+  questions: z.array(QuestionSchema).min(1).max(200),
   headerFields: z.array(HeaderFieldSchema).max(8),
   bubble: BubbleMetricsSchema,
+  /** How much the printed code carries. Changes the code's printed size. */
+  code: z.enum(SHEET_CODES).default('full'),
 });
 
+export type FieldUsage = (typeof FIELD_USAGES)[number];
+export type FieldWidth = (typeof FIELD_WIDTHS)[number];
+export type LabelPlacement = (typeof LABEL_PLACEMENTS)[number];
+export type SelectMode = (typeof SELECT_MODES)[number];
+export type SheetCodeMode = (typeof SHEET_CODES)[number];
 export type WrittenBoxField = z.output<typeof WrittenBoxFieldSchema>;
 export type BubbleGridField = z.output<typeof BubbleGridFieldSchema>;
 export type HeaderField = z.output<typeof HeaderFieldSchema>;
+export type ChoiceQuestion = z.output<typeof ChoiceQuestionSchema>;
+export type Question = z.output<typeof QuestionSchema>;
 export type BubbleMetrics = z.output<typeof BubbleMetricsSchema>;
 export type SheetSpec = z.output<typeof SheetSpecSchema>;
 export type SheetSpecInput = z.input<typeof SheetSpecSchema>;

@@ -1,0 +1,144 @@
+/* Design tokens. This file is the source of truth for the web app and the
+   marketing site. Components reference variables, never raw hex values. */
+
+:root {
+  /* ── Surfaces ────────────────────────────────────────────────────────────
+     Pearl white, not cream. Separation between a card and the page comes
+     from this pair alone, which is why cards carry no border. */
+  --pearl: #f4f6f8;
+  --surface: #ffffff;
+  --surface-sunk: #eaeef2;
+
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --graphite: #16181c;
+  --graphite-2: #5c626b;
+  --hairline: #e2e7ec;
+
+  /* ── Brand ────────────────────────────────────────────────────────────────
+     Petrol, chosen because it sits outside the green/red/amber band that the
+     grading result owns. A brand colour that reads as a result is a bug. */
+  --ink: #0f3d52;
+  --ink-hover: #0a2c3c;
+  --ink-wash: #e4edf2;
+
+  /* ── Result colours, reserved ─────────────────────────────────────────────
+     These three appear only in a grading outcome. Never on a button, a link,
+     a nav item or an icon. */
+  --correct: #1f7a4d;
+  --wrong: #b3261e;
+  --review: #8a6410;
+
+  /* ── Radius ───────────────────────────────────────────────────────────────
+     The sheet is rectangular. Circles belong to bubbles alone, so nothing
+     else in the interface is fully round. */
+  --r-1: 4px;
+  --r-2: 8px;
+  --r-3: 12px;
+
+  /* ── Spacing, 4px rhythm ──────────────────────────────────────────────── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+     One superfamily across every supported language: IBM Plex ships Latin,
+     Arabic, Devanagari and Chinese SC drawn to match, so a page never mixes
+     unrelated designs and line boxes stay the same height when the locale
+     changes.
+
+     Each stack ends in a system font that actually contains the script. That
+     last entry is what stops a failed download from rendering tofu, or from
+     rendering Arabic as disconnected letters. */
+  --font-latin: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-ar: 'IBM Plex Sans Arabic', 'Geeza Pro', 'Noto Naskh Arabic', 'Segoe UI', sans-serif;
+  --font-hi: 'IBM Plex Sans Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', sans-serif;
+  --font-zh: 'IBM Plex Sans SC', 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* The document sets --font-ui per locale; components only read this. */
+  --font-ui: var(--font-ar);
+
+  --t-display: 34px;
+  --t-h1: 26px;
+  --t-h2: 20px;
+  --t-body: 16px;
+  --t-sm: 14px;
+  --t-xs: 12px;
+
+  /* Arabic needs more leading than Latin at the same size. */
+  --lh-tight: 1.4;
+  --lh-body: 1.75;
+
+  /* ── Motion ───────────────────────────────────────────────────────────────
+     One rhythm for the whole product. Exit is faster than enter. */
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 400ms;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+
+  /* ── Elevation ───────────────────────────────────────────────────────────
+     Two steps only: resting and lifted. Anything needing a third step is
+     really asking for a different layout. */
+  --lift-1: 0 1px 2px rgb(22 24 28 / 6%);
+  --lift-2: 0 8px 24px rgb(22 24 28 / 10%);
+
+  /* ── Layers ──────────────────────────────────────────────────────────── */
+  --z-sticky: 10;
+  --z-popover: 40;
+  --z-modal: 100;
+}
+
+/* ── Production font loading ───────────────────────────────────────────────
+   Self-hosted on our own origin, WOFF2 only, one file per script per weight,
+   and only two weights ship: 400 and 600.
+
+   Three rules exist specifically to stop text from rendering broken on real
+   devices. Each one has bitten real products:
+
+   1. NEVER split a joining script across several subset files. Latin can be
+      split safely because letters do not connect. Arabic and Devanagari can
+      not: if one word is served partly from file A and partly from file B the
+      shaper cannot join it, and the word renders as disconnected letters.
+      Arabic ships as ONE file. Devanagari ships as ONE file.
+
+   2. NEVER subset without keeping the OpenType layout tables. A subsetter run
+      with default settings drops GSUB, and GSUB is exactly what selects the
+      initial, medial, final and isolated form of every Arabic letter. Losing
+      it is the single most common cause of disconnected Arabic on the web.
+      Always: pyftsubset --layout-features='*' --unicodes=<script block>
+
+   3. NEVER subset to the characters currently on the page. Student names,
+      exam titles and answer keys arrive at runtime, so a page-derived subset
+      will be missing glyphs for real user data. Subset by script block only.
+
+   Chinese is the exception to eager loading: the SC face is measured in
+   megabytes, so it is requested only on Chinese routes and never appears in
+   the global stylesheet. */
+
+/*
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  src: url('/fonts/plex-ar-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+  ascent-override: 105%;
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/plex-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0100-024F, U+0131, U+2000-206F, U+20A0-20BF;
+}
+*/

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { GEOMETRY, bubbleGroups, layoutSheet } from '../src/index';
-import { allBubbles, layoutOrThrow, makeSpec } from './helpers';
+import { GEOMETRY, arabicSymbols, bubbleGroups, layoutSheet } from '../src/index';
+import { allBubbles, arabicQuestions, choiceQuestions, layoutOrThrow, makeSpec } from './helpers';
 
 describe('layoutSheet geometry', () => {
   it('prints every requested question exactly once', () => {
-    const layout = layoutOrThrow(makeSpec({ questions: 37, columns: 3 }));
+    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(37), columns: 3 }));
     const numbers = layout.questionColumns
       .flatMap((column) => column.rows.map((row) => row.question))
       .sort((a, b) => a - b);
@@ -12,7 +12,7 @@ describe('layoutSheet geometry', () => {
   });
 
   it('fills each column top to bottom before moving to the next', () => {
-    const layout = layoutOrThrow(makeSpec({ questions: 40, columns: 2 }));
+    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(40), columns: 2 }));
     const [first, second] = layout.questionColumns;
     expect(first?.rows.map((row) => row.question)).toEqual(
       Array.from({ length: 20 }, (_, i) => i + 1),
@@ -23,24 +23,25 @@ describe('layoutSheet geometry', () => {
   it('drops trailing columns that would print empty', () => {
     const layout = layoutOrThrow(
       makeSpec({
-        questions: 3,
+        questions: choiceQuestions(3, 4),
         columns: 4,
-        choices: 4,
-        headerFields: [{ id: 'name', label: 'Name', kind: 'writtenBox' }],
+        headerFields: [
+          { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'medium' },
+        ],
       }),
     );
     expect(layout.questionColumns).toHaveLength(3);
   });
 
   it('gives every question one bubble per choice, each carrying its symbol', () => {
-    const layout = layoutOrThrow(makeSpec({ questions: 10, columns: 1, choices: 4 }));
+    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(10, 4), columns: 1 }));
     for (const row of layout.questionColumns.flatMap((column) => column.rows)) {
       expect(row.bubbles.map((bubble) => bubble.symbol)).toEqual(['A', 'B', 'C', 'D']);
     }
   });
 
   it('labels bubbles in Arabic when the teacher asks for it', () => {
-    const layout = layoutOrThrow(makeSpec({ choiceLabels: 'arabic', choices: 4 }));
+    const layout = layoutOrThrow(makeSpec({ questions: arabicQuestions(4) }));
     const first = layout.questionColumns[0]?.rows[0];
     expect(first?.bubbles.map((bubble) => bubble.symbol)).toEqual(['أ', 'ب', 'ج', 'د']);
   });
@@ -82,7 +83,7 @@ describe('layoutSheet geometry', () => {
   });
 
   it('puts one timing mark on the left edge for each grid row', () => {
-    const layout = layoutOrThrow(makeSpec({ questions: 40, columns: 2 }));
+    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(40), columns: 2 }));
     expect(layout.timingMarks).toHaveLength(20);
     for (const mark of layout.timingMarks) {
       expect(mark.xMm).toBe(GEOMETRY.marginMm);
@@ -109,12 +110,12 @@ describe('layoutSheet geometry', () => {
 
 describe('layoutSheet capacity', () => {
   it('reports a height overflow instead of running off the page', () => {
-    const result = layoutSheet(makeSpec({ questions: 200, columns: 1 }));
+    const result = layoutSheet(makeSpec({ questions: choiceQuestions(200), columns: 1 }));
     expect(result).toMatchObject({ kind: 'overflow', area: 'questions', axis: 'height' });
   });
 
   it('reports a width overflow when too many columns are requested', () => {
-    const result = layoutSheet(makeSpec({ questions: 200, columns: 4, choices: 6 }));
+    const result = layoutSheet(makeSpec({ questions: choiceQuestions(200, 10), columns: 4 }));
     expect(result).toMatchObject({ kind: 'overflow', area: 'questions', axis: 'width' });
   });
 
@@ -123,7 +124,14 @@ describe('layoutSheet capacity', () => {
       makeSpec({
         columns: 3,
         headerFields: [
-          { id: 'name', label: 'Name', kind: 'bubbleGrid', length: 12, alphabet: 'arabic' },
+          {
+            id: 'name',
+            usage: 'studentName',
+            label: 'Name',
+            kind: 'bubbleGrid',
+            length: 12,
+            symbols: [...arabicSymbols(10)],
+          },
         ],
       }),
     );
@@ -133,7 +141,9 @@ describe('layoutSheet capacity', () => {
   it('accepts a sheet with no sidebar at all', () => {
     const layout = layoutOrThrow(
       makeSpec({
-        headerFields: [{ id: 'name', label: 'Name', kind: 'writtenBox', widthMm: 80 }],
+        headerFields: [
+          { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'large' },
+        ],
       }),
     );
     expect(layout.gridFields).toHaveLength(0);

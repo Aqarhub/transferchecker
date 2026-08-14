@@ -1,7 +1,7 @@
 // Flows handwriting fields across the header band, wrapping to a new row when
 // the next field would cross the right edge.
 
-import { GEOMETRY } from '../paper';
+import { FIELD_WIDTH_MM, GEOMETRY } from '../paper';
 import type { WrittenBoxField } from '../spec';
 import type { WrittenBoxLayout } from '../types';
 
@@ -31,7 +31,7 @@ export function planHeader(
   for (const field of fields) {
     // A field wider than the band is clamped rather than allowed to overflow,
     // since the header can always be made to fit by shrinking a box.
-    const widthMm = Math.min(field.widthMm, availableMm);
+    const widthMm = Math.min(FIELD_WIDTH_MM[field.width], availableMm);
     const startsRow = cursorXMm === leftMm;
     if (!startsRow && cursorXMm + widthMm > rightMm) {
       cursorXMm = leftMm;

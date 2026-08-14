@@ -5,14 +5,18 @@
 
 ## التوثيق
 
-| الملف                                                | المحتوى                                                  |
-| ---------------------------------------------------- | -------------------------------------------------------- |
-| [docs/PLAN.md](docs/PLAN.md)                         | خطة العمل الكاملة من النموذج إلى الإطلاق                 |
-| [docs/TECH-STACK.md](docs/TECH-STACK.md)             | الستاك المعتمد والإصدارات المتحقق منها بتاريخ 2026-08-13 |
-| [docs/CODING-STANDARDS.md](docs/CODING-STANDARDS.md) | معايير الكتابة والجودة الإلزامية                         |
-| [docs/SHEET-SPEC.md](docs/SHEET-SPEC.md)             | تصميم ورقة الإجابة وقواعد التخصيص واللغة                 |
-| [docs/DISCOVERABILITY.md](docs/DISCOVERABILITY.md)   | SEO و GEO و AEO، وسياسة فتح الموقع لكل الزواحف           |
-| [docs/DEVLOG.md](docs/DEVLOG.md)                     | سجل التطوير الإلزامي، كل تغيير يوثَّق هنا                |
+| الملف                                                  | المحتوى                                                  |
+| ------------------------------------------------------ | -------------------------------------------------------- |
+| [docs/PLAN.md](docs/PLAN.md)                           | خطة العمل الكاملة من النموذج إلى الإطلاق                 |
+| [docs/TECH-STACK.md](docs/TECH-STACK.md)               | الستاك المعتمد والإصدارات المتحقق منها بتاريخ 2026-08-13 |
+| [docs/CODING-STANDARDS.md](docs/CODING-STANDARDS.md)   | معايير الكتابة والجودة الإلزامية                         |
+| [docs/SHEET-SPEC.md](docs/SHEET-SPEC.md)               | تصميم ورقة الإجابة وقواعد التخصيص واللغة                 |
+| [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)         | نظام التصميم والخطوط والحركة وقواعد الواجهة              |
+| [docs/samples/](docs/samples/)                         | أوراق إجابة مولَّدة فعلياً بـTypst، PDF وSVG             |
+| [docs/SHEET-SPEC-V3.md](docs/SHEET-SPEC-V3.md)         | قرارات مواصفة الورقة v3 والسكيما الجديدة                 |
+| [docs/COMPETITIVE-NOTES.md](docs/COMPETITIVE-NOTES.md) | ملاحظات تنافسية على طبقة المنتج والتسعير                 |
+| [docs/DISCOVERABILITY.md](docs/DISCOVERABILITY.md)     | SEO و GEO و AEO، وسياسة فتح الموقع لكل الزواحف           |
+| [docs/DEVLOG.md](docs/DEVLOG.md)                       | سجل التطوير الإلزامي، كل تغيير يوثَّق هنا                |
 
 ## قواعد إلزامية مختصرة
 
@@ -26,6 +30,7 @@
 
 ```
 packages/sheet-spec/   مواصفة الورقة ومحرك التخطيط (TypeScript خالص، مُختبر)
+packages/sheet-pdf/    توليد الورقة PDF عبر Typst، بتشكيل عربي صحيح
 scripts/               أدوات المستودع
 docs/                  التوثيق
 ```

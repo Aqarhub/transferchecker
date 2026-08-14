@@ -9,7 +9,8 @@
 // today must still scan correctly years later, so any change here is a breaking
 // change and requires bumping SheetSpec.version.
 
-export const PAPER_NAMES = ['A4', 'LETTER'] as const;
+// Order is part of the printed code, so names are only ever appended.
+export const PAPER_NAMES = ['A4', 'LETTER', 'A5', 'A6', 'HALF_LETTER', 'QUARTER_LETTER'] as const;
 
 export type PaperName = (typeof PAPER_NAMES)[number];
 
@@ -18,9 +19,20 @@ export interface PaperSize {
   readonly heightMm: number;
 }
 
+/**
+ * The small sizes exist so that several sheets fit one printed page **without
+ * being scaled**. Scaling a sheet down would shrink the bubbles and the corner
+ * squares with it, and the scanner works in millimetres, so a shrunk sheet is
+ * an unreadable sheet. A half page sheet is therefore designed at half page
+ * size and tiled at its true size.
+ */
 export const PAPER: Readonly<Record<PaperName, PaperSize>> = {
   A4: { widthMm: 210, heightMm: 297 },
   LETTER: { widthMm: 216, heightMm: 279 },
+  A5: { widthMm: 148, heightMm: 210 },
+  A6: { widthMm: 105, heightMm: 148 },
+  HALF_LETTER: { widthMm: 139, heightMm: 216 },
+  QUARTER_LETTER: { widthMm: 108, heightMm: 139 },
 };
 
 /** Fixed bands, marks and paddings shared by every sheet. */
@@ -34,10 +46,20 @@ export const GEOMETRY = {
   timingHeightMm: 3,
   /** Vertical text band reserved for the site name on the left edge. */
   brandingBandMm: 8,
-  /** Vertical text band reserved for the exam title on the right edge. */
+  /** Vertical text band reserved for the template name on the right edge. */
   titleBandMm: 8,
-  /** Square QR code carrying the template id, version and form code. */
-  qrSizeMm: 16,
+  /**
+   * Smallest a printed code module may be. Below this a phone camera at normal
+   * distance stops resolving modules, which is a scan that fails rather than a
+   * scan that is merely slower. The code's printed size follows from this and
+   * from how much it carries, so a sheet never spends more paper than its own
+   * payload needs.
+   */
+  codeModuleMm: 0.5,
+  /** Quiet zone the QR specification requires, in modules, on each side. */
+  codeQuietModules: 4,
+  /** Past this the code would eat the header, so the sheet is refused instead. */
+  codeMaxSizeMm: 30,
   /** Vertical space between the fiducial row and the header band. */
   headerGapMm: 4,
   /** Height reserved above a written box for its printed label. */
@@ -65,4 +87,15 @@ export const GEOMETRY = {
   sidebarStackGapMm: 6,
   /** Band at the bottom of the page reserved for the print warning. */
   warningBandMm: 12,
+  /** Space a choice letter needs when it sits beside its bubble. */
+  externalLabelMm: 3.2,
+  /** Gap after an external label's bubble, before the next choice. */
+  externalGapMm: 2.2,
+} as const;
+
+/** Handwriting box widths, named rather than left as free millimetres. */
+export const FIELD_WIDTH_MM = {
+  small: 32,
+  medium: 52,
+  large: 76,
 } as const;

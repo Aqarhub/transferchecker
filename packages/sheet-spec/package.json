@@ -15,6 +15,7 @@
     "mockups": "tsx tools/make-mockups.ts ../../docs/mockups"
   },
   "dependencies": {
+    "qrcode-generator": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
