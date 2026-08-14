@@ -17,6 +17,7 @@
 | [docs/COMPETITIVE-NOTES.md](docs/COMPETITIVE-NOTES.md) | ملاحظات تنافسية على طبقة المنتج والتسعير                 |
 | [docs/DISCOVERABILITY.md](docs/DISCOVERABILITY.md)     | SEO و GEO و AEO، وسياسة فتح الموقع لكل الزواحف           |
 | [docs/DEVLOG.md](docs/DEVLOG.md)                       | سجل التطوير الإلزامي، كل تغيير يوثَّق هنا                |
+| **[docs/STATUS.md](docs/STATUS.md)**                   | **اقرأه أولاً: أين وصلنا، وما التالي، وما ينتظر قراراً** |
 
 ## قواعد إلزامية مختصرة
 
