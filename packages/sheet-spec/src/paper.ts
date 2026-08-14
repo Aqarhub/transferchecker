@@ -36,8 +36,18 @@ export const GEOMETRY = {
   brandingBandMm: 8,
   /** Vertical text band reserved for the template name on the right edge. */
   titleBandMm: 8,
-  /** Square QR code carrying the template identity. */
-  qrSizeMm: 16,
+  /**
+   * Smallest a printed code module may be. Below this a phone camera at normal
+   * distance stops resolving modules, which is a scan that fails rather than a
+   * scan that is merely slower. The code's printed size follows from this and
+   * from how much it carries, so a sheet never spends more paper than its own
+   * payload needs.
+   */
+  codeModuleMm: 0.5,
+  /** Quiet zone the QR specification requires, in modules, on each side. */
+  codeQuietModules: 4,
+  /** Past this the code would eat the header, so the sheet is refused instead. */
+  codeMaxSizeMm: 30,
   /** Vertical space between the fiducial row and the header band. */
   headerGapMm: 4,
   /** Height reserved above a written box for its printed label. */

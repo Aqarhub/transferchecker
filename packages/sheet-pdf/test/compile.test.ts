@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import { NodeCompiler } from '@myriaddreamin/typst-ts-node-compiler';
 import { arabicSymbols, digitSymbols, latinSymbols } from '@transferchecker/sheet-spec';
-import { encodeSheetQr, renderSheetTypst, sheetPayload } from '../src/index';
+import { renderSheetTypst } from '../src/index';
 import { choiceQuestions, makeLayout, makeOptions } from './helpers';
 
 const compiler = NodeCompiler.create();
@@ -70,32 +70,14 @@ describe('generated Typst', () => {
     expect(compile(renderSheetTypst(layout, makeOptions())).length).toBeGreaterThan(4000);
   });
 
+  it('compiles a sheet whose code carries an identifier alone', () => {
+    const layout = makeLayout({ code: 'short' });
+    expect(compile(renderSheetTypst(layout, makeOptions())).length).toBeGreaterThan(4000);
+  });
+
   it('treats a hostile template name as text rather than executing it', () => {
     const source = renderSheetTypst(makeLayout({ name: '#panic("owned")' }), makeOptions());
     // A name that reached code position would abort the compile.
     expect(compile(source).length).toBeGreaterThan(4000);
-  });
-});
-
-describe('sheet code', () => {
-  it('encodes a payload the scanner can identify the template from', () => {
-    const matrix = encodeSheetQr({
-      templateId: '3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90',
-      version: 3,
-    });
-    expect(matrix.length).toBeGreaterThanOrEqual(21);
-    // A QR is square and carries the three finder patterns as dark corners.
-    expect(matrix.every((row) => row.length === matrix.length)).toBe(true);
-    expect(matrix[0]?.[0]).toBe(true);
-    expect(matrix[0]?.[matrix.length - 1]).toBe(true);
-    expect(matrix[matrix.length - 1]?.[0]).toBe(true);
-  });
-
-  it('keeps the payload short and positional', () => {
-    const payload = sheetPayload({
-      templateId: '3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90',
-      version: 3,
-    });
-    expect(payload).toBe('TC1:3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90:3');
   });
 });

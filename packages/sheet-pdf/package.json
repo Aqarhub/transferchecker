@@ -20,7 +20,6 @@
   "devDependencies": {
     "@myriaddreamin/typst-ts-node-compiler": "catalog:",
     "@types/node": "catalog:",
-    "qrcode-generator": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

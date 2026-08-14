@@ -16,7 +16,7 @@ import {
   layoutSheet,
 } from '@transferchecker/sheet-spec';
 import type { SheetSpecInput } from '@transferchecker/sheet-spec';
-import { encodeSheetQr, renderSheetTypst } from '../src/index';
+import { renderSheetTypst } from '../src/index';
 
 const OUT_DIR = resolve(process.cwd(), process.argv[2] ?? '../../docs/samples');
 const FONT_DIR = process.argv[3];
@@ -123,7 +123,6 @@ for (const sheet of SHEETS) {
   const source = renderSheetTypst(result.layout, {
     fonts: ['IBM Plex Sans Arabic', 'IBM Plex Sans', 'DejaVu Sans'],
     warningLines: sheet.warnings,
-    qr: encodeSheetQr({ templateId: spec.templateId, version: spec.version }),
   });
 
   writeFileSync(resolve(OUT_DIR, `${sheet.name}.typ`), source, 'utf8');

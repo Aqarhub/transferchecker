@@ -4,9 +4,11 @@
 // generator draws what it returns and the scanner samples what it returns, so
 // the two can never disagree about where a bubble is.
 
+import { codeMatrix, encodeSheetCode } from '../code/index';
+import { MAX_QR_MODULES } from '../code/matrix';
 import { GEOMETRY, PAPER } from '../paper';
 import type { BubbleGridField, SheetSpec, WrittenBoxField } from '../spec';
-import type { LayoutResult, Rect, SheetLayout } from '../types';
+import type { LayoutResult, Rect, SheetCodeLayout, SheetLayout } from '../types';
 import { planHeader } from './header';
 import { columnWidthMm, planGrid, resolveColumns } from './grid';
 import { planSidebar } from './sidebar';
@@ -37,21 +39,49 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
   const contentWidthMm = contentRightMm - contentLeftMm;
 
   const headerTopMm = GEOMETRY.marginMm + GEOMETRY.fiducialMm + GEOMETRY.headerGapMm;
-  const qr: Rect = {
-    xMm: contentRightMm - GEOMETRY.qrSizeMm,
-    yMm: headerTopMm,
-    wMm: GEOMETRY.qrSizeMm,
-    hMm: GEOMETRY.qrSizeMm,
+
+  // The code is measured first because it is the only element whose size comes
+  // from the sheet's own contents. A sheet that carries its whole geometry
+  // prints a larger code than one carrying an identifier, and everything to its
+  // left has to know that before it can be placed.
+  const payload = encodeSheetCode(spec);
+  const modules = codeMatrix(payload);
+  // A payload no QR can carry is measured against the largest QR that exists,
+  // so it reports as an ordinary overflow with a real number behind it rather
+  // than as a special case. The remedy either way is the same: carry less.
+  const moduleCount = modules?.length ?? MAX_QR_MODULES;
+  const codeSizeMm = (moduleCount + 2 * GEOMETRY.codeQuietModules) * GEOMETRY.codeModuleMm;
+
+  if (modules === null || codeSizeMm > GEOMETRY.codeMaxSizeMm) {
+    return {
+      kind: 'overflow',
+      area: 'code',
+      axis: 'width',
+      neededMm: codeSizeMm,
+      availableMm: GEOMETRY.codeMaxSizeMm,
+    };
+  }
+
+  const code: SheetCodeLayout = {
+    box: {
+      xMm: contentRightMm - codeSizeMm,
+      yMm: headerTopMm,
+      wMm: codeSizeMm,
+      hMm: codeSizeMm,
+    },
+    modules,
+    payload,
   };
 
   const header = planHeader(
     spec.headerFields.filter(isWrittenBox),
     contentLeftMm,
-    qr.xMm - GEOMETRY.headerFieldGapMm,
+    code.box.xMm - GEOMETRY.headerFieldGapMm,
     headerTopMm,
   );
 
-  const bodyTopMm = Math.max(headerTopMm + header.heightMm, qr.yMm + qr.hMm) + GEOMETRY.gridGapMm;
+  const bodyTopMm =
+    Math.max(headerTopMm + header.heightMm, code.box.yMm + code.box.hMm) + GEOMETRY.gridGapMm;
   const bodyLimitMm = paper.heightMm - GEOMETRY.marginMm - GEOMETRY.warningBandMm;
   const bodyHeightMm = bodyLimitMm - bodyTopMm;
 
@@ -134,7 +164,7 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
     paper: { widthMm: paper.widthMm, heightMm: paper.heightMm },
     fiducials: cornerFiducials(paper.widthMm, paper.heightMm),
     timingMarks: grid.timingMarks,
-    qr,
+    code,
     branding: {
       text: spec.branding,
       band: {

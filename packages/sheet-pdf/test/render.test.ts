@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { arabicSymbols, bubbleGroups, latinSymbols } from '@transferchecker/sheet-spec';
+import {
+  GEOMETRY,
+  arabicSymbols,
+  bubbleGroups,
+  decodeSheetCode,
+  latinSymbols,
+} from '@transferchecker/sheet-spec';
 import type { SheetLayout } from '@transferchecker/sheet-spec';
 import { renderSheetTypst } from '../src/index';
-import { choiceQuestions, makeLayout, makeOptions, makeQr } from './helpers';
+import { choiceQuestions, makeLayout, makeOptions } from './helpers';
 
 const countOf = (source: string, pattern: RegExp): number => source.match(pattern)?.length ?? 0;
 
@@ -62,19 +68,58 @@ describe('renderSheetTypst', () => {
     }
   });
 
-  it('draws one square per dark QR module and leaves a quiet zone', () => {
-    const qr = makeQr(21);
-    const dark = qr.flat().filter(Boolean).length;
+  it('draws one square per dark code module and leaves a quiet zone', () => {
     const layout = makeLayout();
-    const source = renderSheetTypst(layout, makeOptions({ qr }));
+    const dark = layout.code.modules.flat().filter(Boolean).length;
+    const source = renderSheetTypst(layout, makeOptions());
     const fills = countOf(source, /rect\(width: [\d.]+mm, height: [\d.]+mm, fill: rgb/g);
-    // Fiducials and timing marks are filled too, so the QR modules are the rest.
+    // Fiducials and timing marks are filled too, so the modules are the rest.
     expect(fills).toBe(dark + layout.fiducials.length + layout.timingMarks.length);
-    // Twenty one modules plus a four module quiet zone on each side.
-    const moduleMm = layout.qr.wMm / 29;
+
+    const quiet = GEOMETRY.codeQuietModules;
+    const moduleMm = layout.code.box.wMm / (layout.code.modules.length + 2 * quiet);
     expect(source).toContain(
-      `dx: ${String(Math.round((layout.qr.xMm + moduleMm * 4) * 1000) / 1000)}mm`,
+      `dx: ${String(Math.round((layout.code.box.xMm + moduleMm * quiet) * 1000) / 1000)}mm`,
     );
+  });
+
+  it('draws the modules in the orientation the matrix has them', () => {
+    // A count of dark modules passes just as happily when x and y are swapped,
+    // and a transposed code is unreadable while looking entirely plausible. So
+    // the emitted rectangles are read back into a grid and compared cell by
+    // cell against the matrix they came from.
+    const layout = makeLayout();
+    const { modules, box } = layout.code;
+    const quiet = GEOMETRY.codeQuietModules;
+    const moduleMm = box.wMm / (modules.length + 2 * quiet);
+    const originXMm = box.xMm + moduleMm * quiet;
+    const originYMm = box.yMm + moduleMm * quiet;
+    const source = renderSheetTypst(layout, makeOptions());
+
+    const drawn = modules.map((row) => row.map(() => false));
+    const place = /#place\(dx: ([\d.]+)mm, dy: ([\d.]+)mm, rect\(width: ([\d.]+)mm/g;
+    for (const match of source.matchAll(place)) {
+      const [, dx, dy, width] = match;
+      if (dx === undefined || dy === undefined || width === undefined) continue;
+      // Fiducials and timing marks are filled rectangles too, so the code's own
+      // modules are picked out by their width.
+      if (Math.abs(Number(width) - (moduleMm + 0.01)) > 0.005) continue;
+      const x = Math.round((Number(dx) - originXMm) / moduleMm);
+      const y = Math.round((Number(dy) - originYMm) / moduleMm);
+      const row = drawn[y];
+      if (row === undefined || x < 0 || x >= row.length) throw new Error('module off the grid');
+      row[x] = true;
+    }
+    expect(drawn).toEqual(modules);
+  });
+
+  it('draws the code the layout produced, so the two can never disagree', () => {
+    // The renderer takes no code of its own, so a sheet and the code printed on
+    // it come from one call and cannot describe different geometry.
+    const layout = makeLayout();
+    const decoded = decodeSheetCode(layout.code.payload);
+    expect(decoded?.mode).toBe('full');
+    expect(decoded?.templateId).toBe('3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90');
   });
 
   it('prints the answer letters inside the bubbles', () => {

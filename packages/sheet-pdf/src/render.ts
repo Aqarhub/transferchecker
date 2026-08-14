@@ -10,36 +10,32 @@ import type {
   GridFieldLayout,
   QuestionColumn,
   QuestionRow,
-  Rect,
+  SheetCodeLayout,
   SheetLayout,
 } from '@transferchecker/sheet-spec';
 import { bubble, bubbleLabel, filledRect, strokedRect, textAt, textInBand } from './draw';
 import { DEFAULT_THEME, type SheetTheme } from './theme';
 import { mm, strArray } from './typst-value';
 
-/** A QR payload rendered as modules. True is a dark module. */
-export type QrMatrix = readonly (readonly boolean[])[];
-
 export interface RenderOptions {
   /** Font stack. The first entry that contains a glyph wins, as in CSS. */
   readonly fonts: readonly string[];
   /** Printed at the foot of the sheet, one line per entry. */
   readonly warningLines: readonly string[];
-  /** Carries the template identity to the scanner. */
-  readonly qr: QrMatrix;
   readonly theme?: SheetTheme;
 }
 
-function renderQr(box: Rect, matrix: QrMatrix, ink: string): string[] {
-  const size = matrix.length;
+function renderCode(code: SheetCodeLayout, ink: string): string[] {
+  const size = code.modules.length;
   if (size === 0) return [];
-  // A quiet zone of four modules is what the QR specification requires for a
-  // reliable read, so the modules are inset rather than filling the box.
-  const moduleMm = box.wMm / (size + 8);
-  const originXMm = box.xMm + moduleMm * 4;
-  const originYMm = box.yMm + moduleMm * 4;
+  // The box the layout gave includes the quiet zone the QR specification
+  // requires, so the modules are inset by it rather than filling the box.
+  const quiet = GEOMETRY.codeQuietModules;
+  const moduleMm = code.box.wMm / (size + 2 * quiet);
+  const originXMm = code.box.xMm + moduleMm * quiet;
+  const originYMm = code.box.yMm + moduleMm * quiet;
 
-  return matrix.flatMap((row, y) =>
+  return code.modules.flatMap((row, y) =>
     row.flatMap((dark, x) =>
       dark
         ? [
@@ -128,7 +124,7 @@ export function renderSheetTypst(layout: SheetLayout, options: RenderOptions): s
 
     ...layout.fiducials.map((box) => filledRect(box, theme.ink)),
     ...layout.timingMarks.map((box) => filledRect(box, theme.ink)),
-    ...renderQr(layout.qr, options.qr, theme.ink),
+    ...renderCode(layout.code, theme.ink),
 
     textInBand(
       layout.branding.band,

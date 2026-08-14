@@ -87,14 +87,36 @@ export const ChoiceQuestionSchema = z.object({
 // designed in docs/SHEET-SPEC-V3.md and join here without a migration.
 export const QuestionSchema = z.discriminatedUnion('kind', [ChoiceQuestionSchema]);
 
+/**
+ * Every metric is a whole number of tenths of a millimetre. Consumer printers
+ * cannot hold finer than that, and the tenth is also the unit the printed code
+ * carries, so a sheet rebuilt from its own code has exactly the geometry it was
+ * printed with rather than a rounded copy of it.
+ */
+const metricMm = (min: number, max: number): z.ZodNumber =>
+  z.number().min(min).max(max).multipleOf(0.1);
+
 export const BubbleMetricsSchema = z.object({
-  radiusMm: z.number().min(1.6).max(3.5),
-  pitchXMm: z.number().min(5).max(12),
+  radiusMm: metricMm(1.6, 3.5),
+  pitchXMm: metricMm(5, 12),
   /** Row spacing in the question grid. */
-  pitchYMm: z.number().min(6).max(14),
+  pitchYMm: metricMm(6, 14),
   /** Row spacing inside bubble grids, which are usually tighter. */
-  gridPitchYMm: z.number().min(5).max(14),
+  gridPitchYMm: metricMm(5, 14),
 });
+
+/**
+ * How much the printed code carries.
+ *
+ * 'full' makes the sheet self describing: the code holds the whole geometry, so
+ * a device that has never seen the template can still grade the paper, with no
+ * network, no account and nobody sharing anything. That is the right default.
+ *
+ * 'short' carries the template id alone. The code is smaller on the page, and
+ * the paper is only readable by a device that already holds the template. It
+ * stays available because the trade is a real one and the teacher owns it.
+ */
+export const SHEET_CODES = ['full', 'short'] as const;
 
 export const SheetSpecSchema = z.object({
   templateId: z.uuid(),
@@ -109,12 +131,15 @@ export const SheetSpecSchema = z.object({
   questions: z.array(QuestionSchema).min(1).max(200),
   headerFields: z.array(HeaderFieldSchema).max(8),
   bubble: BubbleMetricsSchema,
+  /** How much the printed code carries. Changes the code's printed size. */
+  code: z.enum(SHEET_CODES).default('full'),
 });
 
 export type FieldUsage = (typeof FIELD_USAGES)[number];
 export type FieldWidth = (typeof FIELD_WIDTHS)[number];
 export type LabelPlacement = (typeof LABEL_PLACEMENTS)[number];
 export type SelectMode = (typeof SELECT_MODES)[number];
+export type SheetCodeMode = (typeof SHEET_CODES)[number];
 export type WrittenBoxField = z.output<typeof WrittenBoxFieldSchema>;
 export type BubbleGridField = z.output<typeof BubbleGridFieldSchema>;
 export type HeaderField = z.output<typeof HeaderFieldSchema>;

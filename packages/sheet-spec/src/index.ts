@@ -22,6 +22,7 @@ export {
   LABEL_PLACEMENTS,
   QuestionSchema,
   SELECT_MODES,
+  SHEET_CODES,
   SheetSpecSchema,
   WrittenBoxFieldSchema,
 } from './spec';
@@ -35,10 +36,23 @@ export type {
   LabelPlacement,
   Question,
   SelectMode,
+  SheetCodeMode,
   SheetSpec,
   SheetSpecInput,
   WrittenBoxField,
 } from './spec';
+
+export {
+  CODE_FORMAT,
+  base32Decode,
+  base32Encode,
+  codeMatrix,
+  decodeSheetBytes,
+  decodeSheetCode,
+  encodeSheetBytes,
+  encodeSheetCode,
+} from './code/index';
+export type { DecodedCode, QrMatrix } from './code/index';
 
 export { layoutSheet } from './layout/index';
 export { columnWidthMm, questionWidthMm, resolveColumns } from './layout/grid';
@@ -57,6 +71,7 @@ export type {
   QuestionColumn,
   QuestionRow,
   Rect,
+  SheetCodeLayout,
   SheetLayout,
   VerticalText,
   WrittenBoxLayout,

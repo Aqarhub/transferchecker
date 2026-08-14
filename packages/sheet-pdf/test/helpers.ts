@@ -8,7 +8,7 @@ import {
   layoutSheet,
 } from '@transferchecker/sheet-spec';
 import type { SheetLayout, SheetSpecInput } from '@transferchecker/sheet-spec';
-import type { QrMatrix, RenderOptions } from '../src/index';
+import type { RenderOptions } from '../src/index';
 
 type QuestionInput = SheetSpecInput['questions'][number];
 
@@ -56,18 +56,10 @@ export function makeLayout(overrides: Partial<SheetSpecInput> = {}): SheetLayout
   return result.layout;
 }
 
-/** A small stand-in matrix, enough to assert module geometry. */
-export function makeQr(size = 21): QrMatrix {
-  return Array.from({ length: size }, (_, y) =>
-    Array.from({ length: size }, (_, x) => (x + y) % 3 === 0),
-  );
-}
-
 export function makeOptions(overrides: Partial<RenderOptions> = {}): RenderOptions {
   return {
     fonts: ['IBM Plex Sans Arabic', 'IBM Plex Sans'],
     warningLines: ['Print at 100% scale. Do not use Fit to page.'],
-    qr: makeQr(),
     ...overrides,
   };
 }

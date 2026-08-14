@@ -1,6 +1,8 @@
 // Geometry produced by the layout engine. Every coordinate is in millimeters
 // from the top-left corner of the page.
 
+import type { QrMatrix } from './code/matrix';
+
 export interface Point {
   readonly xMm: number;
   readonly yMm: number;
@@ -90,6 +92,18 @@ export interface VerticalText {
   readonly rotationDeg: number;
 }
 
+/**
+ * The printed code and where it sits. The modules come with the layout rather
+ * than from the renderer, because how many modules there are decides how large
+ * the code prints, and that moves the header. Geometry keeps one owner.
+ */
+export interface SheetCodeLayout {
+  readonly box: Rect;
+  readonly modules: QrMatrix;
+  /** The text the modules carry, so a caller can check a decode against it. */
+  readonly payload: string;
+}
+
 export interface SheetLayout {
   readonly version: 3;
   readonly paper: { readonly widthMm: number; readonly heightMm: number };
@@ -97,7 +111,7 @@ export interface SheetLayout {
   readonly fiducials: readonly Rect[];
   /** One mark per question row, used to recover the row index after warping. */
   readonly timingMarks: readonly Rect[];
-  readonly qr: Rect;
+  readonly code: SheetCodeLayout;
   readonly branding: VerticalText;
   readonly title: VerticalText;
   readonly writtenFields: readonly WrittenBoxLayout[];
@@ -107,7 +121,7 @@ export interface SheetLayout {
 }
 
 /** Which region could not accommodate the requested configuration. */
-export type OverflowArea = 'questions' | 'sidebar';
+export type OverflowArea = 'questions' | 'sidebar' | 'code';
 
 /**
  * Layout never throws for a configuration a teacher could plausibly request.

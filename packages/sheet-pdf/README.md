@@ -12,7 +12,7 @@
 
 ```ts
 import { layoutSheet, SheetSpecSchema } from '@transferchecker/sheet-spec';
-import { encodeSheetQr, renderSheetTypst } from '@transferchecker/sheet-pdf';
+import { renderSheetTypst } from '@transferchecker/sheet-pdf';
 
 const spec = SheetSpecSchema.parse(input);
 const result = layoutSheet(spec);
@@ -21,11 +21,10 @@ if (result.kind !== 'ok') return result; // overflow, تُعرض للمعلم
 const source = renderSheetTypst(result.layout, {
   fonts: ['IBM Plex Sans Arabic', 'IBM Plex Sans'],
   warningLines: ['Print at 100% scale. Do not use Fit to page.'],
-  qr: encodeSheetQr({ templateId: spec.templateId, version: spec.version }),
 });
 ```
 
-الحمولة تعرّف **القالب** لا الورقة. نسخة المفتاح صارت حقل فقاعات يظلَّل على الورقة نفسها، فهي تتغير بين ورقة وأخرى بينما القالب واحد.
+**الكود المطبوع لا يُمرَّر هنا.** التخطيط يحمله في `layout.code` جاهزاً بوحداته وموضعه، لأن عدد وحداته يحدد حجمه المطبوع وحجمه يزيح الترويسة. الهندسة لها مالك واحد، فالمولّد يرسم وحدات تُعطى له ولا يصنع منها شيئاً. النتيجة أن الورقة والكود المطبوع عليها يخرجان من نداء واحد ولا يمكن أن يصفا هندستين.
 
 `renderSheetTypst` دالة خالصة تعيد نصاً. التصريف إلى PDF خطوة منفصلة عند الحافة، حتى يبقى التوليد قابلاً للاختبار بلا ثنائيات.
 

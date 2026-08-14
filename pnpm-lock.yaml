@@ -81,9 +81,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.3
-      qrcode-generator:
-        specifier: 'catalog:'
-        version: 2.0.4
       tsx:
         specifier: 'catalog:'
         version: 4.23.12
@@ -96,6 +93,9 @@ importers:
 
   packages/sheet-spec:
     dependencies:
+      qrcode-generator:
+        specifier: 'catalog:'
+        version: 2.0.4
       zod:
         specifier: 'catalog:'
         version: 4.4.3
