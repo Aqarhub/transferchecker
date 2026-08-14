@@ -11,14 +11,64 @@ export type AlphabetName = (typeof ALPHABET_NAMES)[number];
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
 
 const LATIN = [
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'H',
+  'I',
+  'J',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'P',
+  'Q',
+  'R',
+  'S',
+  'T',
+  'U',
+  'V',
+  'W',
+  'X',
+  'Y',
+  'Z',
 ] as const;
 
 // The 28 letters of the Arabic alphabet in standard order.
 const ARABIC = [
-  'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص',
-  'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي',
+  'ا',
+  'ب',
+  'ت',
+  'ث',
+  'ج',
+  'ح',
+  'خ',
+  'د',
+  'ذ',
+  'ر',
+  'ز',
+  'س',
+  'ش',
+  'ص',
+  'ض',
+  'ط',
+  'ظ',
+  'ع',
+  'غ',
+  'ف',
+  'ق',
+  'ك',
+  'ل',
+  'م',
+  'ن',
+  'ه',
+  'و',
+  'ي',
 ] as const;
 
 const ALPHABETS: Readonly<Record<AlphabetName, readonly string[]>> = {
@@ -41,10 +91,7 @@ export type ChoiceLabelName = (typeof CHOICE_LABEL_NAMES)[number];
 const ARABIC_CHOICES = ['أ', 'ب', 'ج', 'د', 'ه', 'و'] as const;
 
 /** The first `count` answer-choice symbols for the requested label style. */
-export function choiceSymbols(
-  labels: ChoiceLabelName,
-  count: number,
-): readonly string[] {
+export function choiceSymbols(labels: ChoiceLabelName, count: number): readonly string[] {
   const source = labels === 'arabic' ? ARABIC_CHOICES : LATIN;
   return source.slice(0, count);
 }

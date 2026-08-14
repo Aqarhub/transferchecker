@@ -3,6 +3,7 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import process from 'node:process';
 import { DEFAULT_BUBBLE, SheetSpecSchema, layoutSheet } from '../src/index';
 import type { SheetSpecInput } from '../src/index';
 import { renderSheetSvg } from './render-svg';

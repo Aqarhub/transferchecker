@@ -9,6 +9,7 @@
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import process from 'node:process';
 
 const EM_DASH = '—';
 // Source, translation catalogues and site content: everything a user can read.
@@ -45,7 +46,9 @@ for (const root of targets) {
 }
 
 if (findings.length > 0) {
-  process.stderr.write(`Found ${findings.length} em dash occurrence(s). Use a comma or a full stop.\n`);
+  process.stderr.write(
+    `Found ${findings.length} em dash occurrence(s). Use a comma or a full stop.\n`,
+  );
   for (const finding of findings) process.stderr.write(`  ${finding}\n`);
   process.exit(1);
 }

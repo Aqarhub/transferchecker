@@ -1,0 +1,39 @@
+# Workspace layout and pnpm settings.
+# In pnpm 11 almost every setting lives here, not in .npmrc, which is now read
+# only for auth and registry configuration.
+packages:
+  - apps/*
+  - packages/*
+
+# Single source of dependency versions, referenced as "catalog:" from every
+# package.json so the mobile and web apps can never drift apart.
+catalog:
+  '@eslint/js': '10.0.1'
+  '@types/node': '24.13.3'
+  eslint: '10.8.1'
+  prettier: '3.9.6'
+  tsx: '4.23.12'
+  typescript: '6.0.3'
+  typescript-eslint: '8.67.0'
+  vitest: '4.1.10'
+  zod: '4.4.3'
+
+# --- Supply-chain settings ---
+
+# Minutes a version must have been published before it may be installed, which
+# blunts the window in which a compromised release can spread. Default since
+# pnpm 11 is 1440, stated explicitly so the value is visible in review.
+minimumReleaseAge: 1440
+
+# Fail the install when a package's publish trust evidence is weaker than a
+# previous release.
+trustPolicy: 'no-downgrade'
+
+# Only direct dependencies may come from git or tarball URLs.
+blockExoticSubdeps: true
+
+# Allowlist for dependency install scripts. Anything not listed here that ships
+# a build script fails the install rather than executing silently. Replaces the
+# onlyBuiltDependencies family of settings, all removed in pnpm 11.
+allowBuilds:
+  esbuild: true

@@ -28,7 +28,16 @@ describe('bubbleGroups', () => {
     const groups = bubbleGroups(layout);
     const column = groups.find((group) => group.id === fieldGroupId('studentId', 0));
     expect(column?.bubbles.map((bubble) => bubble.symbol)).toEqual([
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
     ]);
   });
 

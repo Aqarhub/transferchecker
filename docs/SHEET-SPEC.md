@@ -10,17 +10,17 @@
 
 ## 2) مناطق الورقة (A4: 210x297mm، Letter: 216x279mm)
 
-| المنطقة | الموقع | ملاحظات |
-|---|---|---|
-| مربعات ركنية (fiducials) | 4 زوايا، 8x8mm، هامش 6mm | نقاط المرجع للتصحيح المنظوري |
-| شريط التوقيت (timing marks) | الحافة اليسرى، علامة لكل صف أسئلة | تحديد الصف حتى مع انزياح الطباعة |
-| اسم الموقع | نص عمودي على الحافة اليسرى أعلى | نص قابل للتخصيص (branding) |
-| عنوان الاختبار | نص عمودي على الحافة اليمنى | من إعداد المستخدم، أي لغة |
-| QR | مربع صغير أعلى يمين | يحمل templateId + version + formCode |
-| حقول الترويسة | شريط أفقي أعلى الورقة | قابلة للإضافة والحذف والتخصيص |
-| شبكة الأسئلة | جسم الورقة، 1 إلى 4 أعمدة | فقاعات بمسافات ثابتة بالمليمتر |
-| شبكة هوية الطالب | يمين الجسم (اختيارية) | أعمدة أرقام 0-9 |
-| تحذير الطباعة | أسفل الورقة | «Print at 100% scale» |
+| المنطقة                     | الموقع                            | ملاحظات                              |
+| --------------------------- | --------------------------------- | ------------------------------------ |
+| مربعات ركنية (fiducials)    | 4 زوايا، 8x8mm، هامش 6mm          | نقاط المرجع للتصحيح المنظوري         |
+| شريط التوقيت (timing marks) | الحافة اليسرى، علامة لكل صف أسئلة | تحديد الصف حتى مع انزياح الطباعة     |
+| اسم الموقع                  | نص عمودي على الحافة اليسرى أعلى   | نص قابل للتخصيص (branding)           |
+| عنوان الاختبار              | نص عمودي على الحافة اليمنى        | من إعداد المستخدم، أي لغة            |
+| QR                          | مربع صغير أعلى يمين               | يحمل templateId + version + formCode |
+| حقول الترويسة               | شريط أفقي أعلى الورقة             | قابلة للإضافة والحذف والتخصيص        |
+| شبكة الأسئلة                | جسم الورقة، 1 إلى 4 أعمدة         | فقاعات بمسافات ثابتة بالمليمتر       |
+| شبكة هوية الطالب            | يمين الجسم (اختيارية)             | أعمدة أرقام 0-9                      |
+| تحذير الطباعة               | أسفل الورقة                       | «Print at 100% scale»                |
 
 ## 3) السكيما (Zod، حزمة sheet-spec)
 
@@ -29,10 +29,10 @@
 // handwritten box or bubble grid (e.g. a bubbled name instead of writing).
 const HeaderField = z.object({
   id: z.string().min(1).max(24),
-  label: z.string().min(1).max(40),          // any language, shaped by Typst
+  label: z.string().min(1).max(40), // any language, shaped by Typst
   kind: z.enum(['writtenBox', 'bubbleGrid']),
   // bubbleGrid only:
-  length: z.number().int().min(1).max(12).optional(),   // characters/digits count
+  length: z.number().int().min(1).max(12).optional(), // characters/digits count
   alphabet: z.enum(['digits', 'latin', 'arabic']).optional(),
 });
 
@@ -43,13 +43,15 @@ export const SheetSpec = z.object({
   questions: z.number().int().min(1).max(200),
   choices: z.number().int().min(2).max(6),
   columns: z.number().int().min(1).max(4),
-  bubbleLabels: z.enum(['latin', 'arabic']),  // A B C D vs Arabic letters
-  headerFields: z.array(HeaderField).max(6),  // default: name + section + score
-  studentId: z.object({
-    digits: z.number().int().min(2).max(10),
-  }).nullable(),                              // null = no student ID grid
-  branding: z.string().max(30),               // vertical site name text
-  title: z.string().max(60),                  // vertical exam title, any language
+  bubbleLabels: z.enum(['latin', 'arabic']), // A B C D vs Arabic letters
+  headerFields: z.array(HeaderField).max(6), // default: name + section + score
+  studentId: z
+    .object({
+      digits: z.number().int().min(2).max(10),
+    })
+    .nullable(), // null = no student ID grid
+  branding: z.string().max(30), // vertical site name text
+  title: z.string().max(60), // vertical exam title, any language
   formCode: z.string().regex(/^[A-D]$/),
   bubble: z.object({
     rMm: z.number().min(1.8).max(3.5),

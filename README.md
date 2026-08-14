@@ -5,12 +5,14 @@
 
 ## التوثيق
 
-| الملف | المحتوى |
-|---|---|
-| [docs/PLAN.md](docs/PLAN.md) | خطة العمل الكاملة من النموذج إلى الإطلاق |
-| [docs/TECH-STACK.md](docs/TECH-STACK.md) | الستاك المعتمد والإصدارات المتحقق منها بتاريخ 2026-08-13 |
-| [docs/CODING-STANDARDS.md](docs/CODING-STANDARDS.md) | معايير الكتابة والجودة الإلزامية |
-| [docs/DEVLOG.md](docs/DEVLOG.md) | سجل التطوير الإلزامي، كل تغيير يوثَّق هنا |
+| الملف                                                | المحتوى                                                  |
+| ---------------------------------------------------- | -------------------------------------------------------- |
+| [docs/PLAN.md](docs/PLAN.md)                         | خطة العمل الكاملة من النموذج إلى الإطلاق                 |
+| [docs/TECH-STACK.md](docs/TECH-STACK.md)             | الستاك المعتمد والإصدارات المتحقق منها بتاريخ 2026-08-13 |
+| [docs/CODING-STANDARDS.md](docs/CODING-STANDARDS.md) | معايير الكتابة والجودة الإلزامية                         |
+| [docs/SHEET-SPEC.md](docs/SHEET-SPEC.md)             | تصميم ورقة الإجابة وقواعد التخصيص واللغة                 |
+| [docs/DISCOVERABILITY.md](docs/DISCOVERABILITY.md)   | SEO و GEO و AEO، وسياسة فتح الموقع لكل الزواحف           |
+| [docs/DEVLOG.md](docs/DEVLOG.md)                     | سجل التطوير الإلزامي، كل تغيير يوثَّق هنا                |
 
 ## قواعد إلزامية مختصرة
 
@@ -19,6 +21,23 @@
 3. نصوص الواجهة ورسائل الأخطاء بلا شرطة طويلة (—)، الفصل بالفاصلة أو النقطة فقط.
 4. الملفات صغيرة (هدف أقل من 200 سطر) حفاظاً على سهولة الصيانة.
 5. قبل أي تبعية جديدة: تحقق من تاريخ اليوم وأحدث إصدار مستقر وحالة الأمان، ووثّقها في `docs/TECH-STACK.md`.
+
+## البنية والأوامر
+
+```
+packages/sheet-spec/   مواصفة الورقة ومحرك التخطيط (TypeScript خالص، مُختبر)
+scripts/               أدوات المستودع
+docs/                  التوثيق
+```
+
+```bash
+pnpm install
+pnpm run typecheck     # tsc بكل الأعلام الصارمة، لكل حزمة
+pnpm run lint          # ESLint 10 مع الفحص المعتمد على الأنواع
+pnpm run test          # Vitest
+pnpm run format:check  # Prettier
+pnpm run check:emdash  # يرفض الشرطة الطويلة في نصوص المستخدم
+```
 
 ## ترتيب البدء
 

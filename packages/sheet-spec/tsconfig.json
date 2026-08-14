@@ -2,9 +2,14 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     // Consumed as TypeScript source by Metro and by Next.js, so resolution
-    // follows the bundler algorithm rather than Node's.
+    // follows the bundler algorithm rather than Node's, and nothing is emitted.
     "module": "preserve",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    // The preview tooling reads and writes files; src stays free of Node APIs.
+    "types": ["node"]
   },
-  "include": ["src", "test"]
+  // Every file must belong to a tsconfig or the ESLint project service refuses
+  // to lint it, so tests and tools are included rather than excluded.
+  "include": ["src", "test", "tools", "vitest.config.ts"]
 }

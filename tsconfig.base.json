@@ -1,8 +1,9 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
+  // Shared compiler options for every package and app. Apps override lib and
+  // types where they need DOM or React, and set their own module resolution.
   "compilerOptions": {
-    // Type safety. noUncheckedIndexedAccess is the load-bearing one here:
-    // every coordinate lookup is forced to acknowledge it may be missing.
+    /* Type checking. noUncheckedIndexedAccess is the load-bearing one for the
+       scanning code: every coordinate lookup must acknowledge it may be missing. */
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -12,21 +13,28 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noUncheckedSideEffectImports": true,
     "allowUnreachableCode": false,
 
-    // Per-file transpilation safety. erasableSyntaxOnly bans enums, namespaces
-    // and parameter properties, so sources run under Node's type stripping.
+    /* Syntax constraints for per-file transpilation. erasableSyntaxOnly bans
+       enums, namespaces and parameter properties. */
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
     "moduleDetection": "force",
 
-    // Pinned explicitly: TypeScript 6 floats the default target year to year.
-    "target": "es2024",
-    "lib": ["es2024"],
+    /* Pinned deliberately: TypeScript 6 floats the default target to the latest
+       finalized ES version, so leaving it unset lets a compiler upgrade change
+       the JavaScript shipped to Hermes. */
+    "target": "ES2022",
+    "lib": ["ES2022"],
     "types": [],
 
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
   }
 }

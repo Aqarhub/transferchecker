@@ -22,7 +22,7 @@ function renderQuestions(columns: readonly QuestionColumn[]): string[] {
   return columns.flatMap((column) =>
     column.rows.flatMap((row) => [
       `<text x="${round(row.numberAnchor.xMm)}" y="${round(row.numberAnchor.yMm + 1.3)}" font-size="3.4"` +
-        ` text-anchor="end" ${FONT} fill="${INK}">${row.question}</text>`,
+        ` text-anchor="end" ${FONT} fill="${INK}">${String(row.question)}</text>`,
       ...row.bubbles.flatMap((bubble) => [
         `<circle cx="${round(bubble.cxMm)}" cy="${round(bubble.cyMm)}" r="${round(bubble.rMm)}"` +
           ` fill="none" stroke="${LIGHT}" stroke-width="0.35"/>`,
@@ -76,13 +76,13 @@ export function renderSheetSvg(layout: SheetLayout, options: RenderOptions): str
     const xMm = band.xMm + band.wMm / 2 + (rotationDeg < 0 ? 1.6 : -1.2);
     const yMm = band.yMm + band.hMm / 2;
     return (
-      `<text transform="rotate(${rotationDeg} ${round(xMm)} ${round(yMm)})" x="${round(xMm)}" y="${round(yMm)}"` +
+      `<text transform="rotate(${String(rotationDeg)} ${round(xMm)} ${round(yMm)})" x="${round(xMm)}" y="${round(yMm)}"` +
       ` font-size="4" text-anchor="middle" ${FONT} fill="${INK}">${escapeText(text)}</text>`
     );
   };
 
   const body = [
-    `<rect width="${widthMm}" height="${heightMm}" fill="white"/>`,
+    `<rect width="${String(widthMm)}" height="${String(heightMm)}" fill="white"/>`,
     ...layout.fiducials.map((box) => rect(box, INK)),
     ...layout.timingMarks.map((box) => rect(box, INK)),
     ...renderQr(layout.qr),
@@ -103,7 +103,7 @@ export function renderSheetSvg(layout: SheetLayout, options: RenderOptions): str
   ];
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${widthMm} ${heightMm}" width="${widthMm * 3}" height="${heightMm * 3}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${String(widthMm)} ${String(heightMm)}" width="${String(widthMm * 3)}" height="${String(heightMm * 3)}">`,
     ...body,
     '</svg>',
   ].join('\n');

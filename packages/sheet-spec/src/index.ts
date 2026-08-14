@@ -3,7 +3,13 @@
 export { GEOMETRY, PAPER, PAPER_NAMES } from './paper';
 export type { PaperName, PaperSize } from './paper';
 
-export { ALPHABET_NAMES, CHOICE_LABEL_NAMES, MAX_CHOICES, alphabetSymbols, choiceSymbols } from './alphabet';
+export {
+  ALPHABET_NAMES,
+  CHOICE_LABEL_NAMES,
+  MAX_CHOICES,
+  alphabetSymbols,
+  choiceSymbols,
+} from './alphabet';
 export type { AlphabetName, ChoiceLabelName } from './alphabet';
 
 export {

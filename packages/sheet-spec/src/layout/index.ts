@@ -50,8 +50,7 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
     headerTopMm,
   );
 
-  const bodyTopMm =
-    Math.max(headerTopMm + header.heightMm, qr.yMm + qr.hMm) + GEOMETRY.gridGapMm;
+  const bodyTopMm = Math.max(headerTopMm + header.heightMm, qr.yMm + qr.hMm) + GEOMETRY.gridGapMm;
   const bodyLimitMm = paper.heightMm - GEOMETRY.marginMm - GEOMETRY.warningBandMm;
   const bodyHeightMm = bodyLimitMm - bodyTopMm;
 
@@ -62,10 +61,22 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
   const grid = planGrid(spec, contentLeftMm, bodyTopMm);
 
   if (grid.widthMm > contentWidthMm) {
-    return { kind: 'overflow', area: 'questions', axis: 'width', neededMm: grid.widthMm, availableMm: contentWidthMm };
+    return {
+      kind: 'overflow',
+      area: 'questions',
+      axis: 'width',
+      neededMm: grid.widthMm,
+      availableMm: contentWidthMm,
+    };
   }
   if (grid.heightMm > bodyHeightMm) {
-    return { kind: 'overflow', area: 'questions', axis: 'height', neededMm: grid.heightMm, availableMm: bodyHeightMm };
+    return {
+      kind: 'overflow',
+      area: 'questions',
+      axis: 'height',
+      neededMm: grid.heightMm,
+      availableMm: bodyHeightMm,
+    };
   }
 
   const sidebar = planSidebar(
@@ -77,10 +88,22 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
   const sidebarLimitMm = contentWidthMm - grid.widthMm - GEOMETRY.sidebarGapMm;
 
   if (sidebar.widthMm > sidebarLimitMm) {
-    return { kind: 'overflow', area: 'sidebar', axis: 'width', neededMm: sidebar.widthMm, availableMm: sidebarLimitMm };
+    return {
+      kind: 'overflow',
+      area: 'sidebar',
+      axis: 'width',
+      neededMm: sidebar.widthMm,
+      availableMm: sidebarLimitMm,
+    };
   }
   if (sidebar.heightMm > bodyHeightMm) {
-    return { kind: 'overflow', area: 'sidebar', axis: 'height', neededMm: sidebar.heightMm, availableMm: bodyHeightMm };
+    return {
+      kind: 'overflow',
+      area: 'sidebar',
+      axis: 'height',
+      neededMm: sidebar.heightMm,
+      availableMm: bodyHeightMm,
+    };
   }
 
   const layout: SheetLayout = {
