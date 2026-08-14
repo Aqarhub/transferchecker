@@ -10,6 +10,9 @@ export interface SheetTheme {
   readonly bubbleStrokeMm: number;
   readonly bubbleLabel: string;
   readonly bubbleLabelMm: number;
+  /** A choice letter printed beside its bubble instead of inside it. */
+  readonly choiceLabel: string;
+  readonly choiceLabelMm: number;
   readonly frameStroke: string;
   readonly frameStrokeMm: number;
   readonly boxStroke: string;
@@ -26,6 +29,11 @@ export const DEFAULT_THEME: SheetTheme = {
   bubbleStrokeMm: 0.25,
   bubbleLabel: '#8c9196',
   bubbleLabelMm: 1.9,
+  // Darker than a letter inside a bubble. A letter inside has to stay faint so
+  // the scanner still reads the bubble as blank, while one printed beside it is
+  // outside every sampled area, so it can be as legible as the page allows.
+  choiceLabel: '#3d4348',
+  choiceLabelMm: 2.3,
   frameStroke: '#000000',
   frameStrokeMm: 0.3,
   boxStroke: '#000000',

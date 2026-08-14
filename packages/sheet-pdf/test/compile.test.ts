@@ -6,8 +6,9 @@
 
 import { describe, expect, it } from 'vitest';
 import { NodeCompiler } from '@myriaddreamin/typst-ts-node-compiler';
+import { arabicSymbols, digitSymbols, latinSymbols } from '@transferchecker/sheet-spec';
 import { encodeSheetQr, renderSheetTypst, sheetPayload } from '../src/index';
-import { makeLayout, makeOptions } from './helpers';
+import { choiceQuestions, makeLayout, makeOptions } from './helpers';
 
 const compiler = NodeCompiler.create();
 
@@ -25,12 +26,18 @@ describe('generated Typst', () => {
 
   it('compiles an Arabic sheet, labels and choice letters included', () => {
     const layout = makeLayout({
-      choices: 4,
-      choiceLabels: 'arabic',
-      title: 'اختبار نهائي، رياضيات',
+      name: 'اختبار نهائي، رياضيات',
+      questions: choiceQuestions(40, arabicSymbols(4)),
       headerFields: [
-        { id: 'name', label: 'اسم الطالب', kind: 'writtenBox', widthMm: 72 },
-        { id: 'studentId', label: 'رقم الطالب', kind: 'bubbleGrid', length: 4, alphabet: 'digits' },
+        { id: 'name', usage: 'studentName', label: 'اسم الطالب', kind: 'writtenBox' },
+        {
+          id: 'studentId',
+          usage: 'studentId',
+          label: 'رقم الطالب',
+          kind: 'bubbleGrid',
+          length: 4,
+          symbols: [...digitSymbols()],
+        },
       ],
     });
     const source = renderSheetTypst(layout, {
@@ -40,19 +47,32 @@ describe('generated Typst', () => {
     expect(compile(source).length).toBeGreaterThan(4000);
   });
 
-  it('compiles a dense sheet, four columns of a hundred questions', () => {
+  it('compiles a sheet whose choice letters sit beside the bubbles', () => {
     const layout = makeLayout({
-      questions: 100,
-      columns: 4,
-      choices: 5,
-      headerFields: [{ id: 'name', label: 'Name', kind: 'writtenBox', widthMm: 60 }],
+      questions: choiceQuestions(40, latinSymbols(4), 'external'),
     });
     expect(compile(renderSheetTypst(layout, makeOptions())).length).toBeGreaterThan(4000);
   });
 
-  it('treats a hostile title as text rather than executing it', () => {
-    const source = renderSheetTypst(makeLayout({ title: '#panic("owned")' }), makeOptions());
-    // A title that reached code position would abort the compile.
+  it('compiles a sheet that mixes symbol sets between questions', () => {
+    const layout = makeLayout({
+      questions: [...choiceQuestions(20, latinSymbols(5)), ...choiceQuestions(20, ['T', 'F'])],
+    });
+    expect(compile(renderSheetTypst(layout, makeOptions())).length).toBeGreaterThan(4000);
+  });
+
+  it('compiles a dense sheet, four columns of a hundred questions', () => {
+    const layout = makeLayout({
+      questions: choiceQuestions(100),
+      columns: 4,
+      headerFields: [{ id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox' }],
+    });
+    expect(compile(renderSheetTypst(layout, makeOptions())).length).toBeGreaterThan(4000);
+  });
+
+  it('treats a hostile template name as text rather than executing it', () => {
+    const source = renderSheetTypst(makeLayout({ name: '#panic("owned")' }), makeOptions());
+    // A name that reached code position would abort the compile.
     expect(compile(source).length).toBeGreaterThan(4000);
   });
 });
@@ -61,8 +81,7 @@ describe('sheet code', () => {
   it('encodes a payload the scanner can identify the template from', () => {
     const matrix = encodeSheetQr({
       templateId: '3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90',
-      version: 2,
-      formCode: 'A',
+      version: 3,
     });
     expect(matrix.length).toBeGreaterThanOrEqual(21);
     // A QR is square and carries the three finder patterns as dark corners.
@@ -75,9 +94,8 @@ describe('sheet code', () => {
   it('keeps the payload short and positional', () => {
     const payload = sheetPayload({
       templateId: '3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90',
-      version: 2,
-      formCode: 'A',
+      version: 3,
     });
-    expect(payload).toBe('TC1:3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90:2:A');
+    expect(payload).toBe('TC1:3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90:3');
   });
 });

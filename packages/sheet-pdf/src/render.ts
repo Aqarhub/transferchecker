@@ -5,9 +5,11 @@
 // coordinate here comes from the layout engine, so the printed sheet and the
 // scanner read the same geometry.
 
+import { GEOMETRY } from '@transferchecker/sheet-spec';
 import type {
   GridFieldLayout,
   QuestionColumn,
+  QuestionRow,
   Rect,
   SheetLayout,
 } from '@transferchecker/sheet-spec';
@@ -23,7 +25,7 @@ export interface RenderOptions {
   readonly fonts: readonly string[];
   /** Printed at the foot of the sheet, one line per entry. */
   readonly warningLines: readonly string[];
-  /** Carries the template id, version and form code to the scanner. */
+  /** Carries the template identity to the scanner. */
   readonly qr: QrMatrix;
   readonly theme?: SheetTheme;
 }
@@ -58,6 +60,29 @@ function renderQr(box: Rect, matrix: QrMatrix, ink: string): string[] {
   );
 }
 
+/**
+ * The choice letters of one row. A letter is printed either inside its bubble
+ * or beside it, never both, and the layout says which by leaving `choiceLabels`
+ * empty for the inside case.
+ */
+function renderChoiceLabels(row: QuestionRow, theme: SheetTheme): string[] {
+  if (row.choiceLabels.length === 0) {
+    return row.bubbles.map((b) =>
+      bubbleLabel(b.cxMm, b.cyMm, b.rMm, theme.bubbleLabelMm, theme.bubbleLabel, b.symbol),
+    );
+  }
+  return row.choiceLabels.map((label) =>
+    textAt(
+      label.anchor.xMm,
+      label.anchor.yMm + theme.choiceLabelMm * 0.36,
+      theme.choiceLabelMm,
+      theme.choiceLabel,
+      label.symbol,
+      { align: 'center', widthMm: GEOMETRY.externalLabelMm },
+    ),
+  );
+}
+
 function renderQuestions(columns: readonly QuestionColumn[], theme: SheetTheme): string[] {
   return columns.flatMap((column) =>
     column.rows.flatMap((row) => [
@@ -69,10 +94,10 @@ function renderQuestions(columns: readonly QuestionColumn[], theme: SheetTheme):
         String(row.question),
         { align: 'right', widthMm: 8 },
       ),
-      ...row.bubbles.flatMap((b) => [
+      ...row.bubbles.map((b) =>
         bubble(b.cxMm, b.cyMm, b.rMm, theme.bubbleStrokeMm, theme.bubbleStroke),
-        bubbleLabel(b.cxMm, b.cyMm, b.rMm, theme.bubbleLabelMm, theme.bubbleLabel, b.symbol),
-      ]),
+      ),
+      ...renderChoiceLabels(row, theme),
     ]),
   );
 }

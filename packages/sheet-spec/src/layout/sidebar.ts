@@ -2,7 +2,6 @@
 // sheet. Each field is one grid of character columns and is right-aligned so
 // the sidebar keeps a single straight edge.
 
-import { alphabetSymbols } from '../alphabet';
 import { GEOMETRY } from '../paper';
 import type { BubbleGridField, BubbleMetrics } from '../spec';
 import type { GridFieldColumn, GridFieldLayout, Rect } from '../types';
@@ -32,7 +31,7 @@ export function planSidebar(
   let cursorYMm = topMm;
 
   for (const field of fields) {
-    const symbols = alphabetSymbols(field.alphabet);
+    const symbols = field.symbols;
     const frameWidthMm = frameWidthOf(field.length);
     const frameLeftMm = rightMm - frameWidthMm;
     const frameTopMm = cursorYMm + GEOMETRY.sidebarLabelMm;

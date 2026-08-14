@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { bubbleGroups, fieldGroupId, questionGroupId } from '../src/index';
-import { layoutOrThrow, makeSpec } from './helpers';
+import { choiceQuestions, layoutOrThrow, makeSpec } from './helpers';
 
 describe('bubbleGroups', () => {
   it('emits one group per question and one per grid character column', () => {
-    const layout = layoutOrThrow(makeSpec({ questions: 40, columns: 2 }));
+    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(40), columns: 2 }));
     // Forty questions plus the four digit columns of the student id grid.
     expect(bubbleGroups(layout)).toHaveLength(44);
   });
@@ -42,7 +42,7 @@ describe('bubbleGroups', () => {
   });
 
   it('keeps question groups aligned with the printed choice letters', () => {
-    const layout = layoutOrThrow(makeSpec({ choices: 5 }));
+    const layout = layoutOrThrow(makeSpec());
     const groups = bubbleGroups(layout);
     const question = groups.find((group) => group.id === questionGroupId(7));
     expect(question?.bubbles.map((bubble) => bubble.symbol)).toEqual(['A', 'B', 'C', 'D', 'E']);

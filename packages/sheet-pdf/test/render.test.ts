@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { bubbleGroups } from '@transferchecker/sheet-spec';
+import { arabicSymbols, bubbleGroups, latinSymbols } from '@transferchecker/sheet-spec';
+import type { SheetLayout } from '@transferchecker/sheet-spec';
 import { renderSheetTypst } from '../src/index';
-import { makeLayout, makeOptions, makeQr } from './helpers';
+import { choiceQuestions, makeLayout, makeOptions, makeQr } from './helpers';
 
 const countOf = (source: string, pattern: RegExp): number => source.match(pattern)?.length ?? 0;
+
+const questionBubbles = (layout: SheetLayout): number =>
+  layout.questionColumns
+    .flatMap((column) => column.rows)
+    .reduce((total, row) => total + row.bubbles.length, 0);
+
+const gridBubbles = (layout: SheetLayout): number =>
+  layout.gridFields
+    .flatMap((field) => field.columns)
+    .reduce((total, column) => total + column.bubbles.length, 0);
 
 describe('renderSheetTypst', () => {
   it('sets the page to the exact paper size with no margin', () => {
@@ -41,7 +52,7 @@ describe('renderSheetTypst', () => {
   });
 
   it('draws one timing mark per question row', () => {
-    const layout = makeLayout({ questions: 40, columns: 2 });
+    const layout = makeLayout({ questions: choiceQuestions(40), columns: 2 });
     const source = renderSheetTypst(layout, makeOptions());
     // Twenty timing marks plus four fiducials are the only filled rectangles
     // besides the QR modules, which the next test counts on its own.
@@ -67,7 +78,7 @@ describe('renderSheetTypst', () => {
   });
 
   it('prints the answer letters inside the bubbles', () => {
-    const source = renderSheetTypst(makeLayout({ choices: 5 }), makeOptions());
+    const source = renderSheetTypst(makeLayout(), makeOptions());
     for (const symbol of ['A', 'B', 'C', 'D', 'E']) {
       expect(source).toContain(`"${symbol}"`);
     }
@@ -75,7 +86,7 @@ describe('renderSheetTypst', () => {
 
   it('prints Arabic answer letters when the teacher asks for them', () => {
     const source = renderSheetTypst(
-      makeLayout({ choices: 4, choiceLabels: 'arabic' }),
+      makeLayout({ questions: choiceQuestions(40, arabicSymbols(4)) }),
       makeOptions(),
     );
     for (const symbol of ['أ', 'ب', 'ج', 'د']) {
@@ -83,11 +94,43 @@ describe('renderSheetTypst', () => {
     }
   });
 
-  it('rotates the branding and the title into their edge bands', () => {
+  it('prints a letter once, either inside its bubble or beside it', () => {
+    // A letter inside a bubble is boxed to the bubble's own size, a letter
+    // beside it is boxed to the label slot, so the two are countable apart.
+    const inside = (source: string): number =>
+      countOf(source, /box\(width: 4\.4mm, height: 4\.4mm/g);
+    const beside = (source: string): number =>
+      countOf(source, /box\(width: 3\.2mm, align\(center/g);
+
+    const internal = makeLayout();
+    const external = makeLayout({ questions: choiceQuestions(40, latinSymbols(5), 'external') });
+    const internalSource = renderSheetTypst(internal, makeOptions());
+    const externalSource = renderSheetTypst(external, makeOptions());
+
+    expect(inside(internalSource)).toBe(questionBubbles(internal) + gridBubbles(internal));
+    expect(beside(internalSource)).toBe(0);
+    // Only the id grid keeps its digits inside the bubbles.
+    expect(inside(externalSource)).toBe(gridBubbles(external));
+    expect(beside(externalSource)).toBe(questionBubbles(external));
+  });
+
+  it('prints an external letter to the left of the bubble it belongs to', () => {
+    const layout = makeLayout({ questions: choiceQuestions(40, latinSymbols(5), 'external') });
+    const source = renderSheetTypst(layout, makeOptions());
+    const label = layout.questionColumns[0]?.rows[0]?.choiceLabels[0];
+    expect(label).toBeDefined();
+    if (label === undefined) return;
+    // Centre alignment subtracts half the box width from the anchor.
+    const left = Math.round((label.anchor.xMm - 3.2 / 2) * 1000) / 1000;
+    expect(source).toContain(`#place(dx: ${String(left)}mm,`);
+  });
+
+  it('rotates the branding and the template name into their edge bands', () => {
     const source = renderSheetTypst(makeLayout(), makeOptions());
     expect(source).toContain('rotate(-90deg, origin: center');
     expect(source).toContain('rotate(90deg, origin: center');
     expect(source).toContain('"TRANSFERCHECKER.COM"');
+    expect(source).toContain('"Standard 40"');
   });
 
   it('right aligns question numbers so the column reads as one edge', () => {
@@ -96,8 +139,8 @@ describe('renderSheetTypst', () => {
     expect(source).toContain('"40"');
   });
 
-  it('quotes a hostile exam title instead of letting it become code', () => {
-    const source = renderSheetTypst(makeLayout({ title: '#import "evil.typ": *' }), makeOptions());
+  it('quotes a hostile template name instead of letting it become code', () => {
+    const source = renderSheetTypst(makeLayout({ name: '#import "evil.typ": *' }), makeOptions());
     expect(source).toContain('"#import \\"evil.typ\\": *"');
     expect(source).not.toContain('\n#import');
   });

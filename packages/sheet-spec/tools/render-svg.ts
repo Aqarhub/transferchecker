@@ -3,11 +3,13 @@
 // Arabic shaping; this renderer exists so geometry can be reviewed without a
 // PDF toolchain, and it reads the same layout the scanner will sample.
 
-import type { GridFieldLayout, QuestionColumn, Rect, SheetLayout } from '../src/index';
+import type { GridFieldLayout, QuestionColumn, QuestionRow, Rect, SheetLayout } from '../src/index';
 
 const FONT = "font-family=\"'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif\"";
 const INK = '#111';
 const LIGHT = '#888';
+/** A letter beside a bubble is outside every sampled area, so it prints darker. */
+const LABEL = '#3d4348';
 
 const escapeText = (value: string): string =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -18,17 +20,34 @@ const rect = (box: Rect, fill: string, stroke?: string): string =>
   `<rect x="${round(box.xMm)}" y="${round(box.yMm)}" width="${round(box.wMm)}" height="${round(box.hMm)}"` +
   ` fill="${fill}"${stroke === undefined ? '' : ` stroke="${stroke}" stroke-width="0.4"`}/>`;
 
+// A letter is printed either inside its bubble or beside it, never both. The
+// layout says which by leaving choiceLabels empty for the inside case.
+function renderChoiceLabels(row: QuestionRow): string[] {
+  if (row.choiceLabels.length === 0) {
+    return row.bubbles.map(
+      (bubble) =>
+        `<text x="${round(bubble.cxMm)}" y="${round(bubble.cyMm + 1)}" font-size="2.4" text-anchor="middle"` +
+        ` ${FONT} fill="${LIGHT}">${escapeText(bubble.symbol)}</text>`,
+    );
+  }
+  return row.choiceLabels.map(
+    (label) =>
+      `<text x="${round(label.anchor.xMm)}" y="${round(label.anchor.yMm + 1)}" font-size="2.6" text-anchor="middle"` +
+      ` ${FONT} fill="${LABEL}">${escapeText(label.symbol)}</text>`,
+  );
+}
+
 function renderQuestions(columns: readonly QuestionColumn[]): string[] {
   return columns.flatMap((column) =>
     column.rows.flatMap((row) => [
       `<text x="${round(row.numberAnchor.xMm)}" y="${round(row.numberAnchor.yMm + 1.3)}" font-size="3.4"` +
         ` text-anchor="end" ${FONT} fill="${INK}">${String(row.question)}</text>`,
-      ...row.bubbles.flatMap((bubble) => [
-        `<circle cx="${round(bubble.cxMm)}" cy="${round(bubble.cyMm)}" r="${round(bubble.rMm)}"` +
+      ...row.bubbles.map(
+        (bubble) =>
+          `<circle cx="${round(bubble.cxMm)}" cy="${round(bubble.cyMm)}" r="${round(bubble.rMm)}"` +
           ` fill="none" stroke="${LIGHT}" stroke-width="0.35"/>`,
-        `<text x="${round(bubble.cxMm)}" y="${round(bubble.cyMm + 1)}" font-size="2.4" text-anchor="middle"` +
-          ` ${FONT} fill="${LIGHT}">${escapeText(bubble.symbol)}</text>`,
-      ]),
+      ),
+      ...renderChoiceLabels(row),
     ]),
   );
 }

@@ -8,7 +8,7 @@ import { GEOMETRY, PAPER } from '../paper';
 import type { BubbleGridField, SheetSpec, WrittenBoxField } from '../spec';
 import type { LayoutResult, Rect, SheetLayout } from '../types';
 import { planHeader } from './header';
-import { planGrid } from './grid';
+import { columnWidthMm, planGrid, resolveColumns } from './grid';
 import { planSidebar } from './sidebar';
 
 const isWrittenBox = (field: SheetSpec['headerFields'][number]): field is WrittenBoxField =>
@@ -34,6 +34,7 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
   const paper = PAPER[spec.paper];
   const contentLeftMm = GEOMETRY.marginMm + GEOMETRY.timingWidthMm + GEOMETRY.brandingBandMm;
   const contentRightMm = paper.widthMm - GEOMETRY.marginMm - GEOMETRY.titleBandMm;
+  const contentWidthMm = contentRightMm - contentLeftMm;
 
   const headerTopMm = GEOMETRY.marginMm + GEOMETRY.fiducialMm + GEOMETRY.headerGapMm;
   const qr: Rect = {
@@ -54,38 +55,36 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
   const bodyLimitMm = paper.heightMm - GEOMETRY.marginMm - GEOMETRY.warningBandMm;
   const bodyHeightMm = bodyLimitMm - bodyTopMm;
 
-  // The question grid is the primary content, so it is measured against the
-  // whole content band first. Only then is the sidebar asked to fit in what is
-  // left, which keeps the blame on the optional part when both cannot fit.
-  const contentWidthMm = contentRightMm - contentLeftMm;
-  const grid = planGrid(spec, contentLeftMm, bodyTopMm);
+  // A fixed column count is a request, so the sidebar must leave room for all
+  // of it. Auto only needs one column to survive.
+  const oneColumnMm = columnWidthMm(spec);
+  const requestedGridMm =
+    spec.columns === 'auto'
+      ? oneColumnMm
+      : spec.columns * oneColumnMm + (spec.columns - 1) * GEOMETRY.columnGapMm;
 
-  if (grid.widthMm > contentWidthMm) {
+  // Judged before the sidebar: a grid that cannot fit an empty page is the
+  // grid's fault, and blaming the sidebar for it would send the teacher to the
+  // wrong control.
+  if (requestedGridMm > contentWidthMm) {
     return {
       kind: 'overflow',
       area: 'questions',
       axis: 'width',
-      neededMm: grid.widthMm,
+      neededMm: requestedGridMm,
       availableMm: contentWidthMm,
     };
   }
-  if (grid.heightMm > bodyHeightMm) {
-    return {
-      kind: 'overflow',
-      area: 'questions',
-      axis: 'height',
-      neededMm: grid.heightMm,
-      availableMm: bodyHeightMm,
-    };
-  }
 
+  // The sidebar is measured next because its width does not depend on how the
+  // questions are arranged, while the column count depends on what it leaves.
   const sidebar = planSidebar(
     spec.headerFields.filter(isBubbleGrid),
     spec.bubble,
     contentRightMm,
     bodyTopMm,
   );
-  const sidebarLimitMm = contentWidthMm - grid.widthMm - GEOMETRY.sidebarGapMm;
+  const sidebarLimitMm = contentWidthMm - requestedGridMm - GEOMETRY.sidebarGapMm;
 
   if (sidebar.widthMm > sidebarLimitMm) {
     return {
@@ -106,8 +105,32 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
     };
   }
 
+  const gridWidthMm =
+    sidebar.widthMm > 0 ? contentWidthMm - sidebar.widthMm - GEOMETRY.sidebarGapMm : contentWidthMm;
+  const columnCount = resolveColumns(spec, gridWidthMm, bodyHeightMm);
+  const grid = planGrid(spec, contentLeftMm, bodyTopMm, columnCount);
+
+  if (grid.widthMm > gridWidthMm) {
+    return {
+      kind: 'overflow',
+      area: 'questions',
+      axis: 'width',
+      neededMm: grid.widthMm,
+      availableMm: gridWidthMm,
+    };
+  }
+  if (grid.heightMm > bodyHeightMm) {
+    return {
+      kind: 'overflow',
+      area: 'questions',
+      axis: 'height',
+      neededMm: grid.heightMm,
+      availableMm: bodyHeightMm,
+    };
+  }
+
   const layout: SheetLayout = {
-    version: 2,
+    version: 3,
     paper: { widthMm: paper.widthMm, heightMm: paper.heightMm },
     fiducials: cornerFiducials(paper.widthMm, paper.heightMm),
     timingMarks: grid.timingMarks,
@@ -122,8 +145,10 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
       },
       rotationDeg: -90,
     },
+    // The template name, printed so a teacher can tell two sheets apart by eye
+    // without a device. The QR carries the machine readable form.
     title: {
-      text: spec.title,
+      text: spec.name,
       band: {
         xMm: contentRightMm,
         yMm: bodyTopMm,

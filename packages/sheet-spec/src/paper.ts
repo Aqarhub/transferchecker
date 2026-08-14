@@ -34,9 +34,9 @@ export const GEOMETRY = {
   timingHeightMm: 3,
   /** Vertical text band reserved for the site name on the left edge. */
   brandingBandMm: 8,
-  /** Vertical text band reserved for the exam title on the right edge. */
+  /** Vertical text band reserved for the template name on the right edge. */
   titleBandMm: 8,
-  /** Square QR code carrying the template id, version and form code. */
+  /** Square QR code carrying the template identity. */
   qrSizeMm: 16,
   /** Vertical space between the fiducial row and the header band. */
   headerGapMm: 4,
@@ -65,4 +65,15 @@ export const GEOMETRY = {
   sidebarStackGapMm: 6,
   /** Band at the bottom of the page reserved for the print warning. */
   warningBandMm: 12,
+  /** Space a choice letter needs when it sits beside its bubble. */
+  externalLabelMm: 3.2,
+  /** Gap after an external label's bubble, before the next choice. */
+  externalGapMm: 2.2,
+} as const;
+
+/** Handwriting box widths, named rather than left as free millimetres. */
+export const FIELD_WIDTH_MM = {
+  small: 32,
+  medium: 52,
+  large: 76,
 } as const;

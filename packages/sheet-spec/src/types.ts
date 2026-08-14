@@ -33,12 +33,23 @@ export interface BubbleGroup {
   readonly bubbles: readonly Bubble[];
 }
 
+export interface ChoiceLabel {
+  /** Centre of the slot the symbol is printed in, on the row's centre line. */
+  readonly anchor: Point;
+  readonly symbol: string;
+}
+
 export interface QuestionRow {
   /** One-based question number as printed on the sheet. */
   readonly question: number;
   /** Right-aligned anchor for the printed question number. */
   readonly numberAnchor: Point;
   readonly bubbles: readonly Bubble[];
+  /**
+   * Where each choice letter is printed when it sits beside its bubble. Empty
+   * for internal placement, where the symbol is drawn inside the bubble.
+   */
+  readonly choiceLabels: readonly ChoiceLabel[];
 }
 
 export interface QuestionColumn {
@@ -80,7 +91,7 @@ export interface VerticalText {
 }
 
 export interface SheetLayout {
-  readonly version: 2;
+  readonly version: 3;
   readonly paper: { readonly widthMm: number; readonly heightMm: number };
   /** Perspective reference points, in top-left, top-right, bottom-left, bottom-right order. */
   readonly fiducials: readonly Rect[];

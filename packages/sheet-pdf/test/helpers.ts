@@ -1,26 +1,51 @@
 // Shared fixtures for the Typst rendering tests.
 
-import { DEFAULT_BUBBLE, SheetSpecSchema, layoutSheet } from '@transferchecker/sheet-spec';
+import {
+  DEFAULT_BUBBLE,
+  SheetSpecSchema,
+  digitSymbols,
+  latinSymbols,
+  layoutSheet,
+} from '@transferchecker/sheet-spec';
 import type { SheetLayout, SheetSpecInput } from '@transferchecker/sheet-spec';
 import type { QrMatrix, RenderOptions } from '../src/index';
 
+type QuestionInput = SheetSpecInput['questions'][number];
+
 const TEMPLATE_ID = '3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90';
+
+/** `count` identical multiple choice questions, the common case. */
+export function choiceQuestions(
+  count: number,
+  symbols: readonly string[] = latinSymbols(5),
+  placement: 'internal' | 'external' = 'internal',
+): QuestionInput[] {
+  return Array.from({ length: count }, () => ({
+    kind: 'choice' as const,
+    symbols: [...symbols],
+    placement,
+  }));
+}
 
 export function makeLayout(overrides: Partial<SheetSpecInput> = {}): SheetLayout {
   const base: SheetSpecInput = {
     templateId: TEMPLATE_ID,
-    version: 2,
-    paper: 'A4',
-    questions: 40,
-    choices: 5,
-    columns: 2,
-    choiceLabels: 'latin',
+    version: 3,
+    name: 'Standard 40',
     branding: 'TRANSFERCHECKER.COM',
-    title: 'Final Exam (2614)',
-    formCode: 'A',
+    paper: 'A4',
+    columns: 2,
+    questions: choiceQuestions(40),
     headerFields: [
-      { id: 'name', label: 'Name', kind: 'writtenBox', widthMm: 72 },
-      { id: 'studentId', label: 'Student ID', kind: 'bubbleGrid', length: 4, alphabet: 'digits' },
+      { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'large' },
+      {
+        id: 'studentId',
+        usage: 'studentId',
+        label: 'Student ID',
+        kind: 'bubbleGrid',
+        length: 4,
+        symbols: [...digitSymbols()],
+      },
     ],
     bubble: DEFAULT_BUBBLE,
   };

@@ -9,15 +9,18 @@ import type { QrMatrix } from './render';
 export interface SheetCode {
   readonly templateId: string;
   readonly version: number;
-  readonly formCode: string;
 }
 
 /**
  * The payload string. Kept short and positional so the QR stays a low version
  * with large modules, which is what survives a phone camera at an angle.
+ *
+ * A key version is not encoded here: it is shaded by the student on the sheet
+ * like any other bubble grid, so it varies per paper while the QR identifies
+ * the template that every one of those papers was printed from.
  */
 export function sheetPayload(code: SheetCode): string {
-  return `TC1:${code.templateId}:${String(code.version)}:${code.formCode}`;
+  return `TC1:${code.templateId}:${String(code.version)}`;
 }
 
 export function encodeSheetQr(code: SheetCode): QrMatrix {
