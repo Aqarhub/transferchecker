@@ -62,13 +62,9 @@ function renderCode(code: SheetCodeLayout, ink: string): string[] {
   );
 }
 
-/**
- * The choice letters of one row. A letter is printed either inside its bubble
- * or beside it, never both, and the layout says which by leaving `choiceLabels`
- * empty for the inside case.
- */
+/** The choice letters of one row, when the row carries any of its own. */
 function renderChoiceLabels(row: QuestionRow, theme: SheetTheme): string[] {
-  if (row.choiceLabels.length === 0) {
+  if (row.symbolsInBubbles) {
     return row.bubbles.map((b) =>
       bubbleLabel(b.cxMm, b.cyMm, b.rMm, theme.bubbleLabelMm, theme.bubbleLabel, b.symbol),
     );
@@ -86,8 +82,22 @@ function renderChoiceLabels(row: QuestionRow, theme: SheetTheme): string[] {
 }
 
 function renderQuestions(columns: readonly QuestionColumn[], theme: SheetTheme): string[] {
-  return columns.flatMap((column) =>
-    column.rows.flatMap((row) => [
+  return columns.flatMap((column) => [
+    // The letters above a run of questions, repeated down a long column so the
+    // eye has somewhere to rest and never has to scroll back up to check.
+    ...column.headers.flatMap((header) =>
+      header.labels.map((label) =>
+        textAt(
+          label.anchor.xMm,
+          label.anchor.yMm + theme.choiceLabelMm * 0.36,
+          theme.choiceLabelMm,
+          theme.choiceLabel,
+          label.symbol,
+          { align: 'center', widthMm: GEOMETRY.externalLabelMm },
+        ),
+      ),
+    ),
+    ...column.rows.flatMap((row) => [
       textAt(
         row.numberAnchor.xMm,
         row.numberAnchor.yMm + theme.questionSizeMm * 0.36,
@@ -101,7 +111,7 @@ function renderQuestions(columns: readonly QuestionColumn[], theme: SheetTheme):
       ),
       ...renderChoiceLabels(row, theme),
     ]),
-  );
+  ]);
 }
 
 function renderGridField(field: GridFieldLayout, theme: SheetTheme): string[] {

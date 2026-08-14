@@ -18,7 +18,7 @@ const TEMPLATE_ID = '3f1c9a52-6d4b-4a41-9f0e-2c7b8d5e1a90';
 export function choiceQuestions(
   count: number,
   choices = 5,
-  placement: 'internal' | 'external' = 'internal',
+  placement: 'internal' | 'header' | 'external' = 'internal',
 ): QuestionInput[] {
   return Array.from({ length: count }, () => ({
     kind: 'choice' as const,

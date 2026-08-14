@@ -28,26 +28,26 @@ const rect = (box: Rect, fill: string, stroke?: string): string =>
   `<rect x="${round(box.xMm)}" y="${round(box.yMm)}" width="${round(box.wMm)}" height="${round(box.hMm)}"` +
   ` fill="${fill}"${stroke === undefined ? '' : ` stroke="${stroke}" stroke-width="0.4"`}/>`;
 
-// A letter is printed either inside its bubble or beside it, never both. The
-// layout says which by leaving choiceLabels empty for the inside case.
+const choiceText = (label: { anchor: { xMm: number; yMm: number }; symbol: string }): string =>
+  `<text x="${round(label.anchor.xMm)}" y="${round(label.anchor.yMm + 1)}" font-size="2.6" text-anchor="middle"` +
+  ` ${FONT} fill="${LABEL}">${escapeText(label.symbol)}</text>`;
+
+/** The choice letters of one row, when the row carries any of its own. */
 function renderChoiceLabels(row: QuestionRow): string[] {
-  if (row.choiceLabels.length === 0) {
+  if (row.symbolsInBubbles) {
     return row.bubbles.map(
       (bubble) =>
-        `<text x="${round(bubble.cxMm)}" y="${round(bubble.cyMm + 1)}" font-size="2.4" text-anchor="middle"` +
+        `<text x="${round(bubble.cxMm)}" y="${round(bubble.cyMm + 1)}" font-size="2.2" text-anchor="middle"` +
         ` ${FONT} fill="${LIGHT}">${escapeText(bubble.symbol)}</text>`,
     );
   }
-  return row.choiceLabels.map(
-    (label) =>
-      `<text x="${round(label.anchor.xMm)}" y="${round(label.anchor.yMm + 1)}" font-size="2.6" text-anchor="middle"` +
-      ` ${FONT} fill="${LABEL}">${escapeText(label.symbol)}</text>`,
-  );
+  return row.choiceLabels.map(choiceText);
 }
 
 function renderQuestions(columns: readonly QuestionColumn[]): string[] {
-  return columns.flatMap((column) =>
-    column.rows.flatMap((row) => [
+  return columns.flatMap((column) => [
+    ...column.headers.flatMap((header) => header.labels.map(choiceText)),
+    ...column.rows.flatMap((row) => [
       `<text x="${round(row.numberAnchor.xMm)}" y="${round(row.numberAnchor.yMm + 1.3)}" font-size="3.4"` +
         ` text-anchor="end" ${FONT} fill="${INK}">${String(row.question)}</text>`,
       ...row.bubbles.map(
@@ -57,7 +57,7 @@ function renderQuestions(columns: readonly QuestionColumn[]): string[] {
       ),
       ...renderChoiceLabels(row),
     ]),
-  );
+  ]);
 }
 
 function renderGridField(field: GridFieldLayout): string[] {

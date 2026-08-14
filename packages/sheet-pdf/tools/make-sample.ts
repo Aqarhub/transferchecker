@@ -14,14 +14,17 @@ import {
   digitSymbols,
   latinSymbols,
   layoutSheet,
+  stockTemplate,
 } from '@transferchecker/sheet-spec';
-import type { SheetSpecInput } from '@transferchecker/sheet-spec';
+import type { SheetSpec, SheetSpecInput } from '@transferchecker/sheet-spec';
 import { planPage, renderSheetTypst, themeFor, withPhysicalSize } from '../src/index';
 import type { CopiesPerPage, Darkness } from '../src/index';
 
 interface Sample {
   readonly name: string;
-  readonly input: SheetSpecInput;
+  /** One of these two. A stock template arrives already parsed. */
+  readonly input?: SheetSpecInput;
+  readonly spec?: SheetSpec;
   readonly warnings: readonly string[];
   readonly copies?: CopiesPerPage;
   readonly darkness?: Darkness;
@@ -145,7 +148,42 @@ const quarter: SheetSpecInput = {
   ],
 };
 
+const STOCK_TEXT_EN = {
+  name: 'Standard',
+  branding: 'TRANSFERCHECKER.COM',
+  studentName: 'Name',
+  studentId: 'Student ID',
+  keyVersion: 'Key',
+};
+
 const SHEETS: readonly Sample[] = [
+  {
+    name: 'stock-20',
+    spec: stockTemplate('quick20', { ...STOCK_TEXT_EN, name: 'Quick 20' }),
+    warnings: [WARNING_EN],
+    copies: 2 as const,
+  },
+  {
+    name: 'stock-50',
+    spec: stockTemplate('standard50', { ...STOCK_TEXT_EN, name: 'Standard 50' }),
+    warnings: [WARNING_EN],
+  },
+  {
+    name: 'stock-100',
+    spec: stockTemplate('full100', { ...STOCK_TEXT_EN, name: 'Full 100' }),
+    warnings: [WARNING_EN],
+  },
+  {
+    name: 'stock-50-ar',
+    spec: stockTemplate('standard50', {
+      name: 'نموذج قياسي 50',
+      branding: 'TRANSFERCHECKER.COM',
+      studentName: 'اسم الطالب',
+      studentId: 'رقم الطالب',
+      keyVersion: 'النموذج',
+    }),
+    warnings: [WARNING_EN, WARNING_AR],
+  },
   { name: 'sheet-en', input: english, warnings: [WARNING_EN] },
   { name: 'sheet-ar', input: arabic, warnings: [WARNING_EN, WARNING_AR] },
   { name: 'sheet-external', input: external, warnings: [WARNING_EN] },
@@ -161,7 +199,7 @@ const compiler = NodeCompiler.create(
 mkdirSync(OUT_DIR, { recursive: true });
 
 for (const sheet of SHEETS) {
-  const spec = SheetSpecSchema.parse(sheet.input);
+  const spec = sheet.spec ?? SheetSpecSchema.parse(sheet.input);
   const result = layoutSheet(spec);
   if (result.kind !== 'ok') {
     throw new Error(`${sheet.name}: ${result.axis} overflow in ${result.area}`);

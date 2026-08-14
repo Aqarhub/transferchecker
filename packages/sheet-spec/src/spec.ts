@@ -58,7 +58,22 @@ export const HeaderFieldSchema = z.discriminatedUnion('kind', [
   BubbleGridFieldSchema,
 ]);
 
-export const LABEL_PLACEMENTS = ['internal', 'external'] as const;
+/**
+ * Where a choice letter is printed. Three real options, and the teacher picks.
+ *
+ * 'internal' puts the letter inside its bubble. Every bubble says what it is,
+ * with nothing to look up. This is the default.
+ *
+ * 'header' prints the letters once above the column and leaves the bubbles
+ * empty, the way commercial answer sheets are drawn. A forty question sheet
+ * prints five letters instead of two hundred, so the page is much quieter, and
+ * the bubbles may be smaller because an empty bubble only has to be large
+ * enough to aim at rather than large enough to read a letter in.
+ *
+ * 'external' puts the letter beside each bubble. The most legible and the
+ * widest, at roughly double the row width.
+ */
+export const LABEL_PLACEMENTS = ['internal', 'header', 'external'] as const;
 
 /**
  * How many bubbles a student may fill. 'one' is the ordinary case, where a
@@ -152,13 +167,18 @@ export type SheetSpecInput = z.input<typeof SheetSpecSchema>;
 /**
  * Bubble metrics that print and scan reliably on consumer printers.
  *
- * A 4.4 mm bubble is about 21 pixels across once a frame is warped to the
- * standard 1000 px page width, which leaves ample area for a fill ratio while
- * still fitting three question columns and an id grid side by side on A4.
+ * A 4 mm bubble is about 19 pixels across once a frame is warped to the
+ * standard 1000 px page width, which is ample area for a fill ratio and still
+ * holds a legible letter inside, which the default placement needs.
+ *
+ * The spacing is deliberately tighter than the bubble strictly requires. A page
+ * of widely spaced bubbles is tiring to look at and pushes a short exam onto
+ * paper it does not need, and the student's eye tracks a compact column far
+ * more easily than a sparse one.
  */
 export const DEFAULT_BUBBLE: BubbleMetrics = {
-  radiusMm: 2.2,
-  pitchXMm: 6.2,
-  pitchYMm: 8,
-  gridPitchYMm: 6.8,
+  radiusMm: 2,
+  pitchXMm: 5.6,
+  pitchYMm: 7,
+  gridPitchYMm: 6,
 };

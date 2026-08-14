@@ -47,15 +47,34 @@ export interface QuestionRow {
   /** Right-aligned anchor for the printed question number. */
   readonly numberAnchor: Point;
   readonly bubbles: readonly Bubble[];
-  /**
-   * Where each choice letter is printed when it sits beside its bubble. Empty
-   * for internal placement, where the symbol is drawn inside the bubble.
-   */
+  /** Where each choice letter goes when it sits beside its bubble. */
   readonly choiceLabels: readonly ChoiceLabel[];
+  /**
+   * Whether each bubble is printed with its own symbol inside it. False when
+   * the letters live above the column or beside the bubbles, in which case the
+   * bubbles print empty. Stated rather than inferred from the other two fields,
+   * because a renderer guessing this wrong prints a letter twice or not at all.
+   */
+  readonly symbolsInBubbles: boolean;
+}
+
+/**
+ * A row of choice letters printed above a run of questions that share them.
+ *
+ * It repeats every so many rows rather than appearing once at the top, so a
+ * long column gives the eye somewhere to rest and a student counting down forty
+ * rows can always see which letter a column of bubbles is.
+ */
+export interface ChoiceHeader {
+  readonly labels: readonly ChoiceLabel[];
+  /** Index of the first row this header sits above, within its column. */
+  readonly firstRow: number;
 }
 
 export interface QuestionColumn {
   readonly index: number;
+  /** Empty unless the column's questions print their letters above them. */
+  readonly headers: readonly ChoiceHeader[];
   readonly rows: readonly QuestionRow[];
 }
 

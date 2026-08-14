@@ -75,6 +75,14 @@ export const GEOMETRY = {
   numberGutterMm: 8,
   /** Horizontal space between question columns. */
   columnGapMm: 6,
+  /**
+   * How far apart rows may be pushed when the questions do not fill the page.
+   * `bubble.pitchYMm` is the closest rows may sit; the grid then spreads to use
+   * the height it was given, because a sheet with its questions crammed at the
+   * top and the bottom half blank reads as a mistake. This caps the spreading,
+   * so three questions on a page do not end up a finger apart.
+   */
+  maxRowPitchMm: 12,
   /** Horizontal space between the question grid and the sidebar. */
   sidebarGapMm: 8,
   /** Height reserved above a sidebar grid for its printed label. */
@@ -87,11 +95,31 @@ export const GEOMETRY = {
   sidebarStackGapMm: 6,
   /** Band at the bottom of the page reserved for the print warning. */
   warningBandMm: 12,
+  /** Height of a row of choice letters printed above its column. */
+  choiceHeaderMm: 4,
+  /**
+   * Rows between one header row and the next. Ten is the count a student
+   * counts in, so the header lands where the eye already pauses.
+   */
+  headerEveryRows: 10,
   /** Space a choice letter needs when it sits beside its bubble. */
   externalLabelMm: 3.2,
   /** Gap after an external label's bubble, before the next choice. */
   externalGapMm: 2.2,
 } as const;
+
+/**
+ * Paper sizes from smallest to largest, within one family. A sheet takes the
+ * smallest size its questions fit on, so a twenty question quiz is a small
+ * sheet and a hundred question exam is a full page, rather than every sheet
+ * being a full page with the bottom half empty.
+ */
+export const PAPER_FAMILIES = {
+  A: ['A6', 'A5', 'A4'],
+  LETTER: ['QUARTER_LETTER', 'HALF_LETTER', 'LETTER'],
+} as const satisfies Readonly<Record<string, readonly PaperName[]>>;
+
+export type PaperFamily = keyof typeof PAPER_FAMILIES;
 
 /** Handwriting box widths, named rather than left as free millimetres. */
 export const FIELD_WIDTH_MM = {
