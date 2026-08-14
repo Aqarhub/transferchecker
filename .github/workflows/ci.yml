@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Only the github, inputs and vars contexts are allowed in concurrency.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  PNPM_VERSION: 11.21.0
+  NODE_VERSION: '24'
+  # turbo --affected diffs HEAD against this base. actions/checkout leaves a
+  # detached checkout carrying only remote-tracking refs, so a pull request base
+  # must be spelled origin/<branch>; a bare name may not resolve locally.
+  TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+
+jobs:
+  verify:
+    name: ${{ matrix.task }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [typecheck, lint, test]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # --affected needs the merge base between HEAD and TURBO_SCM_BASE. A
+          # shallow clone does not contain it and Turborepo then silently falls
+          # back to running every package, so CI stays green while the filter is
+          # dead. Depth 2 only suffices when the base is the immediate parent.
+          fetch-depth: 0
+
+      - name: Install pnpm and Node.js
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          runtime: node@${{ env.NODE_VERSION }}
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ${{ matrix.task }}
+        run: pnpm exec turbo run ${{ matrix.task }} --affected
+
+  conventions:
+    name: Conventions
+    runs-on: ubuntu-latest
+    steps:
+      # The scans cover the whole tree, so no git history is needed here.
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install pnpm and Node.js
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          runtime: node@${{ env.NODE_VERSION }}
+          cache: true
+          install: false
+
+      - name: Check for em dash in user-facing text
+        # Zero dependencies, so this runs before the workspace install.
+        run: node scripts/check-no-emdash.mjs .
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm run format:check

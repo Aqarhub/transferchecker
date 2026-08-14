@@ -1,0 +1,12 @@
+{
+  // Covers root-level TypeScript config files so the ESLint project service can
+  // type them. Package sources are typed by their own tsconfig.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["*.ts", "*.mts", "scripts/**/*.mjs"]
+}

@@ -1,0 +1,40 @@
+{
+  // Shared compiler options for every package and app. Apps override lib and
+  // types where they need DOM or React, and set their own module resolution.
+  "compilerOptions": {
+    /* Type checking. noUncheckedIndexedAccess is the load-bearing one for the
+       scanning code: every coordinate lookup must acknowledge it may be missing. */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noUncheckedSideEffectImports": true,
+    "allowUnreachableCode": false,
+
+    /* Syntax constraints for per-file transpilation. erasableSyntaxOnly bans
+       enums, namespaces and parameter properties. */
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "moduleDetection": "force",
+
+    /* Pinned deliberately: TypeScript 6 floats the default target to the latest
+       finalized ES version, so leaving it unset lets a compiler upgrade change
+       the JavaScript shipped to Hermes. */
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": [],
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  }
+}

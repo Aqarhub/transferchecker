@@ -43,17 +43,19 @@
 
     // Speed without losing safety in our own code
     "esModuleInterop": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+  },
 }
 ```
 
 إعدادات الوحدات تختلف حسب نوع الحزمة (لا توضع في الأساس):
+
 - تطبيقات محزومة (mobile عبر Metro، web عبر Turbopack): `"module": "preserve"` + `"moduleResolution": "bundler"`.
 - حزم وأدوات تعمل على Node مباشرة: `"module": "nodenext"`.
 - ممنوعات حُذفت في TS 7 نهائياً: `baseUrl` (استخدم `imports` في package.json)، `moduleResolution: node/classic`، `target: es5`، `outFile`.
 
 ملاحظات:
+
 - `noUncheckedIndexedAccess` هو أهم علم لمحرك OMR: كل وصول لمصفوفة إحداثيات يُعامل كأنه قد يكون `undefined`، فيُجبرنا على معالجة الحالة بدل الانهيار وقت التشغيل.
 - `erasableSyntaxOnly` يمنع enum وnamespace وparameter properties، وبه تعمل ملفاتنا مباشرة على Node 24 بدون أدوات (`node file.ts`).
 - الحزم الخالصة (`core-omr`, `sheet-spec`) تمنع أي تبعية runtime.

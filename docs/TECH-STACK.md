@@ -5,28 +5,28 @@
 
 ## جدول ملخص (الإصدارات المستقرة بتاريخ 2026-08-13)
 
-| الأداة | الإصدار | الحالة | القرار |
-|---|---|---|---|
-| Expo SDK | 57 (expo@57.0.12) | نشط، يشحن RN 0.86.2 + React 19.2.3 | اعتماد |
-| React Native | 0.86.2 (عبر Expo 57) | New Architecture فقط، Hermes V1 افتراضي | اعتماد |
-| react-native-vision-camera | 5.2.2 | v5 إعادة كتابة على Nitro Modules، v4 مؤرشف | اعتماد مع الانتباه لتغير API |
-| react-native-fast-opencv | 1.0.1 | v1 أعيدت كتابته لـNew Architecture، صيانة نشطة | اعتماد مع حذر (مطوّر واحد) |
-| @shopify/react-native-skia | 2.11.0 | نشط جداً (Shopify) | اعتماد عبر SkiaCamera |
-| react-native-worklets (SWM) | 0.11.x | المعيار الجديد للـworklets | اعتماد، **ليس** worklets-core |
-| expo-sqlite | 57.x مع useSQLCipher | دعم SQLCipher رسمي أولى الطرف | اعتماد بدل op-sqlite |
-| Supabase | Postgres 17 مُدار | نشط، RLS + Auth ناضجة | اعتماد |
-| Drizzle ORM | 0.45.2 + drizzle-kit 0.31.10 | نشط، الإصدار 1.0 في مرحلة RC | اعتماد بتثبيت الإصدار |
-| PostgreSQL (Supabase) | 17 (لا يوجد 18 بعد) | uuidv7() الأصلية تحتاج PG18 | توليد UUIDv7 في التطبيق |
-| Next.js | 16.3.x | Turbopack افتراضي، React 19 | اعتماد بدل 15 |
-| Typst | 0.15.x | تشكيل عربي صحيح + دقة mm | اعتماد بدل pdf-lib |
-| TypeScript | 6.0.3 مثبّت | TS 7 صدر لكن typescript-eslint لا يدعمه | تثبيت 6.0.3 مؤقتاً |
-| Node.js | 24 (Active LTS) | type stripping مستقر | اعتماد |
-| Zod | 4.4.x | v3 متوقف نهائياً | اعتماد v4 |
-| i18next + react-i18next | 26.3.4+ / 17.x | حد أدنى أمني، جمع عربي أصلي | اعتماد بدون ICU |
-| pnpm | 11.21 | أمان سلسلة توريد افتراضي | اعتماد عبر packageManager |
-| Turborepo | 2.10.x | كاش بعيد مجاني، --affected | اعتماد |
-| Vitest | 4.1.x | Browser Mode مستقر | اعتماد، وjest-expo لمكونات RN |
-| ESLint + typescript-eslint | 10.x / 8.67+ | الفحص المعتمد على الأنواع | اعتماد كفاحص أساسي |
+| الأداة                      | الإصدار                      | الحالة                                         | القرار                        |
+| --------------------------- | ---------------------------- | ---------------------------------------------- | ----------------------------- |
+| Expo SDK                    | 57 (expo@57.0.12)            | نشط، يشحن RN 0.86.2 + React 19.2.3             | اعتماد                        |
+| React Native                | 0.86.2 (عبر Expo 57)         | New Architecture فقط، Hermes V1 افتراضي        | اعتماد                        |
+| react-native-vision-camera  | 5.2.2                        | v5 إعادة كتابة على Nitro Modules، v4 مؤرشف     | اعتماد مع الانتباه لتغير API  |
+| react-native-fast-opencv    | 1.0.1                        | v1 أعيدت كتابته لـNew Architecture، صيانة نشطة | اعتماد مع حذر (مطوّر واحد)    |
+| @shopify/react-native-skia  | 2.11.0                       | نشط جداً (Shopify)                             | اعتماد عبر SkiaCamera         |
+| react-native-worklets (SWM) | 0.11.x                       | المعيار الجديد للـworklets                     | اعتماد، **ليس** worklets-core |
+| expo-sqlite                 | 57.x مع useSQLCipher         | دعم SQLCipher رسمي أولى الطرف                  | اعتماد بدل op-sqlite          |
+| Supabase                    | Postgres 17 مُدار            | نشط، RLS + Auth ناضجة                          | اعتماد                        |
+| Drizzle ORM                 | 0.45.2 + drizzle-kit 0.31.10 | نشط، الإصدار 1.0 في مرحلة RC                   | اعتماد بتثبيت الإصدار         |
+| PostgreSQL (Supabase)       | 17 (لا يوجد 18 بعد)          | uuidv7() الأصلية تحتاج PG18                    | توليد UUIDv7 في التطبيق       |
+| Next.js                     | 16.3.x                       | Turbopack افتراضي، React 19                    | اعتماد بدل 15                 |
+| Typst                       | 0.15.x                       | تشكيل عربي صحيح + دقة mm                       | اعتماد بدل pdf-lib            |
+| TypeScript                  | 6.0.3 مثبّت                  | TS 7 صدر لكن typescript-eslint لا يدعمه        | تثبيت 6.0.3 مؤقتاً            |
+| Node.js                     | 24 (Active LTS)              | type stripping مستقر                           | اعتماد                        |
+| Zod                         | 4.4.x                        | v3 متوقف نهائياً                               | اعتماد v4                     |
+| i18next + react-i18next     | 26.3.4+ / 17.x               | حد أدنى أمني، جمع عربي أصلي                    | اعتماد بدون ICU               |
+| pnpm                        | 11.21                        | أمان سلسلة توريد افتراضي                       | اعتماد عبر packageManager     |
+| Turborepo                   | 2.10.x                       | كاش بعيد مجاني، --affected                     | اعتماد                        |
+| Vitest                      | 4.1.x                        | Browser Mode مستقر                             | اعتماد، وjest-expo لمكونات RN |
+| ESLint + typescript-eslint  | 10.x / 8.67+                 | الفحص المعتمد على الأنواع                      | اعتماد كفاحص أساسي            |
 
 ## تغييرات جوهرية عن الخطة الأصلية (مكتشفة بالتحقق)
 
@@ -71,6 +71,7 @@ react-native-fast-opencv@1.0.1
 ```
 
 قواعد التشغيل الحرجة:
+
 - صيغة البكسل `'yuv'` (الأكفأ، `'rgb'` أغلى بـ2.6 مرة). تحقق من `Frame.pixelFormat` وقت التشغيل.
 - تصغير الفريم عبر `react-native-vision-camera-resizer` قبل `Mat.createFromVisionCameraFrameBuffer()`.
 - `frame.dispose()` دائماً في try/finally. `mat.release()` في الحلقات الساخنة.
@@ -139,6 +140,7 @@ react-native-fast-opencv@1.0.1
 ## 6) i18n والـMonorepo
 
 **الترجمة والتعدد اللغوي:**
+
 - **i18next 26.3.4 كحد أدنى** (إصدار أمني يسد ثغرة prototype pollution صيف 2026) + react-i18next 17.x، ويُرقيان معاً دائماً.
 - **تصحيح عن الخطة، لا حاجة لـICU MessageFormat:** i18next الحديث يعالج صيغ الجمع الست للعربية أصلياً عبر `Intl.PluralRules` باللواحق `_zero` حتى `_other`. إضافة i18next-icu تستبدل صيغة i18next كلها بصيغة ثانية وتضعف أمان الأنواع بلا مكسب. القرار: بدون ICU.
 - **فخ حرج على Hermes:** محرك Hermes لا يطبق `Intl.PluralRules` حتى الآن. بدون polyfill يتدهور الجمع العربي بصمت إلى صيغتين فقط بلا أي خطأ. **إلزامي:** استيراد `intl-pluralrules` أول سطر في تطبيق الموبايل، مع اختبار وحدة يتحقق أن `new Intl.PluralRules('ar').select(3) === 'few'`.
@@ -148,6 +150,7 @@ react-native-fast-opencv@1.0.1
 - فخ RN معروف: `textAlign` الافتراضي فيزيائي (يسار دائماً) ولا يقبل `start`. الحل مكوّن `<Text>` مشترك يضبط `textAlign: 'left'` صراحة (تعني start في RTL).
 
 **الـMonorepo وCI:**
+
 - **pnpm 11.21** (يتطلب Node >= 22.13)، يثبَّت عبر حقل `packageManager` بدون Corepack (pnpm نفسه صار ينصح بتركه). لا ترقية لـpnpm 12 (ما زال RC).
 - إعدادات أمان سلسلة التوريد الافتراضية في pnpm 11 تبقى مفعلة: `minimumReleaseAge` (24 ساعة تأخير لاعتماد الإصدارات الجديدة، ويفضل رفعها لثلاثة أيام)، حجب سكربتات البناء للتبعيات إلا عبر `allowBuilds`، و`trustPolicy: no-downgrade`.
 - **Catalogs في pnpm** لكل تبعية مشتركة (react، i18next، typescript، vitest) حتى لا تنجرف الإصدارات بين تطبيقي الموبايل والويب.
