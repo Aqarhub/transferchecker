@@ -1,491 +1,488 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" width="630" height="891">
 <rect width="210" height="297" fill="white"/>
-<rect x="6" y="6" width="8" height="8" fill="black"/>
-<rect x="196" y="6" width="8" height="8" fill="black"/>
-<rect x="6" y="283" width="8" height="8" fill="black"/>
-<rect x="196" y="283" width="8" height="8" fill="black"/>
-<text transform="rotate(-90 17.5 100)" x="17.5" y="100" font-size="4.6" letter-spacing="1.2" font-weight="bold" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">TRANSFERCHECKER.COM</text>
-<text transform="rotate(90 201 120)" x="201" y="120" font-size="4.2" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">اختبار نهائي (2614)</text>
-<rect x="168" y="22" width="16" height="16" fill="none" stroke="#111" stroke-width="0.5"/>
-<rect x="169.5" y="23.5" width="3" height="3" fill="#111"/>
-<rect x="169.5" y="23.5" width="3" height="3" fill="#111"/>
-<rect x="174.5" y="23.5" width="3" height="3" fill="#111"/>
-<rect x="169.5" y="28.5" width="3" height="3" fill="#111"/>
-<rect x="179.5" y="23.5" width="3" height="3" fill="#111"/>
-<rect x="169.5" y="33.5" width="3" height="3" fill="#111"/>
-<rect x="175" y="29" width="4" height="4" fill="#111"/>
-<text x="24" y="28.4" font-size="3.4" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">الاسم</text>
-<rect x="24" y="30" width="72" height="10" fill="none" stroke="#111" stroke-width="0.5"/>
-<text x="104" y="28.4" font-size="3.4" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">الشعبة</text>
-<rect x="104" y="30" width="46" height="10" fill="none" stroke="#111" stroke-width="0.5"/>
-<text x="24" y="46.4" font-size="3.4" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">الدرجة</text>
-<rect x="24" y="48" width="50" height="10" fill="none" stroke="#111" stroke-width="0.5"/>
-<text x="30" y="69.4" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">1</text>
-<circle cx="37.0" cy="68.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="69.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="68.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="69.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="68.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="69.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="68.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="69.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="78.0" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">2</text>
-<circle cx="37.0" cy="76.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="77.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="76.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="77.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="76.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="77.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="76.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="77.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="86.60000000000001" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">3</text>
-<circle cx="37.0" cy="85.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="86.3" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="85.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="86.3" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="85.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="86.3" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="85.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="86.3" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="95.2" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">4</text>
-<circle cx="37.0" cy="93.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="94.89999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="93.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="94.89999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="93.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="94.89999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="93.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="94.89999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="103.80000000000001" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">5</text>
-<circle cx="37.0" cy="102.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="103.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="102.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="103.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="102.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="103.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="102.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="103.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="112.4" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">6</text>
-<circle cx="37.0" cy="111.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="112.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="111.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="112.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="111.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="112.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="111.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="112.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="121.0" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">7</text>
-<circle cx="37.0" cy="119.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="120.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="119.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="120.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="119.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="120.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="119.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="120.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="129.6" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">8</text>
-<circle cx="37.0" cy="128.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="129.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="128.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="129.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="128.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="129.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="128.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="129.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="138.20000000000002" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">9</text>
-<circle cx="37.0" cy="136.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="137.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="136.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="137.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="136.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="137.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="136.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="137.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="146.79999999999998" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">10</text>
-<circle cx="37.0" cy="145.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="146.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="145.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="146.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="145.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="146.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="145.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="146.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="155.4" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">11</text>
-<circle cx="37.0" cy="154.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="155.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="154.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="155.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="154.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="155.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="154.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="155.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="164.0" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">12</text>
-<circle cx="37.0" cy="162.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="163.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="162.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="163.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="162.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="163.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="162.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="163.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="172.6" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">13</text>
-<circle cx="37.0" cy="171.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="172.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="171.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="172.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="171.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="172.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="171.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="172.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="181.20000000000002" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">14</text>
-<circle cx="37.0" cy="179.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="180.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="179.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="180.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="179.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="180.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="179.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="180.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="189.79999999999998" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">15</text>
-<circle cx="37.0" cy="188.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="189.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="188.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="189.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="188.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="189.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="188.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="189.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="198.4" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">16</text>
-<circle cx="37.0" cy="197.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="198.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="197.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="198.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="197.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="198.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="197.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="198.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="207.0" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">17</text>
-<circle cx="37.0" cy="205.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="206.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="205.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="206.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="205.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="206.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="205.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="206.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="215.6" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">18</text>
-<circle cx="37.0" cy="214.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="215.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="214.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="215.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="214.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="215.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="214.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="215.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="224.2" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">19</text>
-<circle cx="37.0" cy="222.79999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="223.89999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="222.79999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="223.89999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="222.79999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="223.89999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="222.79999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="223.89999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="30" y="232.8" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">20</text>
-<circle cx="37.0" cy="231.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="37.0" y="232.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="44.2" cy="231.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="44.2" y="232.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="51.4" cy="231.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="51.4" y="232.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="58.6" cy="231.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="58.6" y="232.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="69.4" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">21</text>
-<circle cx="91.0" cy="68.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="69.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="68.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="69.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="68.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="69.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="68.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="69.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="78.0" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">22</text>
-<circle cx="91.0" cy="76.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="77.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="76.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="77.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="76.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="77.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="76.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="77.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="86.60000000000001" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">23</text>
-<circle cx="91.0" cy="85.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="86.3" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="85.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="86.3" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="85.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="86.3" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="85.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="86.3" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="95.2" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">24</text>
-<circle cx="91.0" cy="93.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="94.89999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="93.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="94.89999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="93.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="94.89999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="93.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="94.89999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="103.80000000000001" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">25</text>
-<circle cx="91.0" cy="102.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="103.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="102.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="103.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="102.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="103.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="102.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="103.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="112.4" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">26</text>
-<circle cx="91.0" cy="111.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="112.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="111.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="112.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="111.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="112.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="111.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="112.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="121.0" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">27</text>
-<circle cx="91.0" cy="119.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="120.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="119.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="120.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="119.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="120.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="119.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="120.69999999999999" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="129.6" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">28</text>
-<circle cx="91.0" cy="128.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="129.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="128.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="129.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="128.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="129.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="128.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="129.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="138.20000000000002" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">29</text>
-<circle cx="91.0" cy="136.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="137.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="136.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="137.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="136.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="137.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="136.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="137.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="146.79999999999998" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">30</text>
-<circle cx="91.0" cy="145.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="146.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="145.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="146.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="145.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="146.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="145.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="146.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="155.4" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">31</text>
-<circle cx="91.0" cy="154.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="155.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="154.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="155.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="154.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="155.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="154.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="155.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="164.0" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">32</text>
-<circle cx="91.0" cy="162.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="163.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="162.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="163.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="162.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="163.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="162.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="163.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="172.6" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">33</text>
-<circle cx="91.0" cy="171.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="172.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="171.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="172.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="171.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="172.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="171.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="172.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="181.20000000000002" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">34</text>
-<circle cx="91.0" cy="179.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="180.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="179.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="180.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="179.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="180.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="179.8" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="180.9" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="189.79999999999998" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">35</text>
-<circle cx="91.0" cy="188.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="189.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="188.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="189.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="188.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="189.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="188.39999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="189.49999999999997" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="198.4" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">36</text>
-<circle cx="91.0" cy="197.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="198.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="197.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="198.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="197.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="198.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="197.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="198.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="207.0" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">37</text>
-<circle cx="91.0" cy="205.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="206.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="205.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="206.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="205.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="206.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="205.6" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="206.7" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="215.6" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">38</text>
-<circle cx="91.0" cy="214.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="215.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="214.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="215.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="214.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="215.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="214.2" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="215.29999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="224.2" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">39</text>
-<circle cx="91.0" cy="222.79999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="223.89999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="222.79999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="223.89999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="222.79999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="223.89999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="222.79999999999998" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="223.89999999999998" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<text x="84" y="232.8" font-size="3.6" text-anchor="end" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">40</text>
-<circle cx="91.0" cy="231.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="91.0" y="232.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">أ</text>
-<circle cx="98.2" cy="231.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="98.2" y="232.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ب</text>
-<circle cx="105.4" cy="231.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="105.4" y="232.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">ج</text>
-<circle cx="112.6" cy="231.4" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="112.6" y="232.5" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">د</text>
-<rect x="6" y="66.5" width="6" height="3" fill="black"/>
-<rect x="6" y="75.1" width="6" height="3" fill="black"/>
-<rect x="6" y="83.7" width="6" height="3" fill="black"/>
-<rect x="6" y="92.3" width="6" height="3" fill="black"/>
-<rect x="6" y="100.9" width="6" height="3" fill="black"/>
-<rect x="6" y="109.5" width="6" height="3" fill="black"/>
-<rect x="6" y="118.1" width="6" height="3" fill="black"/>
-<rect x="6" y="126.69999999999999" width="6" height="3" fill="black"/>
-<rect x="6" y="135.3" width="6" height="3" fill="black"/>
-<rect x="6" y="143.89999999999998" width="6" height="3" fill="black"/>
-<rect x="6" y="152.5" width="6" height="3" fill="black"/>
-<rect x="6" y="161.1" width="6" height="3" fill="black"/>
-<rect x="6" y="169.7" width="6" height="3" fill="black"/>
-<rect x="6" y="178.3" width="6" height="3" fill="black"/>
-<rect x="6" y="186.89999999999998" width="6" height="3" fill="black"/>
-<rect x="6" y="195.5" width="6" height="3" fill="black"/>
-<rect x="6" y="204.1" width="6" height="3" fill="black"/>
-<rect x="6" y="212.7" width="6" height="3" fill="black"/>
-<rect x="6" y="221.29999999999998" width="6" height="3" fill="black"/>
-<rect x="6" y="229.9" width="6" height="3" fill="black"/>
-<text x="146" y="154" font-size="3.4" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">رقم الطالب</text>
-<rect x="145" y="157" width="7" height="8" fill="none" stroke="#111" stroke-width="0.4"/>
-<rect x="154" y="157" width="7" height="8" fill="none" stroke="#111" stroke-width="0.4"/>
-<rect x="163" y="157" width="7" height="8" fill="none" stroke="#111" stroke-width="0.4"/>
-<rect x="172" y="157" width="7" height="8" fill="none" stroke="#111" stroke-width="0.4"/>
-<circle cx="148" cy="168.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="169.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">0</text>
-<circle cx="148" cy="175.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="176.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">1</text>
-<circle cx="148" cy="183.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="184.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">2</text>
-<circle cx="148" cy="190.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="191.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">3</text>
-<circle cx="148" cy="198.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="199.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">4</text>
-<circle cx="148" cy="205.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="206.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">5</text>
-<circle cx="148" cy="213.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="214.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">6</text>
-<circle cx="148" cy="220.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="221.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">7</text>
-<circle cx="148" cy="228.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="229.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">8</text>
-<circle cx="148" cy="235.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="148" y="236.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">9</text>
-<circle cx="157" cy="168.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="169.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">0</text>
-<circle cx="157" cy="175.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="176.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">1</text>
-<circle cx="157" cy="183.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="184.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">2</text>
-<circle cx="157" cy="190.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="191.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">3</text>
-<circle cx="157" cy="198.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="199.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">4</text>
-<circle cx="157" cy="205.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="206.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">5</text>
-<circle cx="157" cy="213.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="214.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">6</text>
-<circle cx="157" cy="220.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="221.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">7</text>
-<circle cx="157" cy="228.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="229.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">8</text>
-<circle cx="157" cy="235.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="157" y="236.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">9</text>
-<circle cx="166" cy="168.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="169.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">0</text>
-<circle cx="166" cy="175.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="176.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">1</text>
-<circle cx="166" cy="183.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="184.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">2</text>
-<circle cx="166" cy="190.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="191.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">3</text>
-<circle cx="166" cy="198.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="199.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">4</text>
-<circle cx="166" cy="205.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="206.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">5</text>
-<circle cx="166" cy="213.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="214.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">6</text>
-<circle cx="166" cy="220.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="221.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">7</text>
-<circle cx="166" cy="228.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="229.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">8</text>
-<circle cx="166" cy="235.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="166" y="236.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">9</text>
-<circle cx="175" cy="168.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="169.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">0</text>
-<circle cx="175" cy="175.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="176.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">1</text>
-<circle cx="175" cy="183.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="184.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">2</text>
-<circle cx="175" cy="190.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="191.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">3</text>
-<circle cx="175" cy="198.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="199.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">4</text>
-<circle cx="175" cy="205.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="206.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">5</text>
-<circle cx="175" cy="213.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="214.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">6</text>
-<circle cx="175" cy="220.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="221.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">7</text>
-<circle cx="175" cy="228.0" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="229.1" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">8</text>
-<circle cx="175" cy="235.5" r="2.6" fill="none" stroke="#888" stroke-width="0.4"/>
-<text x="175" y="236.6" font-size="2.6" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#888">9</text>
-<rect x="143" y="154.5" width="42" height="86.0" fill="none" stroke="#111" stroke-width="0.4"/>
-<text x="105.0" y="280" font-size="3" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">Print at 100% scale. Do not use Fit to page.</text>
-<text x="105.0" y="284.5" font-size="3" text-anchor="middle" font-family="'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif" fill="#111">اطبع بمقياس 100٪. لا تستخدم Fit to page.</text>
+<rect x="6" y="6" width="8" height="8" fill="#111"/>
+<rect x="196" y="6" width="8" height="8" fill="#111"/>
+<rect x="6" y="283" width="8" height="8" fill="#111"/>
+<rect x="196" y="283" width="8" height="8" fill="#111"/>
+<rect x="6" y="59.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="67.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="75.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="83.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="91.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="99.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="107.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="115.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="123.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="131.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="139.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="147.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="155.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="163.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="171.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="179.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="187.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="195.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="203.50" width="6" height="3" fill="#111"/>
+<rect x="6" y="211.50" width="6" height="3" fill="#111"/>
+<rect x="180" y="18" width="16" height="16" fill="none" stroke="#111" stroke-width="0.4"/>
+<rect x="181.78" y="19.78" width="3.56" height="3.56" fill="#111"/>
+<rect x="190.67" y="19.78" width="3.56" height="3.56" fill="#111"/>
+<rect x="181.78" y="28.67" width="3.56" height="3.56" fill="#111"/>
+<rect x="187.11" y="25.11" width="1.78" height="1.78" fill="#111"/>
+<text transform="rotate(-90 17.60 137)" x="17.60" y="137" font-size="4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">TRANSFERCHECKER.COM</text>
+<text transform="rotate(90 198.80 137)" x="198.80" y="137" font-size="4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">اختبار نهائي (2614)</text>
+<text x="20" y="21.30" font-size="3.2" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">اسم الطالب</text>
+<rect x="20" y="22.50" width="72" height="10" fill="none" stroke="#111" stroke-width="0.4"/>
+<text x="98" y="21.30" font-size="3.2" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">الشعبة</text>
+<rect x="98" y="22.50" width="46" height="10" fill="none" stroke="#111" stroke-width="0.4"/>
+<text x="20" y="39.80" font-size="3.2" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">الدرجة</text>
+<rect x="20" y="41" width="50" height="10" fill="none" stroke="#111" stroke-width="0.4"/>
+<text x="26" y="62.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">1</text>
+<circle cx="30.20" cy="61" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="62" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="61" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="62" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="61" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="62" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="61" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="62" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="70.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">2</text>
+<circle cx="30.20" cy="69" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="70" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="69" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="70" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="69" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="70" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="69" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="70" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="78.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">3</text>
+<circle cx="30.20" cy="77" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="78" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="77" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="78" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="77" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="78" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="77" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="78" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="86.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">4</text>
+<circle cx="30.20" cy="85" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="86" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="85" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="86" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="85" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="86" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="85" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="86" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="94.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">5</text>
+<circle cx="30.20" cy="93" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="94" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="93" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="94" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="93" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="94" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="93" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="94" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="102.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">6</text>
+<circle cx="30.20" cy="101" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="102" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="101" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="102" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="101" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="102" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="101" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="102" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="110.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">7</text>
+<circle cx="30.20" cy="109" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="110" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="109" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="110" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="109" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="110" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="109" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="110" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="118.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">8</text>
+<circle cx="30.20" cy="117" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="118" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="117" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="118" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="117" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="118" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="117" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="118" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="126.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">9</text>
+<circle cx="30.20" cy="125" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="126" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="125" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="126" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="125" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="126" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="125" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="126" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="134.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">10</text>
+<circle cx="30.20" cy="133" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="134" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="133" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="134" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="133" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="134" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="133" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="134" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="142.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">11</text>
+<circle cx="30.20" cy="141" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="142" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="141" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="142" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="141" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="142" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="141" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="142" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="150.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">12</text>
+<circle cx="30.20" cy="149" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="150" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="149" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="150" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="149" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="150" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="149" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="150" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="158.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">13</text>
+<circle cx="30.20" cy="157" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="158" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="157" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="158" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="157" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="158" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="157" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="158" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="166.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">14</text>
+<circle cx="30.20" cy="165" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="166" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="165" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="166" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="165" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="166" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="165" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="166" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="174.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">15</text>
+<circle cx="30.20" cy="173" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="174" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="173" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="174" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="173" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="174" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="173" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="174" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="182.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">16</text>
+<circle cx="30.20" cy="181" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="182" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="181" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="182" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="181" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="182" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="181" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="182" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="190.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">17</text>
+<circle cx="30.20" cy="189" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="190" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="189" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="190" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="189" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="190" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="189" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="190" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="198.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">18</text>
+<circle cx="30.20" cy="197" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="198" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="197" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="198" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="197" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="198" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="197" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="198" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="206.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">19</text>
+<circle cx="30.20" cy="205" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="206" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="205" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="206" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="205" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="206" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="205" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="206" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="26" y="214.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">20</text>
+<circle cx="30.20" cy="213" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="30.20" y="214" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="36.40" cy="213" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="36.40" y="214" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="42.60" cy="213" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="42.60" y="214" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="48.80" cy="213" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="48.80" y="214" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="62.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">21</text>
+<circle cx="67.20" cy="61" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="62" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="61" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="62" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="61" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="62" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="61" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="62" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="70.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">22</text>
+<circle cx="67.20" cy="69" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="70" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="69" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="70" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="69" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="70" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="69" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="70" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="78.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">23</text>
+<circle cx="67.20" cy="77" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="78" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="77" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="78" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="77" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="78" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="77" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="78" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="86.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">24</text>
+<circle cx="67.20" cy="85" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="86" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="85" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="86" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="85" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="86" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="85" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="86" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="94.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">25</text>
+<circle cx="67.20" cy="93" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="94" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="93" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="94" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="93" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="94" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="93" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="94" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="102.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">26</text>
+<circle cx="67.20" cy="101" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="102" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="101" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="102" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="101" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="102" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="101" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="102" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="110.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">27</text>
+<circle cx="67.20" cy="109" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="110" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="109" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="110" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="109" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="110" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="109" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="110" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="118.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">28</text>
+<circle cx="67.20" cy="117" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="118" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="117" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="118" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="117" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="118" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="117" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="118" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="126.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">29</text>
+<circle cx="67.20" cy="125" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="126" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="125" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="126" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="125" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="126" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="125" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="126" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="134.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">30</text>
+<circle cx="67.20" cy="133" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="134" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="133" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="134" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="133" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="134" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="133" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="134" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="142.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">31</text>
+<circle cx="67.20" cy="141" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="142" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="141" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="142" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="141" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="142" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="141" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="142" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="150.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">32</text>
+<circle cx="67.20" cy="149" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="150" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="149" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="150" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="149" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="150" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="149" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="150" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="158.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">33</text>
+<circle cx="67.20" cy="157" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="158" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="157" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="158" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="157" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="158" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="157" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="158" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="166.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">34</text>
+<circle cx="67.20" cy="165" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="166" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="165" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="166" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="165" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="166" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="165" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="166" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="174.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">35</text>
+<circle cx="67.20" cy="173" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="174" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="173" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="174" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="173" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="174" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="173" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="174" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="182.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">36</text>
+<circle cx="67.20" cy="181" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="182" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="181" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="182" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="181" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="182" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="181" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="182" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="190.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">37</text>
+<circle cx="67.20" cy="189" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="190" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="189" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="190" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="189" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="190" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="189" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="190" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="198.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">38</text>
+<circle cx="67.20" cy="197" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="198" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="197" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="198" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="197" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="198" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="197" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="198" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="206.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">39</text>
+<circle cx="67.20" cy="205" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="206" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="205" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="206" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="205" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="206" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="205" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="206" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="63" y="214.30" font-size="3.4" text-anchor="end" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">40</text>
+<circle cx="67.20" cy="213" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="67.20" y="214" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">أ</text>
+<circle cx="73.40" cy="213" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="73.40" y="214" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ب</text>
+<circle cx="79.60" cy="213" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="79.60" y="214" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">ج</text>
+<circle cx="85.80" cy="213" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="85.80" y="214" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">د</text>
+<text x="168.20" y="60.50" font-size="3.2" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">رقم الطالب</text>
+<rect x="165.20" y="62" width="30.80" height="84" fill="none" stroke="#111" stroke-width="0.4"/>
+<rect x="168.95" y="65" width="4.70" height="8" fill="none" stroke="#111" stroke-width="0.4"/>
+<rect x="175.15" y="65" width="4.70" height="8" fill="none" stroke="#111" stroke-width="0.4"/>
+<rect x="181.35" y="65" width="4.70" height="8" fill="none" stroke="#111" stroke-width="0.4"/>
+<rect x="187.55" y="65" width="4.70" height="8" fill="none" stroke="#111" stroke-width="0.4"/>
+<circle cx="171.30" cy="78.40" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="79.40" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">0</text>
+<circle cx="171.30" cy="85.20" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="86.20" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">1</text>
+<circle cx="171.30" cy="92" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="93" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">2</text>
+<circle cx="171.30" cy="98.80" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="99.80" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">3</text>
+<circle cx="171.30" cy="105.60" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="106.60" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">4</text>
+<circle cx="171.30" cy="112.40" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="113.40" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">5</text>
+<circle cx="171.30" cy="119.20" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="120.20" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">6</text>
+<circle cx="171.30" cy="126" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="127" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">7</text>
+<circle cx="171.30" cy="132.80" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="133.80" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">8</text>
+<circle cx="171.30" cy="139.60" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="171.30" y="140.60" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">9</text>
+<circle cx="177.50" cy="78.40" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="79.40" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">0</text>
+<circle cx="177.50" cy="85.20" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="86.20" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">1</text>
+<circle cx="177.50" cy="92" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="93" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">2</text>
+<circle cx="177.50" cy="98.80" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="99.80" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">3</text>
+<circle cx="177.50" cy="105.60" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="106.60" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">4</text>
+<circle cx="177.50" cy="112.40" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="113.40" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">5</text>
+<circle cx="177.50" cy="119.20" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="120.20" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">6</text>
+<circle cx="177.50" cy="126" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="127" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">7</text>
+<circle cx="177.50" cy="132.80" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="133.80" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">8</text>
+<circle cx="177.50" cy="139.60" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="177.50" y="140.60" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">9</text>
+<circle cx="183.70" cy="78.40" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="79.40" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">0</text>
+<circle cx="183.70" cy="85.20" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="86.20" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">1</text>
+<circle cx="183.70" cy="92" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="93" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">2</text>
+<circle cx="183.70" cy="98.80" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="99.80" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">3</text>
+<circle cx="183.70" cy="105.60" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="106.60" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">4</text>
+<circle cx="183.70" cy="112.40" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="113.40" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">5</text>
+<circle cx="183.70" cy="119.20" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="120.20" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">6</text>
+<circle cx="183.70" cy="126" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="127" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">7</text>
+<circle cx="183.70" cy="132.80" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="133.80" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">8</text>
+<circle cx="183.70" cy="139.60" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="183.70" y="140.60" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">9</text>
+<circle cx="189.90" cy="78.40" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="79.40" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">0</text>
+<circle cx="189.90" cy="85.20" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="86.20" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">1</text>
+<circle cx="189.90" cy="92" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="93" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">2</text>
+<circle cx="189.90" cy="98.80" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="99.80" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">3</text>
+<circle cx="189.90" cy="105.60" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="106.60" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">4</text>
+<circle cx="189.90" cy="112.40" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="113.40" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">5</text>
+<circle cx="189.90" cy="119.20" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="120.20" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">6</text>
+<circle cx="189.90" cy="126" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="127" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">7</text>
+<circle cx="189.90" cy="132.80" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="133.80" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">8</text>
+<circle cx="189.90" cy="139.60" r="2.20" fill="none" stroke="#888" stroke-width="0.35"/>
+<text x="189.90" y="140.60" font-size="2.4" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#888">9</text>
+<text x="105" y="280" font-size="2.9" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">Print at 100% scale. Do not use Fit to page.</text>
+<text x="105" y="284.20" font-size="2.9" text-anchor="middle" font-family="'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif" fill="#111">اطبع بمقياس 100٪. لا تستخدم خيار ملاءمة الصفحة.</text>
 </svg>

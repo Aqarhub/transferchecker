@@ -1,0 +1,30 @@
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+.vitest/
+*.tsbuildinfo
+
+# Expo and native build output
+.expo/
+android/
+ios/
+
+# Next.js
+.next/
+out/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Editor and OS noise
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Scratch output from local tooling
+*.tmp.mjs

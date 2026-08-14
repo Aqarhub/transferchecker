@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    // Type safety. noUncheckedIndexedAccess is the load-bearing one here:
+    // every coordinate lookup is forced to acknowledge it may be missing.
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+
+    // Per-file transpilation safety. erasableSyntaxOnly bans enums, namespaces
+    // and parameter properties, so sources run under Node's type stripping.
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "moduleDetection": "force",
+
+    // Pinned explicitly: TypeScript 6 floats the default target year to year.
+    "target": "es2024",
+    "lib": ["es2024"],
+    "types": [],
+
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}

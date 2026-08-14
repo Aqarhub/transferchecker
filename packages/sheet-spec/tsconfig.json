@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Consumed as TypeScript source by Metro and by Next.js, so resolution
+    // follows the bundler algorithm rather than Node's.
+    "module": "preserve",
+    "moduleResolution": "bundler"
+  },
+  "include": ["src", "test"]
+}
