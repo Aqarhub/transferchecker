@@ -111,14 +111,37 @@ export const QuestionSchema = z.discriminatedUnion('kind', [ChoiceQuestionSchema
 const metricMm = (min: number, max: number): z.ZodNumber =>
   z.number().min(min).max(max).multipleOf(0.1);
 
-export const BubbleMetricsSchema = z.object({
-  radiusMm: metricMm(1.6, 3.5),
-  pitchXMm: metricMm(5, 12),
-  /** Row spacing in the question grid. */
-  pitchYMm: metricMm(6, 14),
-  /** Row spacing inside bubble grids, which are usually tighter. */
-  gridPitchYMm: metricMm(5, 14),
-});
+/**
+ * White paper that must remain between one bubble's edge and the next.
+ *
+ * Without it the ranges alone permit bubbles that touch or overlap: a 3.5 mm
+ * radius at a 5 mm pitch puts a seven millimetre circle every five
+ * millimetres. Bubbles crowded to that point are the oldest complaint about
+ * machine graded forms, and they defeat the scanner too, because a mark that
+ * strays out of one bubble lands inside its neighbour.
+ */
+const BUBBLE_GAP_MM = 1;
+
+export const BubbleMetricsSchema = z
+  .object({
+    radiusMm: metricMm(1.6, 3.5),
+    pitchXMm: metricMm(5, 12),
+    /** Row spacing in the question grid. */
+    pitchYMm: metricMm(6, 14),
+    /** Row spacing inside bubble grids, which are usually tighter. */
+    gridPitchYMm: metricMm(5, 14),
+  })
+  // Each range is sane on its own and the combinations are not, so this is
+  // checked across fields rather than field by field.
+  .refine(
+    (bubble) =>
+      Math.min(bubble.pitchXMm, bubble.pitchYMm, bubble.gridPitchYMm) >=
+      2 * bubble.radiusMm + BUBBLE_GAP_MM,
+    {
+      message: `bubbles would touch: every pitch must be at least twice the radius plus ${String(BUBBLE_GAP_MM)}mm`,
+      path: ['pitchXMm'],
+    },
+  );
 
 /**
  * How much the printed code carries.
