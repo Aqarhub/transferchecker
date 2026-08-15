@@ -9,7 +9,7 @@
 // never turn into a plausible looking sheet that grades wrongly.
 
 import { PAPER_NAMES } from '../paper';
-import { FIELD_USAGES, FIELD_WIDTHS, SheetSpecSchema } from '../spec';
+import { FIELD_USAGES, FIELD_WIDTHS, LABEL_PLACEMENTS, SheetSpecSchema } from '../spec';
 import type { SheetSpec, SheetSpecInput } from '../spec';
 import { base32Decode } from './base32';
 import { CODE_FORMAT } from './encode';
@@ -91,12 +91,16 @@ function questions(reader: Reader): SheetSpecInput['questions'] | null {
     if (count === null || flags === null || count < 1) return null;
     const found = symbols(reader);
     if (found === null) return null;
+    // Two bits of placement, matching encode.ts. One bit lost 'header'
+    // entirely and moved every bubble on the sheet by millimetres.
+    const placement = LABEL_PLACEMENTS[(flags >> 6) & 0x03];
+    if (placement === undefined) return null;
     for (let index = 0; index < count; index += 1) {
       out.push({
         kind: 'choice',
         symbols: [...found],
-        placement: (flags & 0x80) === 0 ? 'internal' : 'external',
-        select: (flags & 0x40) === 0 ? 'one' : 'many',
+        placement,
+        select: (flags & 0x20) === 0 ? 'one' : 'many',
       });
     }
   }
@@ -118,8 +122,10 @@ export function decodeSheetBytes(bytes: Uint8Array): DecodedCode | null {
 
   const geometry = byte(reader);
   if (geometry === null) return null;
-  const paper = PAPER_NAMES[geometry >> 7];
-  const columnCount = (geometry >> 4) & 0x07;
+  // Three bits each, matching the format 2 packing in encode.ts. Format 1 gave
+  // the paper one bit and lost every size past LETTER.
+  const paper = PAPER_NAMES[(geometry >> 5) & 0x07];
+  const columnCount = (geometry >> 2) & 0x07;
   if (paper === undefined) return null;
 
   const metrics: number[] = [];
@@ -155,7 +161,7 @@ export function decodeSheetBytes(bytes: Uint8Array): DecodedCode | null {
 
   const parsed = SheetSpecSchema.safeParse({
     templateId,
-    version: 3,
+    version: 4,
     // Neither is carried: both are printed text and neither moves a bubble.
     name: '?',
     branding: '',

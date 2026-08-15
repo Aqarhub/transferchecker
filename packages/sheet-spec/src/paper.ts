@@ -37,25 +37,59 @@ export const PAPER: Readonly<Record<PaperName, PaperSize>> = {
 
 /** Fixed bands, marks and paddings shared by every sheet. */
 export const GEOMETRY = {
-  /** Distance from the paper edge to the corner fiducials. */
-  marginMm: 6,
+  /**
+   * Distance from the paper edge to the corner fiducials, defense د1.
+   *
+   * The three are not equal, and they are not meant to be. Desktop printers are
+   * quoted at a 6.35 mm unprintable border, and economy ink jets declare a
+   * BOTTOM margin of 15 mm to 16.7 mm, so a 6 mm margin put both lower corner
+   * squares inside the band the printer never puts ink on: not a degraded scan,
+   * a sheet with no corners, repeated across the whole stack.
+   *
+   * Unequal margins cost nothing, because the perspective solve needs four
+   * points at KNOWN positions and not at EQUAL ones, and the scanner reads the
+   * positions out of the paper size the printed code carries.
+   */
+  marginTopMm: 10,
+  marginSideMm: 10,
+  marginBottomMm: 18,
   /** Side length of each of the four square corner fiducials. */
   fiducialMm: 8,
-  /** Timing mark drawn on the left edge, one per question row. */
+  /**
+   * Timing mark drawn on the left edge, one per question row.
+   *
+   * Four millimetres rather than three, defense د3: three is under everything
+   * the field's literature recommends, and a 3 mm mark is the first thing to
+   * clog when the toner runs low or the sheet is a third generation photocopy.
+   * The mark is a measuring instrument and not a decoration, so it is given the
+   * height that keeps it measurable at the end of its life rather than the
+   * height that looks tidy when new.
+   */
   timingWidthMm: 6,
-  timingHeightMm: 3,
-  /** Vertical text band reserved for the site name on the left edge. */
+  timingHeightMm: 4,
+  /**
+   * Blank paper beside a timing mark, before any printed ink, defense د3.
+   *
+   * The sheet used to leave NONE: marks ran from 6 mm to 12 mm and the branding
+   * band started at 12 mm exactly, so the mark's own measurement window opened
+   * onto the ink beside it. Four millimetres is what moved the branding band to
+   * the other edge, and the timing reader no longer has to inset its window to
+   * keep that ink out.
+   */
+  timingClearMm: 4,
+  /** Vertical text band reserved for the site name, on the right edge. */
   brandingBandMm: 8,
   /** Vertical text band reserved for the template name on the right edge. */
   titleBandMm: 8,
   /**
    * Smallest a printed code module may be. Below this a phone camera at normal
    * distance stops resolving modules, which is a scan that fails rather than a
-   * scan that is merely slower. The code's printed size follows from this and
-   * from how much it carries, so a sheet never spends more paper than its own
-   * payload needs.
+   * scan that is merely slower.
+   *
+   * This is a FLOOR and no longer the printed size: `codeModuleMmFor` grows the
+   * module until the code fills its budget. See defense د6.
    */
-  codeModuleMm: 0.5,
+  codeMinModuleMm: 0.5,
   /** Quiet zone the QR specification requires, in modules, on each side. */
   codeQuietModules: 4,
   /** Past this the code would eat the header, so the sheet is refused instead. */
@@ -73,8 +107,38 @@ export const GEOMETRY = {
   gridGapMm: 6,
   /** Space left of the first bubble of a row for the question number. */
   numberGutterMm: 8,
-  /** Horizontal space between question columns. */
-  columnGapMm: 6,
+  /**
+   * Horizontal space between question columns.
+   *
+   * Eight rather than six because the gap now carries the anchor marks, and a
+   * 3 mm mark in a 6 mm gap would have had its measurement window open onto the
+   * bubble outline beside it.
+   */
+  columnGapMm: 8,
+  /**
+   * Width of an anchor mark, printed in each gap between question columns.
+   *
+   * This is the only evidence on the sheet for registration in x anywhere
+   * between the corner squares. Every timing mark sits at one x inside the left
+   * corner square's own band, so a cylindrical curl about a vertical axis, zero
+   * at the corners and peaking mid page, solves the four corners exactly, leaves
+   * a timing residual of 0.00 mm, and still moves the middle of the page by a
+   * whole bubble pitch. The anchor is what makes that measurable.
+   *
+   * Three millimetres in an 8 mm gap leaves 2.5 mm of blank paper on each side.
+   * That is less than `timingClearMm` and it is enough here, because the ink it
+   * would meet first is the bubble outline, which is printed light and falls on
+   * the paper side of the mark's own black to white cut. The nearest SOLID ink,
+   * the printed question number, is 5 mm away.
+   */
+  anchorWidthMm: 3,
+  /**
+   * Blank paper an anchor mark needs on each side. Exactly what an anchor gets
+   * inside a column gap, which is where the number comes from: it is also the
+   * width a band anywhere else on the sheet must have before an anchor is
+   * printed in it.
+   */
+  anchorClearMm: 2.5,
   /**
    * How far apart rows may be pushed when the questions do not fill the page.
    * `bubble.pitchYMm` is the closest rows may sit; the grid then spreads to use
@@ -107,6 +171,38 @@ export const GEOMETRY = {
   /** Gap after an external label's bubble, before the next choice. */
   externalGapMm: 2.2,
 } as const;
+
+/**
+ * The printed size of one code module, given how many modules the symbol has.
+ *
+ * Defense د6. The module used to be pinned at its documented MINIMUM of 0.5 mm
+ * against a budget of 30 mm, so a sheet with a small payload printed a fragile
+ * code and got nothing back for it: the spare millimetres were spent on white
+ * paper around the symbol. Here the module grows until the code fills the
+ * budget, which is a third more ink for the printer and zero extra page.
+ *
+ * It matters more here than it would elsewhere, because the `full` code is what
+ * lets a device that has never seen the template grade the paper, so the
+ * promise of working with no account and no network hangs on the smallest
+ * feature printed on the page.
+ *
+ * Both sides of the system call THIS function rather than reading a constant:
+ * the layout to print the code, and the scanner to derive the module size of
+ * each module count it tries. A second implementation of the same arithmetic is
+ * how a sheet becomes unreadable by the engine that printed it.
+ */
+export function codeModuleMmFor(moduleCount: number): number {
+  const across = moduleCount + 2 * GEOMETRY.codeQuietModules;
+  if (across <= 0) return GEOMETRY.codeMinModuleMm;
+  // Rounded down to a hundredth of a millimetre, so both sides land on the same
+  // number without depending on floating point equality. A tenth, the unit the
+  // rest of the sheet is drawn in, was the first choice and it was measured to
+  // be wrong here: at 45 modules across it threw away 4.5 mm of a 30 mm budget,
+  // which is a tenth of the module size and the whole point of this function. A
+  // printer rasterises at about 0.04 mm, so it can hold a hundredth.
+  const fits = Math.floor((GEOMETRY.codeMaxSizeMm / across) * 100) / 100;
+  return Math.max(GEOMETRY.codeMinModuleMm, fits);
+}
 
 /**
  * Paper sizes from smallest to largest, within one family. A sheet takes the

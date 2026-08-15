@@ -10,13 +10,24 @@
 // renumbered. A change means a new CODE_FORMAT, not an edit to this one.
 
 import { PAPER_NAMES } from '../paper';
-import { FIELD_USAGES, FIELD_WIDTHS } from '../spec';
+import { FIELD_USAGES, FIELD_WIDTHS, LABEL_PLACEMENTS } from '../spec';
 import type { HeaderField, Question, SheetSpec } from '../spec';
 import { base32Encode } from './base32';
 import { CUSTOM_SET, symbolSetId } from './symbols';
 import { uuidToBytes } from './uuid';
 
-export const CODE_FORMAT = 1;
+/**
+ * Three, because the PAPER changed under the code even though the code's own
+ * bytes did not.
+ *
+ * The payload carries what varies between sheets and never what is compiled
+ * into both sides: margins, band widths, mark sizes and the code module are all
+ * in `GEOMETRY`. Defenses د1, د3 and د6 moved every one of those. A format 2
+ * sheet therefore still decodes byte for byte and rebuilds a geometry it was
+ * not printed with, which is the silent wrong grade this format number exists
+ * to prevent. Bumping it turns that into a refusal.
+ */
+export const CODE_FORMAT = 3;
 
 const utf8 = new TextEncoder();
 
@@ -80,9 +91,21 @@ export function encodeSheetBytes(spec: SheetSpec): Uint8Array {
   bytes.push(...uuidToBytes(spec.templateId));
   if (short) return Uint8Array.from(bytes);
 
+  // Three bits of paper and three of columns, with the low two spare.
+  //
+  // Format 1 gave the paper a single bit, which silently truncated every paper
+  // past LETTER: an A5 sheet encoded a geometry byte of zero and decoded as A4,
+  // so a scanner rebuilt the wrong page size and every bubble coordinate with
+  // it. Two of the three stock templates are not A4, so this was the ordinary
+  // path rather than an edge. Format 2 is the fix, and the version is bumped
+  // rather than the packing quietly corrected, because a format 1 sheet should
+  // now be refused rather than graded against a page size it never had.
   const paper = PAPER_NAMES.indexOf(spec.paper);
   const columns = spec.columns === 'auto' ? 0 : spec.columns;
-  bytes.push((paper << 7) | (columns << 4));
+  if (paper < 0 || paper > 7 || columns < 0 || columns > 7) {
+    throw new Error('sheet code: paper or column count does not fit the geometry byte');
+  }
+  bytes.push((paper << 5) | (columns << 2));
 
   const { radiusMm, pitchXMm, pitchYMm, gridPitchYMm } = spec.bubble;
   for (const value of [radiusMm, pitchXMm, pitchYMm, gridPitchYMm]) {
@@ -96,10 +119,22 @@ export function encodeSheetBytes(spec: SheetSpec): Uint8Array {
   bytes.push(runs.length);
   for (const run of runs) {
     bytes.push(run.count);
-    bytes.push(
-      (run.question.placement === 'external' ? 0x80 : 0) |
-        (run.question.select === 'many' ? 0x40 : 0),
-    );
+    // Two bits of placement and one of select mode.
+    //
+    // A single bit for placement was the same defect as the single bit for
+    // paper, in the same byte layout, and just as silent. LABEL_PLACEMENTS has
+    // THREE members, so 'header' encoded as 0 and decoded as 'internal': a
+    // 'header' sheet prints a row of choice letters above each column, which
+    // costs `choiceHeaderMm` of height and moves the whole grid. Measured on a
+    // 40 question A4 sheet, every bubble landed 3.8 mm from where the decoded
+    // spec said it was, growing to about 11 mm by the twentieth row, and the
+    // scanner would have blamed the timing mark residual and told the teacher
+    // the paper was not flat.
+    const placement = LABEL_PLACEMENTS.indexOf(run.question.placement);
+    if (placement < 0 || placement > 3) {
+      throw new Error('sheet code: label placement does not fit the question flags');
+    }
+    bytes.push((placement << 6) | (run.question.select === 'many' ? 0x20 : 0));
     writeSymbols(bytes, run.question.symbols);
   }
 

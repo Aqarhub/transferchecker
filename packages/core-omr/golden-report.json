@@ -1,0 +1,1134 @@
+{
+  "tier": "synthetic",
+  "cases": 52,
+  "questions": 2240,
+  "answerable": 748,
+  "answeredCorrect": 745,
+  "answeredAccuracy": 0.9959893048128342,
+  "counts": {
+    "correct": 2237,
+    "flagged": 3,
+    "missed": 0,
+    "wrong": 0
+  },
+  "accuracy": 0.9986607142857142,
+  "flagRate": 0.0013392857142857143,
+  "wrongSheets": [],
+  "strata": [
+    {
+      "stratum": "clean",
+      "cases": 21,
+      "asked": 21,
+      "questions": 1190,
+      "counts": {
+        "correct": 1190,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "accuracy": 1
+    },
+    {
+      "stratum": "framing",
+      "cases": 12,
+      "asked": 12,
+      "questions": 350,
+      "counts": {
+        "correct": 350,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "accuracy": 1
+    },
+    {
+      "stratum": "lighting",
+      "cases": 4,
+      "asked": 4,
+      "questions": 150,
+      "counts": {
+        "correct": 150,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "accuracy": 1
+    },
+    {
+      "stratum": "printing",
+      "cases": 6,
+      "asked": 6,
+      "questions": 300,
+      "counts": {
+        "correct": 299,
+        "flagged": 1,
+        "missed": 0,
+        "wrong": 0
+      },
+      "accuracy": 0.9966666666666667
+    },
+    {
+      "stratum": "marks",
+      "cases": 2,
+      "asked": 2,
+      "questions": 100,
+      "counts": {
+        "correct": 98,
+        "flagged": 2,
+        "missed": 0,
+        "wrong": 0
+      },
+      "accuracy": 0.98
+    },
+    {
+      "stratum": "geometry",
+      "cases": 7,
+      "asked": 7,
+      "questions": 150,
+      "counts": {
+        "correct": 150,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "accuracy": 1
+    }
+  ],
+  "marginP1": 0.29864081230793343,
+  "gates": [
+    {
+      "gate": "no silent wrong answer",
+      "armed": true,
+      "passed": true,
+      "detail": "0 confident answers disagreed with the paper"
+    },
+    {
+      "gate": "every case ends the way it was designed to",
+      "armed": true,
+      "passed": true,
+      "detail": "all cases graded or refused as designed"
+    },
+    {
+      "gate": "accuracy at or above 99.7 percent",
+      "armed": false,
+      "passed": true,
+      "detail": "99.87 percent on SYNTHETIC pages, which is not the claim: 0 of 30 real papers collected"
+    },
+    {
+      "gate": "per stratum floor of 98 percent",
+      "armed": false,
+      "passed": true,
+      "detail": "clean 100.0, framing 100.0, lighting 100.0, printing 99.7, marks 98.0, geometry 100.0"
+    },
+    {
+      "gate": "the marks string carries what the paper carries",
+      "armed": true,
+      "passed": true,
+      "detail": "every case wrote the alphabet it declared"
+    },
+    {
+      "gate": "margin: first percentile above the uncertain band",
+      "armed": true,
+      "passed": true,
+      "detail": "first percentile of the margin of DECIDED answers 0.299"
+    },
+    {
+      "gate": "synthetic regression: answers still read",
+      "armed": true,
+      "passed": true,
+      "detail": "99.60 percent of 748 answered questions read correctly, floor 98"
+    }
+  ],
+  "elapsedMs": 31464.335999998264,
+  "caveat": "Synthetic pages drawn from the same layout object the engine reads. This measures whether the named defenses work and whether a change moved a number. It does NOT measure accuracy on paper: no rasteriser, no toner, no graphite and no camera are involved, and the accuracy gate stays disarmed until 30 real papers are captured.",
+  "records": [
+    {
+      "id": "clean/quick20/answered-0",
+      "stratum": "clean",
+      "template": "quick20",
+      "why": "0 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbbbbbbbbbbbb",
+      "charFault": "",
+      "elapsedMs": 481.3600000003353
+    },
+    {
+      "id": "clean/quick20/answered-2",
+      "stratum": "clean",
+      "template": "quick20",
+      "why": "2 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbbbbbbbbbbbb",
+      "charFault": "",
+      "elapsedMs": 73.72800000011921
+    },
+    {
+      "id": "clean/quick20/answered-5",
+      "stratum": "clean",
+      "template": "quick20",
+      "why": "5 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbbbbbbbbbbbc",
+      "charFault": "",
+      "elapsedMs": 332.7290000002831
+    },
+    {
+      "id": "clean/quick20/answered-10",
+      "stratum": "clean",
+      "template": "quick20",
+      "why": "10 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbcbbbbbbbbbc",
+      "charFault": "",
+      "elapsedMs": 323.74200000055134
+    },
+    {
+      "id": "clean/quick20/answered-20",
+      "stratum": "clean",
+      "template": "quick20",
+      "why": "20 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbcbbbbcbbbbcbbbbc",
+      "charFault": "",
+      "elapsedMs": 319.7170000001788
+    },
+    {
+      "id": "clean/quick20/answered-50",
+      "stratum": "clean",
+      "template": "quick20",
+      "why": "50 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 332.76799999922514
+    },
+    {
+      "id": "clean/quick20/answered-100",
+      "stratum": "clean",
+      "template": "quick20",
+      "why": "100 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "cccccccccccccccccccc",
+      "charFault": "",
+      "elapsedMs": 334.293000000529
+    },
+    {
+      "id": "clean/standard50/answered-0",
+      "stratum": "clean",
+      "template": "standard50",
+      "why": "0 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "charFault": "",
+      "elapsedMs": 608.1749999998137
+    },
+    {
+      "id": "clean/standard50/answered-2",
+      "stratum": "clean",
+      "template": "standard50",
+      "why": "2 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
+      "charFault": "",
+      "elapsedMs": 616.1380000002682
+    },
+    {
+      "id": "clean/standard50/answered-5",
+      "stratum": "clean",
+      "template": "standard50",
+      "why": "5 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbc",
+      "charFault": "",
+      "elapsedMs": 625.2790000000969
+    },
+    {
+      "id": "clean/standard50/answered-10",
+      "stratum": "clean",
+      "template": "standard50",
+      "why": "10 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbc",
+      "charFault": "",
+      "elapsedMs": 612.8629999998957
+    },
+    {
+      "id": "clean/standard50/answered-20",
+      "stratum": "clean",
+      "template": "standard50",
+      "why": "20 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbc",
+      "charFault": "",
+      "elapsedMs": 642.0450000008568
+    },
+    {
+      "id": "clean/standard50/answered-50",
+      "stratum": "clean",
+      "template": "standard50",
+      "why": "50 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 639.8140000002459
+    },
+    {
+      "id": "clean/standard50/answered-100",
+      "stratum": "clean",
+      "template": "standard50",
+      "why": "100 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "cccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "charFault": "",
+      "elapsedMs": 679.6940000001341
+    },
+    {
+      "id": "clean/full100/answered-0",
+      "stratum": "clean",
+      "template": "full100",
+      "why": "0 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 100,
+      "counts": {
+        "correct": 100,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "charFault": "",
+      "elapsedMs": 936.0419999994338
+    },
+    {
+      "id": "clean/full100/answered-2",
+      "stratum": "clean",
+      "template": "full100",
+      "why": "2 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 100,
+      "counts": {
+        "correct": 100,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
+      "charFault": "",
+      "elapsedMs": 888.2529999995604
+    },
+    {
+      "id": "clean/full100/answered-5",
+      "stratum": "clean",
+      "template": "full100",
+      "why": "5 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 100,
+      "counts": {
+        "correct": 100,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbc",
+      "charFault": "",
+      "elapsedMs": 926.3519999999553
+    },
+    {
+      "id": "clean/full100/answered-10",
+      "stratum": "clean",
+      "template": "full100",
+      "why": "10 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 100,
+      "counts": {
+        "correct": 100,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbc",
+      "charFault": "",
+      "elapsedMs": 902.4440000001341
+    },
+    {
+      "id": "clean/full100/answered-20",
+      "stratum": "clean",
+      "template": "full100",
+      "why": "20 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 100,
+      "counts": {
+        "correct": 100,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbc",
+      "charFault": "",
+      "elapsedMs": 888.6710000000894
+    },
+    {
+      "id": "clean/full100/answered-50",
+      "stratum": "clean",
+      "template": "full100",
+      "why": "50 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 100,
+      "counts": {
+        "correct": 100,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 925.0339999999851
+    },
+    {
+      "id": "clean/full100/answered-100",
+      "stratum": "clean",
+      "template": "full100",
+      "why": "100 percent of the questions answered",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 100,
+      "counts": {
+        "correct": 100,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "charFault": "",
+      "elapsedMs": 965.9609999991953
+    },
+    {
+      "id": "framing/quick20/1080p",
+      "stratum": "framing",
+      "template": "quick20",
+      "why": "photographed at 1080p",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 890.9320000000298
+    },
+    {
+      "id": "framing/quick20/1440p",
+      "stratum": "framing",
+      "template": "quick20",
+      "why": "photographed at 1440p",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 513.7019999995828
+    },
+    {
+      "id": "framing/quick20/1920p",
+      "stratum": "framing",
+      "template": "quick20",
+      "why": "photographed at 1920p",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 776.7019999995828
+    },
+    {
+      "id": "framing/quick20/1440p-far",
+      "stratum": "framing",
+      "template": "quick20",
+      "why": "photographed at 1440p-far",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 397.9069999996573
+    },
+    {
+      "id": "framing/quick20/1440p-steep",
+      "stratum": "framing",
+      "template": "quick20",
+      "why": "photographed at 1440p-steep",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 20,
+      "counts": {
+        "correct": 20,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 464.5319999996573
+    },
+    {
+      "id": "framing/quick20/beyond-the-angle",
+      "stratum": "framing",
+      "template": "quick20",
+      "why": "past the angle this paper survives, where the honest answer is to hold the phone flatter",
+      "got": "too_steep",
+      "wanted": "too_steep",
+      "asked": true,
+      "questions": 0,
+      "counts": {
+        "correct": 0,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "",
+      "charFault": "",
+      "elapsedMs": 412.3410000000149
+    },
+    {
+      "id": "framing/standard50/1080p",
+      "stratum": "framing",
+      "template": "standard50",
+      "why": "photographed at 1080p",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 1533.069000000134
+    },
+    {
+      "id": "framing/standard50/1440p",
+      "stratum": "framing",
+      "template": "standard50",
+      "why": "photographed at 1440p",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 607.3799999998882
+    },
+    {
+      "id": "framing/standard50/1920p",
+      "stratum": "framing",
+      "template": "standard50",
+      "why": "photographed at 1920p",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 853.4189999997616
+    },
+    {
+      "id": "framing/standard50/1440p-far",
+      "stratum": "framing",
+      "template": "standard50",
+      "why": "photographed at 1440p-far",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 496.31199999991804
+    },
+    {
+      "id": "framing/standard50/1440p-steep",
+      "stratum": "framing",
+      "template": "standard50",
+      "why": "photographed at 1440p-steep",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+      "charFault": "",
+      "elapsedMs": 537.5339999999851
+    },
+    {
+      "id": "framing/standard50/beyond-the-angle",
+      "stratum": "framing",
+      "template": "standard50",
+      "why": "past the angle this paper survives, where the honest answer is to hold the phone flatter",
+      "got": "too_steep",
+      "wanted": "too_steep",
+      "asked": true,
+      "questions": 0,
+      "counts": {
+        "correct": 0,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "",
+      "charFault": "",
+      "elapsedMs": 447.8279999997467
+    },
+    {
+      "id": "lighting/shadow-across-the-page",
+      "stratum": "lighting",
+      "template": "standard50",
+      "why": "a hand or a head between the lamp and the paper",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
+      "charFault": "",
+      "elapsedMs": 1636.821000000462
+    },
+    {
+      "id": "lighting/under-exposed",
+      "stratum": "lighting",
+      "template": "standard50",
+      "why": "the camera metered for a bright room",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
+      "charFault": "",
+      "elapsedMs": 599.0209999997169
+    },
+    {
+      "id": "lighting/over-exposed",
+      "stratum": "lighting",
+      "template": "standard50",
+      "why": "the camera metered for the dark desk around the page",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
+      "charFault": "",
+      "elapsedMs": 565.8930000001565
+    },
+    {
+      "id": "lighting/glare-on-a-shaded-bubble",
+      "stratum": "lighting",
+      "template": "standard50",
+      "why": "a point source reflected off graphite, which destroys the reading",
+      "got": "glare",
+      "wanted": "glare",
+      "asked": true,
+      "questions": 0,
+      "counts": {
+        "correct": 0,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "",
+      "charFault": "",
+      "elapsedMs": 651.8289999999106
+    },
+    {
+      "id": "printing/toner-96",
+      "stratum": "printing",
+      "template": "standard50",
+      "why": "a tired cartridge",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
+      "charFault": "",
+      "elapsedMs": 571.956999999471
+    },
+    {
+      "id": "printing/toner-56",
+      "stratum": "printing",
+      "template": "standard50",
+      "why": "a third generation photocopy",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
+      "charFault": "",
+      "elapsedMs": 567.1899999994785
+    },
+    {
+      "id": "printing/toner-40",
+      "stratum": "printing",
+      "template": "standard50",
+      "why": "the weakest page the engine accepts at all",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
+      "charFault": "",
+      "elapsedMs": 564.9419999998063
+    },
+    {
+      "id": "printing/speck-on-weak-toner",
+      "stratum": "printing",
+      "template": "standard50",
+      "why": "a speck of show through on the weakest page the engine accepts",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 49,
+        "flagged": 1,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
+      "charFault": "",
+      "elapsedMs": 562.5599999995902
+    },
+    {
+      "id": "printing/fit-to-page-96",
+      "stratum": "printing",
+      "template": "standard50",
+      "why": "Fit to page shrank the sheet",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
+      "charFault": "",
+      "elapsedMs": 680.0679999999702
+    },
+    {
+      "id": "printing/scaled-104",
+      "stratum": "printing",
+      "template": "standard50",
+      "why": "printed a little large",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
+      "charFault": "",
+      "elapsedMs": 214.83800000045449
+    },
+    {
+      "id": "marks/a-real-hand-flat",
+      "stratum": "marks",
+      "template": "standard50",
+      "why": "hard pencil, a tick, an off centre shading, an erasure, a double and a spill",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 49,
+        "flagged": 1,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbcbebccecdbxbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
+      "charFault": "",
+      "elapsedMs": 584.5449999999255
+    },
+    {
+      "id": "marks/a-real-hand-photographed",
+      "stratum": "marks",
+      "template": "standard50",
+      "why": "the same hand, through a camera",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 49,
+        "flagged": 1,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbcbebccecdbxbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
+      "charFault": "",
+      "elapsedMs": 1631.5959999999031
+    },
+    {
+      "id": "geometry/flat",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "the control for this stratum",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
+      "charFault": "",
+      "elapsedMs": 583.734999999404
+    },
+    {
+      "id": "geometry/curl-0.3mm",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "a curl inside the registration budget",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
+      "charFault": "",
+      "elapsedMs": 332.5939999995753
+    },
+    {
+      "id": "geometry/curl-1.5mm",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "a curl that moves the middle of the page",
+      "got": "sheet_not_flat",
+      "wanted": "sheet_not_flat",
+      "asked": true,
+      "questions": 0,
+      "counts": {
+        "correct": 0,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "",
+      "charFault": "",
+      "elapsedMs": 252.10800000000745
+    },
+    {
+      "id": "geometry/curl-5.6mm",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "a whole bubble pitch of curl, the silent wrong grade",
+      "got": "anchors_missing",
+      "wanted": "anchors_missing",
+      "asked": true,
+      "questions": 0,
+      "counts": {
+        "correct": 0,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "",
+      "charFault": "",
+      "elapsedMs": 267.37900000065565
+    },
+    {
+      "id": "geometry/one-mark-covered",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "a pen line over one timing mark",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
+      "charFault": "",
+      "elapsedMs": 102.328000000678
+    },
+    {
+      "id": "geometry/three-marks-covered",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "more of the strip than interpolation may bridge",
+      "got": "rows_missing",
+      "wanted": "rows_missing",
+      "asked": true,
+      "questions": 0,
+      "counts": {
+        "correct": 0,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "",
+      "charFault": "",
+      "elapsedMs": 27.294000000692904
+    },
+    {
+      "id": "geometry/two-sheets-in-frame",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "the 2 up print path, photographed whole",
+      "got": "not_one_sheet",
+      "wanted": "not_one_sheet",
+      "asked": true,
+      "questions": 0,
+      "counts": {
+        "correct": 0,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "",
+      "charFault": "",
+      "elapsedMs": 80.87799999956042
+    }
+  ]
+}

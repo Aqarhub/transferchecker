@@ -126,8 +126,19 @@ export const BubbleMetricsSchema = z
   .object({
     radiusMm: metricMm(1.6, 3.5),
     pitchXMm: metricMm(5, 12),
-    /** Row spacing in the question grid. */
-    pitchYMm: metricMm(6, 14),
+    /**
+     * Row spacing in the question grid.
+     *
+     * The floor is 5.5 rather than 6 because defense د1 moved the corner
+     * squares out of the printer's dead zone and took 16 mm of page height with
+     * them, and a hundred question sheet on US Letter does not fit without it.
+     * It is a floor and not the printed pitch: the grid spreads its rows to use
+     * the height it was given, so the same sheet still prints at 6.1 mm on A4.
+     *
+     * It is safe to lower because the cross field rule below is what actually
+     * keeps bubbles apart: at 5.5 mm the radius may not exceed 2.25 mm.
+     */
+    pitchYMm: metricMm(5.5, 14),
     /** Row spacing inside bubble grids, which are usually tighter. */
     gridPitchYMm: metricMm(5, 14),
   })
@@ -158,10 +169,17 @@ export const SHEET_CODES = ['full', 'short'] as const;
 
 export const SheetSpecSchema = z.object({
   templateId: z.uuid(),
-  version: z.literal(3),
+  /**
+   * Four, because `paper.ts` says its constants are part of the printed
+   * artifact and that changing them is a breaking change. Defenses د1, د3 and
+   * د6 changed the margins, the timing mark and the code module, and the sheet
+   * gained the anchor columns, so a version 3 sheet is a different piece of
+   * paper and must be refused rather than graded against these numbers.
+   */
+  version: z.literal(4),
   /** Printed on the right edge, so a teacher can identify a sheet by eye. */
   name: z.string().min(1).max(40),
-  /** Vertical text on the left edge, typically the product name. */
+  /** Vertical text on the right edge, typically the product name. */
   branding: z.string().max(30),
   paper: z.enum(PAPER_NAMES),
   /** 'auto' derives the count from row width and the space available. */

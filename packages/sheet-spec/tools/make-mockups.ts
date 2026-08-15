@@ -32,7 +32,7 @@ const choiceRows = (
 
 const english: SheetSpecInput = {
   templateId: TEMPLATE_ID,
-  version: 3,
+  version: 4,
   name: 'Standard 40',
   branding: 'TRANSFERCHECKER.COM',
   paper: 'A4',

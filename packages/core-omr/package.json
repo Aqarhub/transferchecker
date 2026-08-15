@@ -11,7 +11,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "golden": "tsx tools/golden/run.ts",
+    "golden:quick": "tsx tools/golden/run.ts --quick"
   },
   "dependencies": {
     "@transferchecker/sheet-spec": "workspace:*"

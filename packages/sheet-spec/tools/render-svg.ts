@@ -130,6 +130,7 @@ export function renderSheetSvg(layout: SheetLayout, options: RenderOptions): str
     `<rect width="${String(widthMm)}" height="${String(heightMm)}" fill="white"/>`,
     ...layout.fiducials.map((box) => rect(box, INK)),
     ...layout.timingMarks.map((box) => rect(box, INK)),
+    ...layout.anchorColumns.flatMap((column) => column.marks.map((box) => rect(box, INK))),
     ...renderCode(layout.code),
     vertical(layout.branding.text, layout.branding.band, layout.branding.rotationDeg),
     vertical(layout.title.text, layout.title.band, layout.title.rotationDeg),

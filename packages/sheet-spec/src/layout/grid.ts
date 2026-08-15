@@ -9,11 +9,19 @@
 
 import { GEOMETRY } from '../paper';
 import type { Question, SheetSpec } from '../spec';
-import type { ChoiceHeader, ChoiceLabel, QuestionColumn, QuestionRow, Rect } from '../types';
+import type {
+  AnchorColumn,
+  ChoiceHeader,
+  ChoiceLabel,
+  QuestionColumn,
+  QuestionRow,
+  Rect,
+} from '../types';
 
 export interface GridPlan {
   readonly columns: readonly QuestionColumn[];
   readonly timingMarks: readonly Rect[];
+  readonly anchorColumns: readonly AnchorColumn[];
   readonly widthMm: number;
   readonly heightMm: number;
 }
@@ -190,15 +198,43 @@ export function planGrid(
   });
 
   const timingMarks = Array.from({ length: rowsPerColumn }, (_, row): Rect => ({
-    xMm: GEOMETRY.marginMm,
+    xMm: GEOMETRY.marginSideMm,
     yMm: centerYMm(row) - GEOMETRY.timingHeightMm / 2,
     wMm: GEOMETRY.timingWidthMm,
     hMm: GEOMETRY.timingHeightMm,
   }));
 
+  // One column of anchor marks per gap between question columns: the sheet's
+  // only evidence for registration in x anywhere between the corner squares.
+  //
+  // Every mark takes its y from `centerYMm(row)`, the same call the bubbles of
+  // that row take theirs from, so an anchor is locked to its row by
+  // construction exactly as a timing mark is. What it adds is the x: a sheet
+  // curled about a vertical axis moves these and moves nothing else the scanner
+  // can see, and a sheet printed flat leaves them where they were predicted.
+  //
+  // A one column sheet has no gap and therefore no anchor. That is a real hole
+  // and it is reported as one rather than filled with a zero: the scanner says
+  // the probe was unavailable, because "measured no error" and "could not
+  // measure" are different sentences and only one of them is true.
+  const anchorColumns = Array.from({ length: usedColumns - 1 }, (_, gap): AnchorColumn => {
+    const centreXMm =
+      leftMm + gap * (width + GEOMETRY.columnGapMm) + width + GEOMETRY.columnGapMm / 2;
+    return {
+      xMm: centreXMm,
+      marks: Array.from({ length: rowsPerColumn }, (_, row): Rect => ({
+        xMm: centreXMm - GEOMETRY.anchorWidthMm / 2,
+        yMm: centerYMm(row) - GEOMETRY.timingHeightMm / 2,
+        wMm: GEOMETRY.anchorWidthMm,
+        hMm: GEOMETRY.timingHeightMm,
+      })),
+    };
+  });
+
   return {
     columns,
     timingMarks,
+    anchorColumns,
     widthMm: usedColumns * width + (usedColumns - 1) * GEOMETRY.columnGapMm,
     heightMm: rowsPerColumn * pitchYMm + headerAt.size * GEOMETRY.choiceHeaderMm,
   };

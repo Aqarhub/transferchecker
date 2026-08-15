@@ -1,19 +1,57 @@
 // The scanning engine: a photograph of a sheet goes in, an answered sheet
 // comes out.
 //
-// This package is deliberately empty so far. Its architecture turns on one
-// question that the plan leaves contradictory, and the answer decides every
-// file that follows, so it is being settled before any of it is written.
+// Pure TypeScript, zero runtime dependencies, and it knows nothing about React
+// or the camera. It is handed one plane of eight bit luminance, which is what a
+// camera frame's Y plane already is, so a phone gives it a view rather than a
+// conversion and Node gives it a decoded fixture.
 //
-// The contradiction: docs/PLAN.md calls this package pure TypeScript with zero
-// dependencies, tested in CI on static images with no phone involved, while the
-// pipeline it sketches in the same section names OpenCV operations that on a
-// phone would come from react-native-fast-opencv.
+// The architecture in one paragraph. The sheet is not a general document: four
+// solid 8 mm squares sit at known millimetres, a timing mark sits beside every
+// question row, and the printed code carries the whole geometry, so a device
+// that has never seen the template rebuilds it exactly. The corner squares give
+// a projective map between the sheet's millimetres and the frame's pixels, and
+// every measurement afterwards is a set of millimetre positions pushed through
+// that map and read on the frame at full resolution. Nothing is warped, nothing
+// is resampled, and the sample lattice is fixed on the paper rather than on the
+// sensor, which is what makes two photographs of one paper give one answer.
 //
-// What the package will rely on, and the reason it can be small: the sheet is
-// not a general document. Four solid 8 mm squares sit at known millimetre
-// positions, timing marks run down one edge, and the printed code decodes to
-// the whole geometry, so a device that has never seen the template still knows
-// where every bubble is. See @transferchecker/sheet-spec.
+// The decisions and their alternatives are in docs/CORE-OMR.md, and the
+// defenses the numbers implement are in docs/FAILURE-MODES.md.
 
-export {};
+export { scanSheet } from './scan/pipeline';
+export type { ScanOptions } from './scan/pipeline';
+export type {
+  FieldReading,
+  FieldState,
+  QuestionReading,
+  ScanQuality,
+  ScanResult,
+  ScannedSheet,
+} from './scan/result';
+export { isFrameFault, messageKeyOf } from './scan/reject';
+export type { Rejection } from './scan/reject';
+
+export { DEFAULT_THRESHOLDS } from './decide/thresholds';
+export type { Thresholds } from './decide/thresholds';
+export { decideGroup, markOf } from './decide/group';
+export type { GroupInput, GroupOutcome } from './decide/group';
+
+export { createGray, sampleAt, wrapGray } from './image/gray';
+export type { GrayImage } from './image/gray';
+
+export { findFiducials } from './geometry/fiducials';
+export type { FiducialQuad, FiducialSearch } from './geometry/fiducials';
+export { estimateFrame, paperFrame, pxPerMmAt, toImage, toPaper } from './geometry/frame';
+export type { Frame } from './geometry/frame';
+
+export { MIN_MODULE_PX, readSheetCode } from './code/index';
+export type { CodeResult } from './code/index';
+export { decodeQrMatrix } from './qr/index';
+
+export { measureBubble } from './measure/bubble';
+export type { BubbleReading, LabelSide } from './measure/bubble';
+export { inkRatio, photometryOf, referenceAt } from './measure/photometry';
+export type { PhotometricField, Reference } from './measure/photometry';
+export { MAX_RESIDUAL_MM, readTimingMarks, rowCorrectionMm } from './measure/timing';
+export type { RowMark, TimingRead } from './measure/timing';

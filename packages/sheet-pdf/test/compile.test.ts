@@ -63,7 +63,12 @@ describe('generated Typst', () => {
 
   it('compiles a dense sheet, four columns of a hundred questions', () => {
     const layout = makeLayout({
-      questions: choiceQuestions(100),
+      // Four choices rather than five. Defenses د1 and د3 took 12 mm of content
+      // width and the anchor's clearance took 6 mm more, so four columns of
+      // five choices no longer fit A4 at the default bubble: 169.6 mm of ink
+      // and gap against 164 mm of content [measured]. Three columns of five is
+      // the widest A4 now takes with the identifier sidebar beside it.
+      questions: choiceQuestions(100, latinSymbols(4)),
       columns: 4,
       headerFields: [{ id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox' }],
     });
@@ -84,11 +89,14 @@ describe('generated Typst', () => {
       expect(page).not.toBeNull();
       if (page === null) continue;
       // A small sheet gets a small configuration: no id sidebar, and the
-      // column count left to the engine.
+      // column count left to the engine. Eight questions rather than ten,
+      // because defense د1 costs the same 16 mm of height on every paper size
+      // and a quarter page sheet has the least of it to give: A6 held ten rows
+      // at the default pitch and now holds eight [measured].
       const layout = makeLayout({
         paper,
         columns: 'auto',
-        questions: choiceQuestions(10, latinSymbols(4)),
+        questions: choiceQuestions(8, latinSymbols(4)),
         headerFields: [{ id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox' }],
       });
       const source = renderSheetTypst(layout, makeOptions({ page }));

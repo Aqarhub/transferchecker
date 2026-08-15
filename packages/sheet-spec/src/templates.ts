@@ -44,7 +44,7 @@ export interface TemplateText {
  * closer rows. Closer rows win: the bubble is what the scanner measures, while
  * row spacing costs only a little reading comfort.
  */
-const DENSE: BubbleMetrics = { ...DEFAULT_BUBBLE, pitchYMm: 6, gridPitchYMm: 5.4 };
+const DENSE: BubbleMetrics = { ...DEFAULT_BUBBLE, pitchYMm: 5.5, gridPitchYMm: 5.4 };
 
 interface Shape {
   readonly questions: number;
@@ -69,7 +69,7 @@ export function stockTemplate(
 
   const withoutPaper: Omit<SheetSpecInput, 'paper'> = {
     templateId: TEMPLATE_ID[kind],
-    version: 3,
+    version: 4,
     name: text.name,
     branding: text.branding,
     columns: 'auto',

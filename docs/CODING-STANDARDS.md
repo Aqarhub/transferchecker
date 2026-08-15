@@ -73,10 +73,20 @@
      | { kind: 'ambiguous'; question: number; fills: number[] }
      | { kind: 'no_sheet' };
    ```
-5. **Exhaustiveness check:** كل `switch` على union يُغلق بـ:
+5. **الشمول (exhaustiveness) يفرضه المصرّف لا فرعٌ ميت.** كل `switch` على union يغطي كل أعضائه **بلا `default`**:
+
    ```ts
-   default: { const _exhaustive: never = value; throw new Error('Unreachable'); }
+   switch (outcome.kind) {
+     case 'blank':
+       return 'b';
+     case 'answer':
+       return 'c';
+   }
+   // No default. Adding a member to the union breaks the build here.
    ```
+
+   **تصحيح لقاعدة سابقة كانت تنص على `default: { const _exhaustive: never = value; ... }`.** ذلك النمط **يرفضه إعدادنا نفسه من جهتين**: `switch-exhaustiveness-check` مضبوطة بـ`allowDefaultCaseForExhaustiveSwitch: false` فترفض `default` على switch شامل، و`allowUnreachableCode: false` ترفض وضع فحص `never` بعد الـswitch. والحارسان اللذان يبقيان أقوى لا أضعف: **قاعدة ESLint تسقط أي switch ناقص عضواً**، و`noImplicitReturns` تسقط دالةً صار لها مسار بلا `return`. اكتُشف التناقض بتشغيل الفحوص على `core-omr`، لا بالقراءة.
+
 6. **`as const` للثوابت** و`readonly` للمصفوفات والكائنات التي لا يجب تعديلها. إحداثيات الورقة كلها `readonly`.
 7. **أنواع Branded للمعرّفات** حتى لا يُمرَّر `examId` مكان `templateId`:
    ```ts

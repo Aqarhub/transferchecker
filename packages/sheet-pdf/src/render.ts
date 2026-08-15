@@ -104,7 +104,12 @@ function renderQuestions(columns: readonly QuestionColumn[], theme: SheetTheme):
         theme.questionSizeMm,
         theme.ink,
         String(row.question),
-        { align: 'right', widthMm: 8 },
+        // The box the number is right aligned in ends 2 mm before the first
+        // bubble, the same 2 mm the layout's own anchor leaves, and starts
+        // exactly at the column's left edge. It may not start before it:
+        // defense د3 gives the timing marks 4 mm of blank paper, and the
+        // leftmost column's gutter is what that clearance is measured against.
+        { align: 'right', widthMm: GEOMETRY.numberGutterMm - 2 },
       ),
       ...row.bubbles.map((b) =>
         bubble(b.cxMm, b.cyMm, b.rMm, theme.bubbleStrokeMm, theme.bubbleStroke),
@@ -135,6 +140,12 @@ function sheetBody(layout: SheetLayout, options: RenderOptions, theme: SheetThem
   return [
     ...layout.fiducials.map((box) => filledRect(box, theme.ink)),
     ...layout.timingMarks.map((box) => filledRect(box, theme.ink)),
+    // Printed in the same solid ink as the timing marks, because they are the
+    // same instrument turned ninety degrees: these are what the scanner has to
+    // measure registration in x with, anywhere between the corner squares.
+    ...layout.anchorColumns.flatMap((column) =>
+      column.marks.map((box) => filledRect(box, theme.ink)),
+    ),
     ...renderCode(layout.code, theme.ink),
 
     textInBand(

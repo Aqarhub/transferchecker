@@ -6,9 +6,13 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_BUBBLE,
   GEOMETRY,
+  LABEL_PLACEMENTS,
+  PAPER_NAMES,
+  SELECT_MODES,
   arabicSymbols,
   base32Decode,
   base32Encode,
+  codeModuleMmFor,
   decodeSheetCode,
   digitSymbols,
   encodeSheetBytes,
@@ -83,6 +87,66 @@ describe('a sheet that carries its whole geometry', () => {
     expect(geometryOf(layoutOf(decoded.spec))).toEqual(geometryOf(layoutOf(spec)));
   });
 
+  it('carries every paper size, not only the two the first format could hold', () => {
+    // This is the test whose absence let a real defect through. Format 1 gave
+    // the paper a single bit, so A5 decoded as A4 and A6 as LETTER: a sheet
+    // rebuilt its geometry against a page size it was never printed on, and
+    // two of the three stock templates are not A4. Every name, or nothing.
+    for (const paper of PAPER_NAMES) {
+      const spec = makeSpec({
+        paper,
+        questions: choiceQuestions(4, 4),
+        headerFields: [],
+      });
+      const decoded = decodeSheetCode(encodeSheetCode(spec));
+      expect(`${paper}: ${String(decoded?.mode)}`).toBe(`${paper}: full`);
+      if (decoded?.mode !== 'full') continue;
+      expect(`${paper} decodes as ${decoded.spec.paper}`).toBe(`${paper} decodes as ${paper}`);
+    }
+  });
+
+  it('carries every label placement, not only the two that fitted one bit', () => {
+    // The second defect of exactly the same shape, in the same byte layout, and
+    // just as silent. LABEL_PLACEMENTS has THREE members and the question flags
+    // gave placement one bit, so 'header' encoded as 0 and decoded as
+    // 'internal'. A 'header' sheet prints a row of choice letters above each
+    // column, so the whole grid moves: measured at 3.8 mm on the first bubble
+    // of a 40 question A4 sheet, and about 11 mm by the twentieth row.
+    //
+    // The assertion is on the REBUILT GEOMETRY and not only on the field,
+    // because the field is a means and the millimetres are the end.
+    for (const placement of LABEL_PLACEMENTS) {
+      for (const select of SELECT_MODES) {
+        const spec = makeSpec({
+          questions: Array.from({ length: 40 }, () => ({
+            kind: 'choice' as const,
+            symbols: [...latinSymbols(4)],
+            placement,
+            select,
+          })),
+        });
+        const decoded = decodeSheetCode(encodeSheetCode(spec));
+        const label = `${placement}/${select}`;
+        expect(`${label}: ${String(decoded?.mode)}`).toBe(`${label}: full`);
+        if (decoded?.mode !== 'full') continue;
+
+        expect(`${label} placement ${String(decoded.spec.questions[0]?.placement)}`).toBe(
+          `${label} placement ${placement}`,
+        );
+        expect(`${label} select ${String(decoded.spec.questions[0]?.select)}`).toBe(
+          `${label} select ${select}`,
+        );
+        expect(geometryOf(layoutOf(decoded.spec))).toEqual(geometryOf(layoutOf(spec)));
+      }
+    }
+  });
+
+  it('leaves room in the geometry byte for the paper sizes it may still gain', () => {
+    // Three bits. A seventh and eighth name may be appended, and a ninth needs
+    // a new CODE_FORMAT rather than a silent truncation.
+    expect(PAPER_NAMES.length).toBeLessThanOrEqual(8);
+  });
+
   it('carries the symbols themselves, not only how many there are', () => {
     const spec = makeSpec({ questions: arabicQuestions(4, 10) });
     const decoded = decodeSheetCode(encodeSheetCode(spec));
@@ -137,10 +201,18 @@ describe('a sheet that carries only an identifier', () => {
     expect(encodeSheetBytes(large)).toHaveLength(17);
   });
 
-  it('prints a smaller code than the same sheet carrying its geometry', () => {
+  it('prints fewer and therefore larger modules than the same sheet carrying its geometry', () => {
     const full = layoutOf(makeSpec({ code: 'full' }));
     const short = layoutOf(makeSpec({ code: 'short' }));
-    expect(short.code.box.wMm).toBeLessThan(full.code.box.wMm);
+    expect(short.code.modules.length).toBeLessThan(full.code.modules.length);
+
+    // What 'short' buys changed with defense د6. Both codes now spend the same
+    // budget of paper, so the identifier does not print a smaller box: it
+    // prints the same box at a coarser pitch, which is robustness rather than
+    // saved millimetres. The teacher's trade is real either way.
+    const moduleMm = (code: typeof full.code): number =>
+      code.box.wMm / (code.modules.length + 2 * GEOMETRY.codeQuietModules);
+    expect(moduleMm(short.code)).toBeGreaterThan(moduleMm(full.code));
   });
 });
 
@@ -149,11 +221,37 @@ describe('the printed code', () => {
     for (const questions of [1, 20, 40]) {
       const layout = layoutOf(makeSpec({ questions: choiceQuestions(questions) }));
       const across = layout.code.modules.length + 2 * GEOMETRY.codeQuietModules;
-      expect(layout.code.box.wMm / across).toBeGreaterThanOrEqual(GEOMETRY.codeModuleMm);
+      expect(layout.code.box.wMm / across).toBeGreaterThanOrEqual(GEOMETRY.codeMinModuleMm);
     }
   });
 
-  it('grows with what it carries rather than being one fixed size', () => {
+  it('spends the whole budget it is given rather than the minimum it could', () => {
+    // Defense د6. The module used to be pinned at 0.5 mm against a 30 mm
+    // budget, so a small payload printed a fragile code and left the spare
+    // millimetres as white paper. Every sheet here comes within one rounding
+    // step of the budget, and none exceeds it.
+    for (const questions of [1, 20, 40]) {
+      const layout = layoutOf(makeSpec({ questions: choiceQuestions(questions) }));
+      const across = layout.code.modules.length + 2 * GEOMETRY.codeQuietModules;
+      expect(layout.code.box.wMm).toBeLessThanOrEqual(GEOMETRY.codeMaxSizeMm);
+      expect(layout.code.box.wMm).toBeGreaterThan(GEOMETRY.codeMaxSizeMm - 0.01 * across);
+      expect(layout.code.box.wMm / across).toBeGreaterThan(GEOMETRY.codeMinModuleMm);
+    }
+  });
+
+  it('derives the printed module from the one function both sides call', () => {
+    // The scanner rebuilds the module size for each module count it tries, so a
+    // second implementation of this arithmetic anywhere is a sheet the engine
+    // that printed it cannot read.
+    for (const questions of [1, 20, 40]) {
+      const layout = layoutOf(makeSpec({ questions: choiceQuestions(questions) }));
+      const count = layout.code.modules.length;
+      const across = count + 2 * GEOMETRY.codeQuietModules;
+      expect(layout.code.box.wMm).toBeCloseTo(across * codeModuleMmFor(count), 9);
+    }
+  });
+
+  it('spends a larger payload on more modules rather than on more paper', () => {
     const uniform = layoutOf(makeSpec({ questions: choiceQuestions(40) }));
     // Ten runs instead of one, because a run is what the payload spends bytes on.
     const mixed = layoutOf(
@@ -164,13 +262,22 @@ describe('the printed code', () => {
         })),
       }),
     );
-    expect(mixed.code.box.wMm).toBeGreaterThan(uniform.code.box.wMm);
+    expect(mixed.code.modules.length).toBeGreaterThan(uniform.code.modules.length);
+    // The box is the budget either way since defense د6, so what a heavier
+    // payload costs is module size and not page.
+    expect(mixed.code.box.wMm).toBeLessThanOrEqual(GEOMETRY.codeMaxSizeMm);
   });
 
-  it('costs a self describing sheet only a few millimetres over an identifier', () => {
-    const full = layoutOf(makeSpec({ code: 'full' })).code.box.wMm;
-    const short = layoutOf(makeSpec({ code: 'short' })).code.box.wMm;
-    expect(full - short).toBeLessThanOrEqual(4);
+  it('costs a self describing sheet only a fraction of a module over an identifier', () => {
+    const full = layoutOf(makeSpec({ code: 'full' })).code;
+    const short = layoutOf(makeSpec({ code: 'short' })).code;
+    const moduleMm = (code: typeof full): number =>
+      code.box.wMm / (code.modules.length + 2 * GEOMETRY.codeQuietModules);
+    expect(moduleMm(short) - moduleMm(full)).toBeLessThanOrEqual(0.25);
+    // Both still clear the floor by a wide margin, which is what makes the
+    // full code the default: carrying the whole geometry is what lets a device
+    // that has never seen the template grade the paper.
+    expect(moduleMm(full)).toBeGreaterThanOrEqual(0.7);
   });
 
   it('refuses a sheet whose geometry cannot fit a readable code', () => {
@@ -188,7 +295,8 @@ describe('the printed code', () => {
 
   it('sits inside the page and clear of the template name band', () => {
     const layout = layoutOf(makeSpec());
-    const rightEdgeMm = layout.paper.widthMm - GEOMETRY.marginMm - GEOMETRY.titleBandMm;
+    const rightEdgeMm =
+      layout.paper.widthMm - GEOMETRY.marginSideMm - GEOMETRY.titleBandMm - GEOMETRY.brandingBandMm;
     expect(layout.code.box.xMm + layout.code.box.wMm).toBeCloseTo(rightEdgeMm, 6);
   });
 });
