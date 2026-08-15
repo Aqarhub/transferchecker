@@ -155,6 +155,9 @@ export function renderSheet(layout: SheetLayout, options: RenderOptions = {}): G
 
   for (const rect of layout.fiducials) fillRect(image, pxPerMm, rect, ink.ink);
   for (const rect of layout.timingMarks) fillRect(image, pxPerMm, rect, ink.ink);
+  for (const column of layout.anchorColumns) {
+    for (const rect of column.marks) fillRect(image, pxPerMm, rect, ink.ink);
+  }
   drawCode(image, pxPerMm, layout, ink);
   if (options.furniture !== false) drawFurniture(image, pxPerMm, layout, ink);
 

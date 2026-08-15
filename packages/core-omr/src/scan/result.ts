@@ -42,8 +42,19 @@ export interface FieldReading {
 export interface ScanQuality {
   /** Pixels per printed code module, the resolution the read actually had. */
   readonly modulePx: number;
-  /** Timing mark residual: how well the sheet's middle matched its corners. */
+  /** Timing mark residual: how well the sheet's middle matched its corners in y. */
   readonly timingResidualMm: number;
+  /**
+   * The same measurement in x, from the anchor marks, and **null when the sheet
+   * printed none**.
+   *
+   * Null rather than zero, and it is the difference between two sentences: "the
+   * middle of this sheet is where its corners say" and "nothing on this sheet
+   * measures that". A one column sheet with no room beside its grid is the
+   * second, and reporting it as zero would be a confident answer to a question
+   * nobody asked.
+   */
+  readonly anchorResidualMm: number | null;
   /** Black to white separation the sheet's own furniture declared. */
   readonly contrast: number;
   readonly blanks: number;

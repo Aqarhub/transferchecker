@@ -161,7 +161,7 @@ export function decodeSheetBytes(bytes: Uint8Array): DecodedCode | null {
 
   const parsed = SheetSpecSchema.safeParse({
     templateId,
-    version: 3,
+    version: 4,
     // Neither is carried: both are printed text and neither moves a bubble.
     name: '?',
     branding: '',

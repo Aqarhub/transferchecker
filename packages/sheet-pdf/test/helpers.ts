@@ -30,7 +30,7 @@ export function choiceQuestions(
 export function makeLayout(overrides: Partial<SheetSpecInput> = {}): SheetLayout {
   const base: SheetSpecInput = {
     templateId: TEMPLATE_ID,
-    version: 3,
+    version: 4,
     name: 'Standard 40',
     branding: 'TRANSFERCHECKER.COM',
     paper: 'A4',

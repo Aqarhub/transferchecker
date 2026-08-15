@@ -1,6 +1,13 @@
 // Public surface of the sheet specification package.
 
-export { FIELD_WIDTH_MM, GEOMETRY, PAPER, PAPER_FAMILIES, PAPER_NAMES } from './paper';
+export {
+  FIELD_WIDTH_MM,
+  GEOMETRY,
+  PAPER,
+  PAPER_FAMILIES,
+  PAPER_NAMES,
+  codeModuleMmFor,
+} from './paper';
 export type { PaperFamily, PaperName, PaperSize } from './paper';
 
 export { smallestPaper } from './fit';
@@ -66,6 +73,7 @@ export { columnWidthMm, questionWidthMm, resolveColumns } from './layout/grid';
 export { bubbleGroups, fieldGroupId, questionGroupId } from './groups';
 
 export type {
+  AnchorColumn,
   Bubble,
   ChoiceLabel,
   BubbleGroup,

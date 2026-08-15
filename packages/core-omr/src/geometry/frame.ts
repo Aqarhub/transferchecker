@@ -31,8 +31,18 @@ export interface Frame {
   readonly spanYMm: number;
 }
 
-/** Distance from the paper edge to a fiducial's centre, on every sheet. */
-export const FIDUCIAL_INSET_MM = GEOMETRY.marginMm + GEOMETRY.fiducialMm / 2;
+/**
+ * Distance from a paper edge to the nearest fiducial's centre.
+ *
+ * Three numbers rather than one, defense د1: the bottom margin is larger than
+ * the other two because the printer's bottom dead zone is larger, so the
+ * rectangle the four squares form is NOT centred on the page. Reading it as
+ * centred would put every predicted coordinate several millimetres out in y,
+ * which is most of a row.
+ */
+export const FIDUCIAL_INSET_X_MM = GEOMETRY.marginSideMm + GEOMETRY.fiducialMm / 2;
+export const FIDUCIAL_INSET_TOP_MM = GEOMETRY.marginTopMm + GEOMETRY.fiducialMm / 2;
+export const FIDUCIAL_INSET_BOTTOM_MM = GEOMETRY.marginBottomMm + GEOMETRY.fiducialMm / 2;
 
 function build(corners: Corners, spanXMm: number, spanYMm: number, originMm: Point): Frame | null {
   const source: Point[] = [
@@ -84,11 +94,11 @@ export function estimateFrame(corners: Corners, sidesPx: readonly number[]): Fra
 
 /** The true frame, once the code has said which paper this is. */
 export function paperFrame(corners: Corners, layout: SheetLayout): Frame | null {
-  const spanXMm = layout.paper.widthMm - 2 * FIDUCIAL_INSET_MM;
-  const spanYMm = layout.paper.heightMm - 2 * FIDUCIAL_INSET_MM;
+  const spanXMm = layout.paper.widthMm - 2 * FIDUCIAL_INSET_X_MM;
+  const spanYMm = layout.paper.heightMm - FIDUCIAL_INSET_TOP_MM - FIDUCIAL_INSET_BOTTOM_MM;
   return build(corners, spanXMm, spanYMm, {
-    x: FIDUCIAL_INSET_MM,
-    y: FIDUCIAL_INSET_MM,
+    x: FIDUCIAL_INSET_X_MM,
+    y: FIDUCIAL_INSET_TOP_MM,
   });
 }
 

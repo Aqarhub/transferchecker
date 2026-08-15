@@ -6,9 +6,9 @@
 
 import { codeMatrix, encodeSheetCode } from '../code/index';
 import { MAX_QR_MODULES } from '../code/matrix';
-import { GEOMETRY, PAPER } from '../paper';
+import { GEOMETRY, PAPER, codeModuleMmFor } from '../paper';
 import type { BubbleGridField, SheetSpec, WrittenBoxField } from '../spec';
-import type { LayoutResult, Rect, SheetCodeLayout, SheetLayout } from '../types';
+import type { AnchorColumn, LayoutResult, Rect, SheetCodeLayout, SheetLayout } from '../types';
 import { planHeader } from './header';
 import { columnWidthMm, planGrid, resolveColumns } from './grid';
 import { planSidebar } from './sidebar';
@@ -20,25 +20,72 @@ const isBubbleGrid = (field: SheetSpec['headerFields'][number]): field is Bubble
   field.kind === 'bubbleGrid';
 
 function cornerFiducials(widthMm: number, heightMm: number): readonly Rect[] {
-  const { marginMm: m, fiducialMm: f } = GEOMETRY;
+  const { marginTopMm: top, marginSideMm: side, marginBottomMm: bottom, fiducialMm: f } = GEOMETRY;
   // Order matters: the scanner maps these to destination corners in the same
   // sequence when it solves the perspective transform.
+  //
+  // The lower pair sits further in than the upper pair, defense د1. The
+  // rectangle they form is not centred on the page and does not need to be:
+  // what the solve needs is four KNOWN positions, and the scanner rebuilds
+  // these from the paper size the printed code carries.
   const corners = [
-    [m, m],
-    [widthMm - m - f, m],
-    [m, heightMm - m - f],
-    [widthMm - m - f, heightMm - m - f],
+    [side, top],
+    [widthMm - side - f, top],
+    [side, heightMm - bottom - f],
+    [widthMm - side - f, heightMm - bottom - f],
   ] as const;
   return corners.map(([xMm, yMm]) => ({ xMm, yMm, wMm: f, hMm: f }));
 }
 
+/**
+ * An extra anchor column in the blank band to the right of the question grid.
+ *
+ * A one column sheet has no gap between columns and would otherwise print no
+ * anchor at all, which leaves the smallest and commonest sheets with no
+ * evidence in x anywhere. They always have the room instead, and that is a
+ * guarantee rather than a habit: a layout is REFUSED unless what is left after
+ * the grid is at least `sidebarGapMm` wide, whether or not there is a sidebar
+ * to gap from, and 8 mm is exactly what a 3 mm mark with 2.5 mm of clearance on
+ * each side needs. So no sheet that lays out at all goes without an anchor. A
+ * test holds those two numbers together, because lowering the gap would quietly
+ * take the anchor off the sheets that have nowhere else to put one.
+ *
+ * The marks take their y from the timing marks, so they sit on exactly the rows
+ * everything else the scanner measures sits on.
+ */
+function trailingAnchor(
+  timingMarks: readonly Rect[],
+  leftMm: number,
+  rightMm: number,
+): AnchorColumn[] {
+  const neededMm = GEOMETRY.anchorWidthMm + 2 * GEOMETRY.anchorClearMm;
+  if (rightMm - leftMm < neededMm || timingMarks.length === 0) return [];
+
+  const xMm = (leftMm + rightMm) / 2;
+  return [
+    {
+      xMm,
+      marks: timingMarks.map((mark) => ({
+        xMm: xMm - GEOMETRY.anchorWidthMm / 2,
+        yMm: mark.yMm,
+        wMm: GEOMETRY.anchorWidthMm,
+        hMm: mark.hMm,
+      })),
+    },
+  ];
+}
+
 export function layoutSheet(spec: SheetSpec): LayoutResult {
   const paper = PAPER[spec.paper];
-  const contentLeftMm = GEOMETRY.marginMm + GEOMETRY.timingWidthMm + GEOMETRY.brandingBandMm;
-  const contentRightMm = paper.widthMm - GEOMETRY.marginMm - GEOMETRY.titleBandMm;
+  // Left of the content: the margin, the timing strip, and then blank paper.
+  // Defense د3 put the clearance there and moved the branding band to the right
+  // edge, so nothing is printed beside a timing mark any more.
+  const contentLeftMm = GEOMETRY.marginSideMm + GEOMETRY.timingWidthMm + GEOMETRY.timingClearMm;
+  const contentRightMm =
+    paper.widthMm - GEOMETRY.marginSideMm - GEOMETRY.titleBandMm - GEOMETRY.brandingBandMm;
   const contentWidthMm = contentRightMm - contentLeftMm;
 
-  const headerTopMm = GEOMETRY.marginMm + GEOMETRY.fiducialMm + GEOMETRY.headerGapMm;
+  const headerTopMm = GEOMETRY.marginTopMm + GEOMETRY.fiducialMm + GEOMETRY.headerGapMm;
 
   // The code is measured first because it is the only element whose size comes
   // from the sheet's own contents. A sheet that carries its whole geometry
@@ -50,7 +97,9 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
   // so it reports as an ordinary overflow with a real number behind it rather
   // than as a special case. The remedy either way is the same: carry less.
   const moduleCount = modules?.length ?? MAX_QR_MODULES;
-  const codeSizeMm = (moduleCount + 2 * GEOMETRY.codeQuietModules) * GEOMETRY.codeModuleMm;
+  // Defense د6: the module is derived from the count, not fixed, so the code
+  // spends the whole budget it was given rather than the minimum it could.
+  const codeSizeMm = (moduleCount + 2 * GEOMETRY.codeQuietModules) * codeModuleMmFor(moduleCount);
 
   if (modules === null || codeSizeMm > GEOMETRY.codeMaxSizeMm) {
     return {
@@ -82,7 +131,7 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
 
   const bodyTopMm =
     Math.max(headerTopMm + header.heightMm, code.box.yMm + code.box.hMm) + GEOMETRY.gridGapMm;
-  const bodyLimitMm = paper.heightMm - GEOMETRY.marginMm - GEOMETRY.warningBandMm;
+  const bodyLimitMm = paper.heightMm - GEOMETRY.marginBottomMm - GEOMETRY.warningBandMm;
   const bodyHeightMm = bodyLimitMm - bodyTopMm;
 
   // A fixed column count is a request, so the sidebar must leave room for all
@@ -160,20 +209,32 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
   }
 
   const layout: SheetLayout = {
-    version: 3,
+    version: 4,
     paper: { widthMm: paper.widthMm, heightMm: paper.heightMm },
     fiducials: cornerFiducials(paper.widthMm, paper.heightMm),
     timingMarks: grid.timingMarks,
+    anchorColumns: [
+      ...grid.anchorColumns,
+      ...trailingAnchor(
+        grid.timingMarks,
+        contentLeftMm + grid.widthMm,
+        sidebar.widthMm > 0 ? contentRightMm - sidebar.widthMm : contentRightMm,
+      ),
+    ],
     code,
+    // The site name. It used to run down the left edge with its ink starting at
+    // the exact millimetre the timing marks ended, which is the clearance
+    // defense د3 says a measuring mark must have, so it moved to the other edge
+    // and the left of the sheet is now blank paper beside every mark.
     branding: {
       text: spec.branding,
       band: {
-        xMm: GEOMETRY.marginMm + GEOMETRY.timingWidthMm,
+        xMm: contentRightMm + GEOMETRY.titleBandMm,
         yMm: bodyTopMm,
         wMm: GEOMETRY.brandingBandMm,
         hMm: grid.heightMm,
       },
-      rotationDeg: -90,
+      rotationDeg: 90,
     },
     // The template name, printed so a teacher can tell two sheets apart by eye
     // without a device. The QR carries the machine readable form.
@@ -192,7 +253,7 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
     questionColumns: grid.columns,
     warningAnchor: {
       xMm: paper.widthMm / 2,
-      yMm: paper.heightMm - GEOMETRY.marginMm - GEOMETRY.fiducialMm - 3,
+      yMm: paper.heightMm - GEOMETRY.marginBottomMm - GEOMETRY.fiducialMm - 3,
     },
   };
 

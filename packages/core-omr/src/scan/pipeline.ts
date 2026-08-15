@@ -23,6 +23,7 @@ import type { Thresholds } from '../decide/thresholds';
 import { findFiducials } from '../geometry/fiducials';
 import { paperFrame } from '../geometry/frame';
 import type { GrayImage } from '../image/gray';
+import { readAnchors } from '../measure/anchor';
 import { photometryOf } from '../measure/photometry';
 import { readTimingMarks } from '../measure/timing';
 import { groupsOf, identityOf, measureSheet } from './measure-sheet';
@@ -152,7 +153,29 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
     };
   }
   if (timing.kind !== 'ok') {
-    return { kind: 'rejected', reason: { kind: 'sheet_not_flat', residualMm: timing.residualMm } };
+    return {
+      kind: 'rejected',
+      reason: { kind: 'sheet_not_flat', residualMm: timing.residualMm, axis: 'y' },
+    };
+  }
+
+  // The horizontal axis, which nothing before the anchor marks could measure.
+  // A sheet curled about a vertical axis solves its four corners exactly and
+  // leaves the timing residual at zero, so this is the only stage that can
+  // refuse it, and a sheet that prints no anchor at all is reported as
+  // unmeasured rather than as measured and clean.
+  const anchors = readAnchors(image, frame, layout);
+  if (anchors.kind === 'missing') {
+    return {
+      kind: 'rejected',
+      reason: { kind: 'anchors_missing', expected: anchors.expected, found: anchors.found },
+    };
+  }
+  if (anchors.kind === 'unstable') {
+    return {
+      kind: 'rejected',
+      reason: { kind: 'sheet_not_flat', residualMm: anchors.residualMm, axis: 'x' },
+    };
   }
 
   const field = photometryOf(image, frame, layout, timing.marks);
@@ -224,6 +247,7 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
       quality: {
         modulePx: code.modulePx,
         timingResidualMm: timing.residualMm,
+        anchorResidualMm: anchors.kind === 'ok' ? anchors.residualMm : null,
         contrast: field.contrast,
         blanks: questions.filter((entry) => entry.outcome.kind === 'blank').length,
         ambiguous: questions.filter((entry) => entry.outcome.kind === 'ambiguous').length,

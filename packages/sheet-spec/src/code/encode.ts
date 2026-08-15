@@ -16,7 +16,18 @@ import { base32Encode } from './base32';
 import { CUSTOM_SET, symbolSetId } from './symbols';
 import { uuidToBytes } from './uuid';
 
-export const CODE_FORMAT = 2;
+/**
+ * Three, because the PAPER changed under the code even though the code's own
+ * bytes did not.
+ *
+ * The payload carries what varies between sheets and never what is compiled
+ * into both sides: margins, band widths, mark sizes and the code module are all
+ * in `GEOMETRY`. Defenses د1, د3 and د6 moved every one of those. A format 2
+ * sheet therefore still decodes byte for byte and rebuilds a geometry it was
+ * not printed with, which is the silent wrong grade this format number exists
+ * to prevent. Bumping it turns that into a refusal.
+ */
+export const CODE_FORMAT = 3;
 
 const utf8 = new TextEncoder();
 

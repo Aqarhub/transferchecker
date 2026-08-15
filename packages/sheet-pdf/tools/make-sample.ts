@@ -46,7 +46,7 @@ const choiceRows = (
 
 const english: SheetSpecInput = {
   templateId: TEMPLATE_ID,
-  version: 3,
+  version: 4,
   name: 'Standard 40',
   branding: 'TRANSFERCHECKER.COM',
   paper: 'A4',
@@ -138,11 +138,17 @@ const half: SheetSpecInput = {
 
 // A quarter page carries no bubbled id grid at any question count, so this one
 // identifies the student by hand.
+//
+// Its rows are tighter than the default. Defense د1 costs the same 16 mm of
+// height on every paper size, and a quarter page has the least of it to give:
+// ten rows at the default 7 mm pitch no longer fit A6. At 5.5 mm, the floor the
+// schema allows and exactly `2r + 1.5` at this radius, they do.
 const quarter: SheetSpecInput = {
   ...english,
   name: 'Quick 10',
   paper: 'A6',
   questions: choiceRows(10, latinSymbols(4)),
+  bubble: { ...DEFAULT_BUBBLE, pitchYMm: 5.5 },
   headerFields: [
     { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'small' },
   ],

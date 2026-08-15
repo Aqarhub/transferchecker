@@ -123,13 +123,29 @@ export interface SheetCodeLayout {
   readonly payload: string;
 }
 
+/**
+ * A column of anchor marks, printed in the gap between two question columns.
+ *
+ * The timing marks all sit at one x, inside the band the left corner squares
+ * already occupy, so they say nothing about the middle of the page in x. These
+ * do: they are the same mark, in the same rows, at an x the corners do not pin.
+ */
+export interface AnchorColumn {
+  /** Centre of the marks in x. This is the value a scanner measures against. */
+  readonly xMm: number;
+  /** One mark per question row, index aligned with `timingMarks`. */
+  readonly marks: readonly Rect[];
+}
+
 export interface SheetLayout {
-  readonly version: 3;
+  readonly version: 4;
   readonly paper: { readonly widthMm: number; readonly heightMm: number };
   /** Perspective reference points, in top-left, top-right, bottom-left, bottom-right order. */
   readonly fiducials: readonly Rect[];
   /** One mark per question row, used to recover the row index after warping. */
   readonly timingMarks: readonly Rect[];
+  /** Empty on a one column sheet, which therefore has no evidence in x. */
+  readonly anchorColumns: readonly AnchorColumn[];
   readonly code: SheetCodeLayout;
   readonly branding: VerticalText;
   readonly title: VerticalText;

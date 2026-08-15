@@ -12,7 +12,10 @@ describe('core-omr can see the sheet it will read', () => {
     // A solid square this size at the page corners is what perspective
     // correction finds first, before anything else on the page is meaningful.
     expect(GEOMETRY.fiducialMm).toBeGreaterThan(0);
-    expect(GEOMETRY.marginMm).toBeGreaterThan(0);
+    expect(GEOMETRY.marginTopMm).toBeGreaterThan(0);
+    expect(GEOMETRY.marginSideMm).toBeGreaterThan(0);
+    // Larger than the others, because the printer's bottom dead zone is.
+    expect(GEOMETRY.marginBottomMm).toBeGreaterThan(GEOMETRY.marginTopMm);
   });
 
   it('gets a laid out sheet and the groups it will score', () => {

@@ -9,7 +9,14 @@ import { layoutSheet, stockTemplate } from '@transferchecker/sheet-spec';
 import type { SheetLayout, SheetSpec } from '@transferchecker/sheet-spec';
 import { findFiducials } from '../src/geometry/fiducials';
 import { MIN_MODULE_PX, readSheetCode } from '../src/code/index';
-import { estimateFrame, paperFrame, toImage } from '../src/geometry/frame';
+import {
+  FIDUCIAL_INSET_BOTTOM_MM,
+  FIDUCIAL_INSET_TOP_MM,
+  FIDUCIAL_INSET_X_MM,
+  estimateFrame,
+  paperFrame,
+  toImage,
+} from '../src/geometry/frame';
 import { renderSheet } from '../tools/render';
 import { photograph } from '../tools/photograph';
 
@@ -131,10 +138,10 @@ describe('the sheet says what it is', () => {
   });
 
   it('reads below the nominal resolution floor, so the floor is a diagnosis', () => {
-    // Defense د11 asks for three pixels per code module, which at a 0.5 mm
-    // module means an A4 page must span at least 1260 pixels. A 1440 pixel wide
-    // frame does not clear that at ordinary framing: at 86 percent fill the page
-    // spans 1238 pixels and 2.95 pixels per module.
+    // Defense د11 asks for three pixels per code module. Defense د6 grew the
+    // module from 0.5 mm to 0.81 mm, so the frame that lands under the floor is
+    // now a much smaller one: at 720 by 1280 with 86 percent fill the module
+    // spans 2.39 pixels [measured].
     //
     // It reads anyway, with tilt, shadow, noise and blur on top, and that is
     // measured here rather than hoped for. The reason it reads is the two
@@ -151,8 +158,8 @@ describe('the sheet says what it is', () => {
     const { spec, layout } = sheet('standard50');
     const flat = renderSheet(layout, { pxPerMm: 12 });
     const frame = photograph(flat, layout.paper.widthMm, layout.paper.heightMm, {
-      width: 1440,
-      height: 2560,
+      width: 720,
+      height: 1280,
       fill: 0.86,
       yawDeg: 5,
       pitchDeg: 4,
@@ -200,13 +207,22 @@ describe('the sheet says what it is', () => {
   it('refuses a frame that cannot carry the code, and says so', () => {
     const { layout } = sheet('full100');
     const flat = renderSheet(layout, { pxPerMm: 12 });
-    // A sheet photographed small enough that a 0.5 mm module lands under three
-    // pixels. This is the proven defect: the answer is a named refusal, not a
-    // silent failure and never a guess.
+    // A sheet photographed small enough that even the grown module lands well
+    // under three pixels, with the noise and blur a phone actually delivers.
+    // This is the proven defect: the answer is a named refusal, not a silent
+    // failure and never a guess.
+    //
+    // The noise and the blur are load bearing here rather than decoration. On a
+    // clean synthetic frame this same code reads at 1.11 pixels per module
+    // [measured], because an area averaged render of a flat page carries no
+    // grain and the decoder resamples nothing. A photograph does carry grain,
+    // and it stops reading at about 2 pixels per module.
     const frame = photograph(flat, layout.paper.widthMm, layout.paper.heightMm, {
-      width: 360,
-      height: 640,
+      width: 480,
+      height: 854,
       fill: 0.8,
+      noise: 3,
+      blur: 1,
       seed: 5,
     });
 
@@ -260,9 +276,11 @@ describe('the paper frame puts every printed feature where it was printed', () =
     if (estimate === null) return;
 
     // Within a few percent, which is all the code window needs and all the
-    // fiducial side can honestly deliver.
-    const expectedX = layout.paper.widthMm - 20;
-    const expectedY = layout.paper.heightMm - 20;
+    // fiducial side can honestly deliver. The two spans are not the same inset
+    // on both ends any more: defense د1 pushed the bottom pair further in than
+    // the top pair, so the rectangle the squares form is not centred.
+    const expectedX = layout.paper.widthMm - 2 * FIDUCIAL_INSET_X_MM;
+    const expectedY = layout.paper.heightMm - FIDUCIAL_INSET_TOP_MM - FIDUCIAL_INSET_BOTTOM_MM;
     expect(Math.abs(estimate.spanXMm - expectedX) / expectedX).toBeLessThan(0.04);
     expect(Math.abs(estimate.spanYMm - expectedY) / expectedY).toBeLessThan(0.04);
   });

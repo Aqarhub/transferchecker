@@ -154,10 +154,15 @@ describe('criterion 16: every refusal names a physical cause', () => {
   it('names the resolution when the frame cannot carry the code', () => {
     const { layout } = sheet('standard50');
     const flat = renderSheet(layout, { pxPerMm: 12 });
+    // Noise and blur included, because defense د6 grew the module by 62 percent
+    // and a clean synthetic frame of this size now reads: what stops a real
+    // phone at this distance is grain, not geometry.
     const frame = photograph(flat, layout.paper.widthMm, layout.paper.heightMm, {
       width: 420,
       height: 720,
       fill: 0.8,
+      noise: 3,
+      blur: 1,
       seed: 41,
     });
     const result = scanSheet(frame);

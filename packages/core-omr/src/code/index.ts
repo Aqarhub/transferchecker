@@ -13,7 +13,7 @@
 // percent of scale error harmless: the error is a fraction of the short offset
 // to the code, not of the whole page.
 
-import { GEOMETRY, decodeSheetCode } from '@transferchecker/sheet-spec';
+import { GEOMETRY, codeModuleMmFor, decodeSheetCode } from '@transferchecker/sheet-spec';
 import type { DecodedCode } from '@transferchecker/sheet-spec';
 import { estimateFrame } from '../geometry/frame';
 import type { Frame } from '../geometry/frame';
@@ -22,7 +22,7 @@ import { cornerReadings } from '../geometry/quad';
 import type { Corners } from '../geometry/quad';
 import type { GrayImage } from '../image/gray';
 import { decodeQrMatrix } from '../qr/index';
-import { FINDER_HALF_MM, looksLikeFinder, refineFinder } from './finder';
+import { finderHalfMm, looksLikeFinder, refineFinder } from './finder';
 import type { Centre } from './finder';
 import { readModules } from './read';
 import { MAX_VERSION, moduleCountOf } from '../qr/versions';
@@ -41,9 +41,6 @@ import { MAX_VERSION, moduleCountOf } from '../qr/versions';
  * difference between a rejection a teacher can act on and one they cannot.
  */
 export const MIN_MODULE_PX = 3;
-
-/** Quiet zone between the printed box's edge and the symbol itself. */
-const QUIET_MM = GEOMETRY.codeQuietModules * GEOMETRY.codeModuleMm;
 
 /** How far a predicted finder centre may move before it is not that pattern. */
 const MAX_DRIFT_MM = 1.2;
@@ -64,9 +61,8 @@ function candidateSizes(): number[] {
   const sizes: number[] = [];
   for (let version = MAX_VERSION; version >= 1; version -= 1) {
     const size = moduleCountOf(version);
-    if ((size + 2 * GEOMETRY.codeQuietModules) * GEOMETRY.codeModuleMm <= GEOMETRY.codeMaxSizeMm) {
-      sizes.push(size);
-    }
+    const acrossMm = (size + 2 * GEOMETRY.codeQuietModules) * codeModuleMmFor(size);
+    if (acrossMm <= GEOMETRY.codeMaxSizeMm) sizes.push(size);
   }
   return sizes;
 }
@@ -76,30 +72,41 @@ const away = (a: Centre, b: Centre): number => Math.hypot(a.xMm - b.xMm, a.yMm -
 interface Found {
   readonly text: string;
   readonly decoded: DecodedCode;
+  readonly moduleMm: number;
 }
 
 function attempt(image: GrayImage, frame: Frame): Found | null {
-  // The symbol's own top-right corner, then in 3.5 modules to its centre.
-  const rightOffsetMm = GEOMETRY.titleBandMm - GEOMETRY.fiducialMm / 2;
+  // Distance from the top-right corner square's CENTRE to the printed code's
+  // own top-right corner. Neither term depends on the paper, which is the
+  // point, because the paper is exactly what has not been read yet.
+  const rightOffsetMm = GEOMETRY.titleBandMm + GEOMETRY.brandingBandMm - GEOMETRY.fiducialMm / 2;
   const topOffsetMm = GEOMETRY.fiducialMm / 2 + GEOMETRY.headerGapMm;
-  const guess: Centre = {
-    xMm: frame.spanXMm - rightOffsetMm - QUIET_MM - FINDER_HALF_MM,
-    yMm: topOffsetMm + QUIET_MM + FINDER_HALF_MM,
-  };
-
-  const topRight = refineFinder(image, frame, guess);
-  if (topRight === null || !looksLikeFinder(image, frame, topRight)) return null;
 
   for (const size of candidateSizes()) {
-    const legMm = (size - 7) * GEOMETRY.codeModuleMm;
+    // Defense د6 made the module a function of the module count, so the whole
+    // search is now per candidate: a 21 module code prints at 1.0 mm and a 49
+    // module one at 0.5 mm, which puts their top-right finder centres 4 mm
+    // apart. Deriving it from the SAME function the layout printed with is what
+    // keeps this arithmetic rather than search.
+    const moduleMm = codeModuleMmFor(size);
+    const inMm = GEOMETRY.codeQuietModules * moduleMm + finderHalfMm(moduleMm);
+    const topRightGuess: Centre = {
+      xMm: frame.spanXMm - rightOffsetMm - inMm,
+      yMm: topOffsetMm + inMm,
+    };
+
+    const topRight = refineFinder(image, frame, topRightGuess, moduleMm);
+    if (topRight === null || !looksLikeFinder(image, frame, topRight, moduleMm)) continue;
+
+    const legMm = (size - 7) * moduleMm;
     const topLeftGuess: Centre = { xMm: topRight.xMm - legMm, yMm: topRight.yMm };
     const bottomLeftGuess: Centre = { xMm: topRight.xMm - legMm, yMm: topRight.yMm + legMm };
 
-    const topLeft = refineFinder(image, frame, topLeftGuess);
+    const topLeft = refineFinder(image, frame, topLeftGuess, moduleMm);
     if (topLeft === null || away(topLeft, topLeftGuess) > MAX_DRIFT_MM) continue;
-    const bottomLeft = refineFinder(image, frame, bottomLeftGuess);
+    const bottomLeft = refineFinder(image, frame, bottomLeftGuess, moduleMm);
     if (bottomLeft === null || away(bottomLeft, bottomLeftGuess) > MAX_DRIFT_MM) continue;
-    if (!looksLikeFinder(image, frame, topLeft)) continue;
+    if (!looksLikeFinder(image, frame, topLeft, moduleMm)) continue;
 
     const matrix = readModules(image, frame, topLeft, topRight, bottomLeft, size);
     if (matrix === null) continue;
@@ -113,7 +120,7 @@ function attempt(image: GrayImage, frame: Frame): Found | null {
     // it was not a sheet code abandoned the size loop with the correct size
     // still untried, and the sheet came back unreadable.
     const decoded = decodeSheetCode(text);
-    if (decoded !== null) return { text, decoded };
+    if (decoded !== null) return { text, decoded, moduleMm };
   }
 
   return null;
@@ -134,7 +141,6 @@ export function readSheetCode(image: GrayImage, quad: FiducialQuad): CodeResult 
     sides.length === 0
       ? 0
       : sides.reduce((sum, side) => sum + side, 0) / sides.length / GEOMETRY.fiducialMm;
-  const modulePx = pxPerMm * GEOMETRY.codeModuleMm;
 
   for (const corners of cornerReadings(quad.points)) {
     const frame = estimateFrame(corners, quad.sidesPx);
@@ -142,10 +148,26 @@ export function readSheetCode(image: GrayImage, quad: FiducialQuad): CodeResult 
 
     const found = attempt(image, frame);
     if (found === null) continue;
-    return { kind: 'ok', text: found.text, decoded: found.decoded, corners, modulePx };
+    // The module size the sheet was ACTUALLY printed with, now that the code
+    // has said how many modules it has. Before defense د6 this was a constant.
+    return {
+      kind: 'ok',
+      text: found.text,
+      decoded: found.decoded,
+      corners,
+      modulePx: pxPerMm * found.moduleMm,
+    };
   }
 
   // Said before "unreadable" because it is the one failure with a remedy.
-  if (modulePx > 0 && modulePx < MIN_MODULE_PX) return { kind: 'too_small', modulePx };
+  //
+  // Measured at the SMALLEST module a sheet may print, because a failed read
+  // has not said how many modules it had and therefore has not said how large
+  // they were. That is the pessimistic end on purpose: the advice it produces
+  // is "come closer", which is never the wrong advice for a read that failed,
+  // whereas measuring at the largest module would keep silent about resolution
+  // for every sheet that prints a small one.
+  const floorPx = pxPerMm * GEOMETRY.codeMinModuleMm;
+  if (floorPx > 0 && floorPx < MIN_MODULE_PX) return { kind: 'too_small', modulePx: floorPx };
   return { kind: 'unreadable' };
 }

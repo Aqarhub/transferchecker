@@ -73,8 +73,10 @@ describe('renderSheetTypst', () => {
     const dark = layout.code.modules.flat().filter(Boolean).length;
     const source = renderSheetTypst(layout, makeOptions());
     const fills = countOf(source, /rect\(width: [\d.]+mm, height: [\d.]+mm, fill: rgb/g);
-    // Fiducials and timing marks are filled too, so the modules are the rest.
-    expect(fills).toBe(dark + layout.fiducials.length + layout.timingMarks.length);
+    // The fiducials, the timing marks and the anchor marks are filled too, so
+    // the modules are the rest.
+    const anchors = layout.anchorColumns.reduce((total, column) => total + column.marks.length, 0);
+    expect(fills).toBe(dark + layout.fiducials.length + layout.timingMarks.length + anchors);
 
     const quiet = GEOMETRY.codeQuietModules;
     const moduleMm = layout.code.box.wMm / (layout.code.modules.length + 2 * quiet);
@@ -188,8 +190,11 @@ describe('renderSheetTypst', () => {
 
   it('rotates the branding and the template name into their edge bands', () => {
     const source = renderSheetTypst(makeLayout(), makeOptions());
-    expect(source).toContain('rotate(-90deg, origin: center');
-    expect(source).toContain('rotate(90deg, origin: center');
+    // Both bands run down the right edge and both read the same way up, since
+    // defense د3 moved the branding off the left edge to give the timing marks
+    // their clearance. Two rotations, not one of each sign.
+    expect(countOf(source, /rotate\(90deg, origin: center/g)).toBe(2);
+    expect(source).not.toContain('rotate(-90deg');
     expect(source).toContain('"TRANSFERCHECKER.COM"');
     expect(source).toContain('"Standard 40"');
   });

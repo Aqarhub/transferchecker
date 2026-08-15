@@ -18,7 +18,18 @@ export type Rejection =
   | { readonly kind: 'template_unknown'; readonly templateId: string }
   | { readonly kind: 'not_this_geometry'; readonly area: string; readonly axis: string }
   | { readonly kind: 'rows_missing'; readonly expected: number; readonly found: number }
-  | { readonly kind: 'sheet_not_flat'; readonly residualMm: number }
+  /**
+   * An anchor mark that is not where the geometry says it is, by more than the
+   * search window is wide. It is its own cause and not a row fault: the rows
+   * were all found, in the right places, in y.
+   */
+  | { readonly kind: 'anchors_missing'; readonly expected: number; readonly found: number }
+  /**
+   * The axis matters to the teacher, because the two are different sheets. In y
+   * the paper is stretched or fed crooked; in x it is curled about a vertical
+   * axis, which is the fault the corner squares cannot see at all.
+   */
+  | { readonly kind: 'sheet_not_flat'; readonly residualMm: number; readonly axis: 'x' | 'y' }
   | {
       readonly kind: 'glare';
       readonly quadrant: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
@@ -45,8 +56,10 @@ export function messageKeyOf(reason: Rejection): string {
       return 'scan.reject.notThisGeometry';
     case 'rows_missing':
       return 'scan.reject.rowsMissing';
+    case 'anchors_missing':
+      return 'scan.reject.anchorsMissing';
     case 'sheet_not_flat':
-      return 'scan.reject.sheetNotFlat';
+      return reason.axis === 'x' ? 'scan.reject.sheetCurled' : 'scan.reject.sheetNotFlat';
     case 'glare':
       return 'scan.reject.glare';
     case 'low_contrast':
@@ -72,6 +85,7 @@ export function isFrameFault(reason: Rejection): boolean {
     case 'template_unknown':
     case 'not_this_geometry':
     case 'rows_missing':
+    case 'anchors_missing':
     case 'sheet_not_flat':
     case 'low_contrast':
       return false;

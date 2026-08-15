@@ -16,7 +16,6 @@
 // paper, so the centre of mass of the ink inside a window centred anywhere near
 // it is pulled toward the true centre. Two passes converge.
 
-import { GEOMETRY } from '@transferchecker/sheet-spec';
 import type { Frame } from '../geometry/frame';
 import { toImage } from '../geometry/frame';
 import { sampleAt } from '../image/gray';
@@ -27,22 +26,27 @@ export interface Centre {
   readonly yMm: number;
 }
 
-/** Half the width of a finder pattern, in millimetres: 3.5 modules. */
-export const FINDER_HALF_MM = 3.5 * GEOMETRY.codeModuleMm;
+/** Half the width of a finder pattern: 3.5 modules, whatever a module is here. */
+export const finderHalfMm = (moduleMm: number): number => 3.5 * moduleMm;
 
 /**
- * Window half widths for the successive refinement passes.
+ * Window half widths for the successive refinement passes, in MODULES past the
+ * pattern's own edge.
  *
- * The pattern is 3.5 mm across and a one module separator of white paper
- * surrounds it, so a window may reach 0.5 mm past the pattern and no further.
- * Reaching further is not a harmless generosity: past the separator lies the
- * symbol's own data, which is dark on two sides of the top-left pattern and on
- * none of the top-right one, so the centre of mass gets pulled down and to the
- * right by a fraction of a module. It cost a fifth of a millimetre, the module
- * grid inherited it, and the payload came back through its own error correction
- * as a different valid codeword.
+ * A one module separator of white paper surrounds the pattern, so a window may
+ * reach one module past it and no further. Reaching further is not a harmless
+ * generosity: past the separator lies the symbol's own data, which is dark on
+ * two sides of the top-left pattern and on none of the top-right one, so the
+ * centre of mass gets pulled down and to the right by a fraction of a module.
+ * It cost a fifth of a millimetre, the module grid inherited it, and the
+ * payload came back through its own error correction as a different valid
+ * codeword.
+ *
+ * Stated in modules rather than in millimetres since defense د6, because the
+ * module size is now derived from the module count and the separator grows and
+ * shrinks with it. The three values are what the fixed 0.5 mm module made them.
  */
-const PASSES = [FINDER_HALF_MM + 0.5, FINDER_HALF_MM + 0.25, FINDER_HALF_MM + 0.12];
+const PASSES = [1, 0.5, 0.24];
 
 /** Samples per millimetre inside a refinement window. */
 const GRAIN = 8;
@@ -84,10 +88,16 @@ function readWindow(image: GrayImage, frame: Frame, centre: Centre, halfMm: numb
  * itself: 33 of its 49 modules are dark, which over a window a little larger
  * than the pattern is between a third and two thirds of the area.
  */
-export function refineFinder(image: GrayImage, frame: Frame, guess: Centre): Centre | null {
+export function refineFinder(
+  image: GrayImage,
+  frame: Frame,
+  guess: Centre,
+  moduleMm: number,
+): Centre | null {
   let centre = guess;
 
-  for (const halfMm of PASSES) {
+  for (const past of PASSES) {
+    const halfMm = finderHalfMm(moduleMm) + past * moduleMm;
     const window = readWindow(image, frame, centre, halfMm);
     if (window === null) return null;
 
@@ -120,8 +130,12 @@ export function refineFinder(image: GrayImage, frame: Frame, guess: Centre): Cen
  * signature a general detector hunts for, checked at module centres instead of
  * by run lengths, which is why blur does not take it away.
  */
-export function looksLikeFinder(image: GrayImage, frame: Frame, centre: Centre): boolean {
-  const module = GEOMETRY.codeModuleMm;
+export function looksLikeFinder(
+  image: GrayImage,
+  frame: Frame,
+  centre: Centre,
+  module: number,
+): boolean {
   const wanted = [true, false, true, true, true, false, true];
 
   // Each of the seven points is the mean of three samples across the middle of

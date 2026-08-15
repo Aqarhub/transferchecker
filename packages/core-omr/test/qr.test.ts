@@ -157,8 +157,8 @@ describe('error correction earns its place', () => {
 describe('the printed sheet stays inside the versions this decoder carries', () => {
   it('cannot print a code larger than the largest supported version', () => {
     const modulesAcross =
-      GEOMETRY.codeMaxSizeMm / GEOMETRY.codeModuleMm - 2 * GEOMETRY.codeQuietModules;
-    // Raising codeMaxSizeMm or shrinking codeModuleMm upstream without widening
+      GEOMETRY.codeMaxSizeMm / GEOMETRY.codeMinModuleMm - 2 * GEOMETRY.codeQuietModules;
+    // Raising codeMaxSizeMm or lowering codeMinModuleMm upstream without widening
     // the version tables here would print sheets this engine cannot read, so
     // the failure belongs at build time and not on a teacher's phone.
     expect(modulesAcross).toBeLessThanOrEqual(moduleCountOf(MAX_VERSION));
