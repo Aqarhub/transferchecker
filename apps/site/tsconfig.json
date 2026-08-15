@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    // The generator writes files, which is the whole of what it does.
+    "types": ["node"]
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}
