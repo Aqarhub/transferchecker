@@ -5,6 +5,7 @@
 // and this file only compares.
 
 import type { GroupOutcome } from '../../src/decide/group';
+import type { Thresholds } from '../../src/decide/thresholds';
 import { scanSheet } from '../../src/scan/pipeline';
 import type { ScanResult } from '../../src/scan/result';
 import type { GoldenCase, Stratum } from './corpus';
@@ -20,6 +21,19 @@ export interface QuestionRecord {
   readonly verdict: Verdict;
   /** How far the decision was from the threshold it would have had to cross. */
   readonly margin: number;
+  /**
+   * Whether the engine actually named a letter here.
+   *
+   * The margin only means something on these. A blank's margin is the distance
+   * DOWN to the floor, so an engine blinded by raising the floor reports the
+   * widest margins in the corpus: [measured] `minInk` at 0.99 reads nothing at
+   * all, 185 of 229 answered questions come back blank, and its first
+   * percentile margin is 0.849 against the working engine's 0.119. A leading
+   * indicator that rewards blindness is worse than none.
+   */
+  readonly decided: boolean;
+  /** Whether the paper carried an answer here, which is the honest denominator. */
+  readonly answerable: boolean;
 }
 
 export interface CaseRecord {
@@ -35,6 +49,10 @@ export interface CaseRecord {
   readonly asked: boolean;
   readonly questions: readonly QuestionRecord[];
   readonly counts: Readonly<Record<Verdict, number>>;
+  /** Defense د20's one character per question, as the engine wrote it. */
+  readonly marks: string;
+  /** Empty when the marks string carried what the case says it should. */
+  readonly charFault: string;
   readonly elapsedMs: number;
 }
 
@@ -69,9 +87,12 @@ function marksByQuestion(item: GoldenCase): Map<number, typeof item.marks> {
   return byQuestion;
 }
 
-export function runCase(item: GoldenCase): CaseRecord {
+export function runCase(item: GoldenCase, thresholds?: Thresholds): CaseRecord {
   const started = Number(process.hrtime.bigint() / 1000n) / 1000;
-  const result: ScanResult = scanSheet(imageOf(item));
+  const result: ScanResult = scanSheet(
+    imageOf(item),
+    thresholds === undefined ? {} : { thresholds },
+  );
   const elapsedMs = Number(process.hrtime.bigint() / 1000n) / 1000 - started;
 
   const got = result.kind === 'ok' ? 'graded' : result.reason.kind;
@@ -91,6 +112,8 @@ export function runCase(item: GoldenCase): CaseRecord {
       asked,
       questions: [],
       counts: { ...EMPTY },
+      marks: '',
+      charFault: '',
       elapsedMs,
     };
   }
@@ -113,6 +136,8 @@ export function runCase(item: GoldenCase): CaseRecord {
         outcome: label(reading.outcome),
         verdict,
         margin: 'margin' in reading.outcome ? reading.outcome.margin : 0,
+        decided: reading.outcome.kind === 'answer' || reading.outcome.kind === 'multiple',
+        answerable: expected.kind === 'answer' || expected.kind === 'either',
       });
     }
   }
@@ -127,6 +152,27 @@ export function runCase(item: GoldenCase): CaseRecord {
     asked,
     questions,
     counts,
+    marks: result.sheet.marks,
+    charFault: charFaultOf(item, result.sheet.marks),
     elapsedMs,
   };
+}
+
+/** What the marks string carried that the case did not ask for, or did not carry. */
+function charFaultOf(item: GoldenCase, marks: string): string {
+  const wanted = item.chars;
+  if (wanted === undefined) return '';
+  const present = new Set(marks);
+
+  const only = wanted.only;
+  if (only !== undefined) {
+    const extra = [...present].filter((char) => !only.includes(char));
+    if (extra.length > 0) {
+      return `carries ${extra.join('')} but may only carry ${only.join('')}`;
+    }
+  }
+
+  const atLeast = wanted.atLeast ?? [];
+  const absent = atLeast.filter((char) => !present.has(char));
+  return absent.length === 0 ? '' : `does not carry ${absent.join('')}`;
 }

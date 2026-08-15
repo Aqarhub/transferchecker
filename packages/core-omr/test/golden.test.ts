@@ -14,7 +14,8 @@
 // the published number stay disarmed until real papers exist.
 
 import { describe, expect, it } from 'vitest';
-import { quickCases } from '../tools/golden/cases';
+import { allCases, quickCases } from '../tools/golden/cases';
+import { MUTANTS, survivorsOf } from '../tools/golden/mutants';
 import { forgetRenders } from '../tools/golden/image';
 import { summarise } from '../tools/golden/report';
 import { runCase } from '../tools/golden/score';
@@ -27,7 +28,7 @@ let records: CaseRecord[] = [];
 
 function sweep(): CaseRecord[] {
   if (records.length === 0) {
-    records = quickCases().map(runCase);
+    records = quickCases().map((item) => runCase(item));
     forgetRenders();
   }
   return records;
@@ -175,5 +176,63 @@ describe('the truth of a case comes from the paper, not from the engine', () => 
         trace: false,
       }),
     ).toBe('wrong');
+  });
+});
+
+describe('the sweep is asked whether it could fail at all', () => {
+  /**
+   * The four cases that exercise a decision rather than a pipeline stage, which
+   * is what a mutation needs to show up in. [measured] 19.2 seconds for the
+   * whole catalogue against them.
+   */
+  const PROBES = new Set([
+    'clean/quick20/answered-100',
+    'marks/a-real-hand-flat',
+    'printing/toner-40',
+    'printing/speck-on-weak-toner',
+    'lighting/glare-on-a-shaded-bubble',
+  ]);
+
+  /**
+   * The mutants this suite still cannot see, each with the reason it survives.
+   * A ratchet rather than a blocker: green today, and red the moment a new
+   * mutant survives or a listed one starts being caught without this list being
+   * updated. Progress is this list getting shorter in a reviewable diff.
+   *
+   * [measured] It was NINE of twelve before the marks alphabet became a gate
+   * and the margin stopped being taken over blanks, and twelve of fourteen when
+   * the sweep was first written: an engine with `minInk` at 0.99 that read
+   * nothing at all passed every gate with the BEST margin score in the corpus.
+   *
+   * A mutant counts as caught only when it fails a gate the unmutated engine
+   * passes, which is not pedantry: without that clause this list read "none"
+   * because the probe set's own baseline sits under the answered accuracy
+   * ratchet, and a suite with no power reported that it caught everything.
+   */
+  const SURVIVORS = [
+    // The corpus has no mark between 0.25 and 0.45 ink, so nothing distinguishes
+    // the two floors. Closing it needs a mark strength ladder.
+    'raised-floor',
+    // No case demands an UNCERTAIN answer, only doubtful ones that resolve to
+    // ambiguous or blank.
+    'flag-nothing',
+    // The double mark on q11 is two nearly equal shadings, so 0.95 of the top
+    // is still under the runner up and the outcome does not change. A strong
+    // plus medium pair would catch it.
+    'runner-up-blind',
+    // Neutralised rather than missed: since the trace flag gained the same
+    // absolute companion the answer floor has, lowering `traceInk` alone no
+    // longer changes what is flagged on a healthy sheet.
+    'trace-paranoid',
+  ];
+
+  it('catches the mutants it claims to, and no more', { timeout: 120_000 }, () => {
+    const probes = allCases().filter((item) => PROBES.has(item.id));
+    expect(probes.length).toBe(PROBES.size);
+
+    const survivors = survivorsOf(probes);
+    expect(survivors.join('\n')).toBe(SURVIVORS.join('\n'));
+    // And the catalogue is worth something only if most of it is caught.
+    expect(MUTANTS.length - survivors.length).toBeGreaterThanOrEqual(8);
   });
 });

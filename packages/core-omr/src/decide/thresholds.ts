@@ -54,17 +54,17 @@ export interface Thresholds {
   readonly minAbsDark: number;
 
   /**
-   * The relative rule, unchanged from the plan's rule 1 and reached only after
-   * the floor has been cleared. A bubble is the answer when it holds at least
-   * this share of the darkest bubble in its group.
+   * The relative rule, reached only after the floor has been cleared: no other
+   * bubble may hold more than this share of the darkest one. Two marks that
+   * close are not an answer, they are a question for the teacher.
    * [reasoned] Carried over from PLAN.md section 4.
-   */
-  readonly answerRatio: number;
-
-  /**
-   * And when no other bubble holds more than this share. Two marks this close
-   * are not an answer, they are a question for the teacher.
-   * [reasoned] Carried over from PLAN.md section 4.
+   *
+   * PLAN.md's rule also carried an `answerRatio` of 0.65, and it is not here:
+   * [measured] setting it to 0.01 or to 0.99 gave byte identical readings on
+   * every case of the sweep, because the winner's own ratio is 1.00 by
+   * construction and no file in `src` ever read the number. A documented
+   * threshold nobody reads is folklore that a sweep then reports as robust, so
+   * it is deleted rather than left to be tuned by someone who believes it.
    */
   readonly runnerUpRatio: number;
 
@@ -111,7 +111,6 @@ export interface Thresholds {
 export const DEFAULT_THRESHOLDS: Thresholds = {
   minInk: 0.25,
   minAbsDark: 18,
-  answerRatio: 0.65,
   runnerUpRatio: 0.45,
   uncertainMargin: 0.08,
   maxSaturation: 0.1,

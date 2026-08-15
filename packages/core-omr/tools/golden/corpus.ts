@@ -50,6 +50,17 @@ export interface GoldenCase {
   readonly twoUp?: boolean;
   /** Graded, or refused by this named cause. Both are correct answers. */
   readonly expect: 'graded' | Rejection['kind'];
+  /**
+   * What the marks string may and must carry, defense د20's alphabet.
+   *
+   * Verdict counts are structurally blind to a flag that rides on a correct
+   * outcome: [measured] at a printed contrast of 96 every question of a quick20
+   * sheet came back `e`, answered and blank alike, while the sweep scored those
+   * pages 50 of 50 correct with every gate green. A teacher would have been
+   * asked to review every question of every page and the report would have said
+   * 100 percent. So a case says which characters belong on it.
+   */
+  readonly chars?: { readonly only?: readonly string[]; readonly atLeast?: readonly string[] };
   readonly why: string;
 }
 

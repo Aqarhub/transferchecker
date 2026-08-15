@@ -108,16 +108,36 @@ function decideMany(input: GroupInput, thresholds: Thresholds): GroupOutcome {
   };
 }
 
-/** A bubble that is not the answer but carries more ink than clean paper does. */
+/**
+ * A bubble that is not the answer but carries more ink than clean paper does.
+ *
+ * The trace threshold needs the same absolute companion the answer floor has,
+ * and it was left without one. [measured] On a quick20 sheet rendered at a
+ * printed contrast of 96 and below, EVERY question came back `e`, answered and
+ * blank alike, and rendering the identical sheet with `labels: false` came back
+ * clean at every toner level: the cause is the printed letter inside the
+ * bubble. It covers 0.9 mm2 of the 7.069 mm2 disc, so it darkens the disc by a
+ * constant 11.5 grey levels whatever the toner does, and as a FRACTION that is
+ * 0.119 at contrast 96 against a raw threshold of 0.10.
+ *
+ * Reusing `minAbsDark` rather than inventing a second number: it is the same
+ * sentence, that this much ink is really on the paper, and 18 levels clears the
+ * label's 11.5 with room. [measured] At the default contrast of 196 it changes
+ * nothing, because 18 / 196 = 0.092 is under the 0.10 that was already there.
+ */
 function hasTrace(
   input: GroupInput,
   thresholds: Thresholds,
   winner: number,
   floor: number,
 ): boolean {
+  const spans = input.readings.map((reading) => reading.spanLevels).filter((span) => span > 0);
+  const traceFloor =
+    spans.length === 0
+      ? thresholds.traceInk
+      : Math.max(thresholds.traceInk, thresholds.minAbsDark / Math.min(...spans));
   return input.readings.some(
-    (reading, index) =>
-      index !== winner && reading.fill >= thresholds.traceInk && reading.fill < floor,
+    (reading, index) => index !== winner && reading.fill >= traceFloor && reading.fill < floor,
   );
 }
 

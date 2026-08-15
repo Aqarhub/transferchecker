@@ -31,6 +31,18 @@ export interface GoldenReport {
   readonly tier: 'synthetic';
   readonly cases: number;
   readonly questions: number;
+  /**
+   * Questions where the paper actually carried an answer, and how many of those
+   * came back with the right letter.
+   *
+   * This is the honest denominator and the headline accuracy is not. [measured]
+   * Of 660 quick tier questions, 428 expect blank and 229 expect an answer, so
+   * an engine that answers NOTHING scores 64.85 percent, and the denominator is
+   * contributor controlled: adding blank pages raises it for free.
+   */
+  readonly answerable: number;
+  readonly answeredCorrect: number;
+  readonly answeredAccuracy: number;
   readonly counts: Readonly<Record<Verdict, number>>;
   readonly accuracy: number;
   readonly flagRate: number;
@@ -74,18 +86,35 @@ function firstPercentile(values: readonly number[]): number {
 /** How many real papers the accuracy gates wait for before they arm themselves. */
 export const PAPERS_TO_ARM = 30;
 
+/**
+ * The floor under the share of ANSWERED questions that come back right.
+ *
+ * [measured] The working engine reads 100 percent of them on this corpus, so
+ * the floor is a ratchet with room rather than a target to tune toward. It is
+ * not the published accuracy claim and the report says so: this counts only
+ * questions the corpus answered, on pages the corpus drew.
+ */
+const MIN_ANSWERED_ACCURACY = 0.98;
+
 export function summarise(records: readonly CaseRecord[], realPapers = 0): GoldenReport {
   const counts: Record<Verdict, number> = { ...ZERO };
   const margins: number[] = [];
   const wrongSheets: string[] = [];
   let elapsedMs = 0;
+  let answerable = 0;
+  let answeredCorrect = 0;
 
   for (const record of records) {
     add(counts, record.counts);
     elapsedMs += record.elapsedMs;
     if (record.counts.wrong > 0 || !record.asked) wrongSheets.push(record.id);
     for (const question of record.questions) {
-      if (question.verdict === 'correct') margins.push(question.margin);
+      // Only a decided letter carries a meaningful margin, and only a question
+      // the paper answered belongs in the reading denominator.
+      if (question.decided) margins.push(question.margin);
+      if (!question.answerable) continue;
+      answerable += 1;
+      if (question.verdict === 'correct') answeredCorrect += 1;
     }
   }
 
@@ -106,6 +135,7 @@ export function summarise(records: readonly CaseRecord[], realPapers = 0): Golde
 
   const questions = total(counts);
   const accuracy = rate(counts.correct, questions);
+  const answeredAccuracy = rate(answeredCorrect, answerable);
   const flagRate = rate(counts.flagged + counts.missed, questions);
   const refusedWrongly = records.filter((record) => !record.asked && record.wanted === 'graded');
   const marginP1 = firstPercentile(margins);
@@ -144,10 +174,33 @@ export function summarise(records: readonly CaseRecord[], realPapers = 0): Golde
         .join(', '),
     },
     {
+      // Defense د20's alphabet as a gate. This is the one that sees a flag
+      // riding on a correct answer, which every count based metric misses.
+      gate: 'the marks string carries what the paper carries',
+      armed: true,
+      passed: records.every((record) => record.charFault === ''),
+      detail:
+        records
+          .filter((record) => record.charFault !== '')
+          .map((record) => `${record.id} ${record.charFault}`)
+          .join('; ') || 'every case wrote the alphabet it declared',
+    },
+    {
       gate: 'margin: first percentile above the uncertain band',
       armed: true,
       passed: marginP1 > 0,
-      detail: `first percentile of decided margin ${marginP1.toFixed(3)}`,
+      detail: `first percentile of the margin of DECIDED answers ${marginP1.toFixed(3)}`,
+    },
+    {
+      // A ratchet against this repository's own number, and NOT the published
+      // claim: it says the synthetic sweep still reads what it read yesterday.
+      // [measured] It is the gate a blinded engine fails: raising `minInk` to
+      // 0.99 takes this from 100 percent to 19.2 while every other armed gate
+      // stays green.
+      gate: 'synthetic regression: answers still read',
+      armed: true,
+      passed: answeredAccuracy >= MIN_ANSWERED_ACCURACY,
+      detail: `${(answeredAccuracy * 100).toFixed(2)} percent of ${String(answerable)} answered questions read correctly, floor ${(MIN_ANSWERED_ACCURACY * 100).toFixed(0)}`,
     },
   ];
 
@@ -155,6 +208,9 @@ export function summarise(records: readonly CaseRecord[], realPapers = 0): Golde
     tier: 'synthetic',
     cases: records.length,
     questions,
+    answerable,
+    answeredCorrect,
+    answeredAccuracy,
     counts,
     accuracy,
     flagRate,
@@ -190,7 +246,12 @@ export function formatReport(report: GoldenReport): string {
       ].join(' '),
     );
   }
-  lines.push('', `margin, first percentile: ${report.marginP1.toFixed(3)}`, '');
+  lines.push(
+    '',
+    `answered questions: ${String(report.answeredCorrect)} of ${String(report.answerable)} read correctly (${(report.answeredAccuracy * 100).toFixed(2)}%), and the other ${String(report.questions - report.answerable)} questions were blank by design`,
+    `margin, first percentile over decided answers: ${report.marginP1.toFixed(3)}`,
+    '',
+  );
   for (const gate of report.gates) {
     const state = !gate.armed ? 'not armed' : gate.passed ? 'pass' : 'FAIL';
     lines.push(`[${state.padEnd(9)}] ${gate.gate}: ${gate.detail}`);

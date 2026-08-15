@@ -36,6 +36,7 @@ function cleanCases(): GoldenCase[] {
         template,
         marks,
         expect: 'graded',
+        chars: { only: ['b', 'c'] },
         why: `${String(Math.round(fraction * 100))} percent of the questions answered`,
       });
     }
@@ -153,6 +154,7 @@ function printingCases(): GoldenCase[] {
     {
       ...base,
       id: 'printing/toner-96',
+      chars: { only: ['b', 'c'] },
       ink: tonerAt(120),
       expect: 'graded',
       why: 'a tired cartridge',
@@ -160,6 +162,7 @@ function printingCases(): GoldenCase[] {
     {
       ...base,
       id: 'printing/toner-56',
+      chars: { only: ['b', 'c'] },
       ink: tonerAt(160),
       expect: 'graded',
       why: 'a third generation photocopy',
@@ -167,13 +170,31 @@ function printingCases(): GoldenCase[] {
     {
       ...base,
       id: 'printing/toner-40',
+      chars: { only: ['b', 'c'] },
       ink: tonerAt(176),
       expect: 'graded',
       why: 'the weakest page the engine accepts at all',
     },
     {
       ...base,
+      id: 'printing/speck-on-weak-toner',
+      ink: tonerAt(176),
+      // Eleven grey levels of show through over one bubble of an unanswered
+      // question. On a healthy page that is nothing; at this contrast it is
+      // 0.28 of the paper to toner swing, which is exactly why the second floor
+      // is counted in grey levels and not in ink units.
+      marks: [
+        ...marks.filter((mark) => mark.groupId !== 'q:2'),
+        { groupId: 'q:2', symbol: 'C', coverage: 1, value: 205 },
+      ],
+      chars: { only: ['b', 'c'] },
+      expect: 'graded',
+      why: 'a speck of show through on the weakest page the engine accepts',
+    },
+    {
+      ...base,
       id: 'printing/fit-to-page-96',
+      chars: { only: ['b', 'c'] },
       printScale: 0.96,
       expect: 'graded',
       why: 'Fit to page shrank the sheet',
@@ -181,6 +202,7 @@ function printingCases(): GoldenCase[] {
     {
       ...base,
       id: 'printing/scaled-104',
+      chars: { only: ['b', 'c'] },
       printScale: 1.04,
       expect: 'graded',
       why: 'printed a little large',
@@ -239,6 +261,9 @@ function markCases(): GoldenCase[] {
       template,
       marks,
       expect: 'graded',
+      // The eraser on q9 and the spill on q13 are the two the record has to
+      // keep: د20 exists so that an appeal can ask which of the two happened.
+      chars: { atLeast: ['e', 'x'] },
       why: 'hard pencil, a tick, an off centre shading, an erasure, a double and a spill',
     },
     {
@@ -249,6 +274,7 @@ function markCases(): GoldenCase[] {
       pxPerMm: 12,
       photo: framing(1440, 2560),
       expect: 'graded',
+      chars: { atLeast: ['e', 'x'] },
       why: 'the same hand, through a camera',
     },
   ];
