@@ -10,7 +10,7 @@
 // renumbered. A change means a new CODE_FORMAT, not an edit to this one.
 
 import { PAPER_NAMES } from '../paper';
-import { FIELD_USAGES, FIELD_WIDTHS } from '../spec';
+import { FIELD_USAGES, FIELD_WIDTHS, LABEL_PLACEMENTS } from '../spec';
 import type { HeaderField, Question, SheetSpec } from '../spec';
 import { base32Encode } from './base32';
 import { CUSTOM_SET, symbolSetId } from './symbols';
@@ -108,10 +108,22 @@ export function encodeSheetBytes(spec: SheetSpec): Uint8Array {
   bytes.push(runs.length);
   for (const run of runs) {
     bytes.push(run.count);
-    bytes.push(
-      (run.question.placement === 'external' ? 0x80 : 0) |
-        (run.question.select === 'many' ? 0x40 : 0),
-    );
+    // Two bits of placement and one of select mode.
+    //
+    // A single bit for placement was the same defect as the single bit for
+    // paper, in the same byte layout, and just as silent. LABEL_PLACEMENTS has
+    // THREE members, so 'header' encoded as 0 and decoded as 'internal': a
+    // 'header' sheet prints a row of choice letters above each column, which
+    // costs `choiceHeaderMm` of height and moves the whole grid. Measured on a
+    // 40 question A4 sheet, every bubble landed 3.8 mm from where the decoded
+    // spec said it was, growing to about 11 mm by the twentieth row, and the
+    // scanner would have blamed the timing mark residual and told the teacher
+    // the paper was not flat.
+    const placement = LABEL_PLACEMENTS.indexOf(run.question.placement);
+    if (placement < 0 || placement > 3) {
+      throw new Error('sheet code: label placement does not fit the question flags');
+    }
+    bytes.push((placement << 6) | (run.question.select === 'many' ? 0x20 : 0));
     writeSymbols(bytes, run.question.symbols);
   }
 

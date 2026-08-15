@@ -169,7 +169,7 @@ describe('criterion 16: every refusal names a physical cause', () => {
 });
 
 describe('criterion 2: the scan fits its time budget', () => {
-  it('grades a hundred question sheet well inside the budget', () => {
+  it('keeps the determinism pass a small multiple of the measurement it repeats', () => {
     // Measured on Node 22 in this repository, median of five runs on a 1440 by
     // 2560 frame with tilt, noise and blur:
     //
@@ -177,11 +177,19 @@ describe('criterion 2: the scan fits its time budget', () => {
     //   50 questions   75 ms                            28 ms
     //  100 questions  117 ms                            35 ms
     //
-    // The budget is 400 ms. The bound asserted here is deliberately loose,
-    // because a shared CI runner is not a measuring instrument and a tight
-    // timing assertion is a flaky test rather than a guarantee. What it catches
-    // is an order of magnitude regression, which is the only kind that would
-    // silently make the camera loop unusable.
+    // The budget is 400 ms, so there is room. What is asserted is a RATIO and
+    // not a wall clock, because a wall clock bound on a shared runner is not a
+    // measurement, it is a flaky test: this very assertion failed once at 2000
+    // ms while three other agents were running on the same machine, which is
+    // the failure mode the first version of this comment predicted and then
+    // walked into anyway.
+    //
+    // A ratio is load independent, because both halves run under the same load,
+    // and it guards the thing that could actually regress: the perturbation set
+    // re-measures every bubble six times, so if the shared stages before it
+    // (finding the sheet, reading the code, the timing marks, the photometry)
+    // ever fell into that loop, this number would jump from under three to
+    // around seven.
     //
     // NOT measured on Hermes, not once. Hermes is slower than Node at typed
     // array work, so the hundred question sheet may land near the budget there
@@ -202,12 +210,28 @@ describe('criterion 2: the scan fits its time budget', () => {
       seed: 9,
     });
 
+    // Warm both paths before either is timed.
     scanSheet(frame);
-    const started = performance.now();
-    const result = scanSheet(frame);
-    const elapsed = performance.now() - started;
+    scanSheet(frame, { perturb: false });
 
-    expect(result.kind).toBe('ok');
-    expect(elapsed).toBeLessThan(2000);
+    const time = (run: () => void): number => {
+      const started = performance.now();
+      run();
+      return performance.now() - started;
+    };
+    const bare = Math.min(
+      time(() => void scanSheet(frame, { perturb: false })),
+      time(() => void scanSheet(frame, { perturb: false })),
+      time(() => void scanSheet(frame, { perturb: false })),
+    );
+    const full = Math.min(
+      time(() => void scanSheet(frame)),
+      time(() => void scanSheet(frame)),
+      time(() => void scanSheet(frame)),
+    );
+
+    expect(scanSheet(frame).kind).toBe('ok');
+    expect(bare).toBeGreaterThan(0);
+    expect(full / bare).toBeLessThan(6);
   });
 });

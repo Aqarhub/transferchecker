@@ -6,7 +6,9 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_BUBBLE,
   GEOMETRY,
+  LABEL_PLACEMENTS,
   PAPER_NAMES,
+  SELECT_MODES,
   arabicSymbols,
   base32Decode,
   base32Encode,
@@ -99,6 +101,42 @@ describe('a sheet that carries its whole geometry', () => {
       expect(`${paper}: ${String(decoded?.mode)}`).toBe(`${paper}: full`);
       if (decoded?.mode !== 'full') continue;
       expect(`${paper} decodes as ${decoded.spec.paper}`).toBe(`${paper} decodes as ${paper}`);
+    }
+  });
+
+  it('carries every label placement, not only the two that fitted one bit', () => {
+    // The second defect of exactly the same shape, in the same byte layout, and
+    // just as silent. LABEL_PLACEMENTS has THREE members and the question flags
+    // gave placement one bit, so 'header' encoded as 0 and decoded as
+    // 'internal'. A 'header' sheet prints a row of choice letters above each
+    // column, so the whole grid moves: measured at 3.8 mm on the first bubble
+    // of a 40 question A4 sheet, and about 11 mm by the twentieth row.
+    //
+    // The assertion is on the REBUILT GEOMETRY and not only on the field,
+    // because the field is a means and the millimetres are the end.
+    for (const placement of LABEL_PLACEMENTS) {
+      for (const select of SELECT_MODES) {
+        const spec = makeSpec({
+          questions: Array.from({ length: 40 }, () => ({
+            kind: 'choice' as const,
+            symbols: [...latinSymbols(4)],
+            placement,
+            select,
+          })),
+        });
+        const decoded = decodeSheetCode(encodeSheetCode(spec));
+        const label = `${placement}/${select}`;
+        expect(`${label}: ${String(decoded?.mode)}`).toBe(`${label}: full`);
+        if (decoded?.mode !== 'full') continue;
+
+        expect(`${label} placement ${String(decoded.spec.questions[0]?.placement)}`).toBe(
+          `${label} placement ${placement}`,
+        );
+        expect(`${label} select ${String(decoded.spec.questions[0]?.select)}`).toBe(
+          `${label} select ${select}`,
+        );
+        expect(geometryOf(layoutOf(decoded.spec))).toEqual(geometryOf(layoutOf(spec)));
+      }
     }
   });
 

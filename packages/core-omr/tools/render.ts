@@ -37,9 +37,15 @@ export interface Ink {
    *
    * A letter is strokes rather than a block, and the engine measures a mean, so
    * what matters is how much ink lands inside the disc and not the shape of it.
-   * At `bubbleLabelMm` 1.9 a capital covers roughly 0.64 mm2, which is 9 percent
-   * of the 1.5 mm inner disc, so an empty internal bubble sits near 0.04 ink
-   * against a floor of 0.25.
+   *
+   * 0.90 mm2 is the PESSIMISTIC end, not the typical one: a '0' at 1.9 mm cap
+   * height, about 1.3 mm wide with a 0.22 mm stroke, covers roughly that much,
+   * which is 12.7 percent of the 1.5 mm inner disc. Denser glyphs like '8' and
+   * 'W' are the reason to sit at this end rather than at the 9 percent an
+   * average letter gives. There is no rasteriser in this repository to measure
+   * it against, so the number is reasoned rather than measured, and the test
+   * asserts the margin it leaves so that being wrong about it shows up as a
+   * shrinking number instead of a passing test.
    */
   readonly bubbleLabelAreaMm2: number;
 }
@@ -66,7 +72,7 @@ export const DEFAULT_INK: Ink = {
   boxStrokeMm: 0.35,
   // The generator prints the letter in the same grey as the outline.
   bubbleLabel: 126,
-  bubbleLabelAreaMm2: 0.64,
+  bubbleLabelAreaMm2: 0.9,
 };
 
 /** One pencil mark a student made, aimed at one bubble of one group. */
