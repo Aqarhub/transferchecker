@@ -3,10 +3,17 @@
 // This is the golden set before there is a golden set. It draws what the PDF
 // generator draws, from the same layout object, so a sheet rendered here has
 // its corner squares, timing marks, printed code and bubbles at exactly the
-// millimetres the scanner is going to look for. What it deliberately does not
-// draw is text: no letter inside a bubble, no question number, no branding.
-// Those are the parts the scanner must not depend on, and leaving them out
-// keeps that honest.
+// millimetres the scanner is going to look for.
+//
+// What it does NOT draw is text the scanner must not depend on: the question
+// number, the branding, the printed warning. Leaving those out keeps the claim
+// honest, because a scanner that quietly needed them would still pass.
+//
+// The one piece of text it DOES draw is the letter printed inside each bubble,
+// and that is not a decoration. `placement: 'internal'` is the default, so on
+// almost every real sheet every empty bubble already carries ink in exactly the
+// place the fill ratio is measured: the middle. Omitting it proves the absolute
+// ink floor against a cleaner sheet than any teacher will ever print.
 
 import type { SheetLayout } from '@transferchecker/sheet-spec';
 import { bubbleGroups } from '@transferchecker/sheet-spec';
@@ -23,6 +30,18 @@ export interface Ink {
   readonly bubbleStrokeMm: number;
   readonly boxStroke: number;
   readonly boxStrokeMm: number;
+  /** The letter printed inside a bubble, kept light so an empty bubble reads as paper. */
+  readonly bubbleLabel: number;
+  /**
+   * Ink area of one printed letter, in square millimetres.
+   *
+   * A letter is strokes rather than a block, and the engine measures a mean, so
+   * what matters is how much ink lands inside the disc and not the shape of it.
+   * At `bubbleLabelMm` 1.9 a capital covers roughly 0.64 mm2, which is 9 percent
+   * of the 1.5 mm inner disc, so an empty internal bubble sits near 0.04 ink
+   * against a floor of 0.25.
+   */
+  readonly bubbleLabelAreaMm2: number;
 }
 
 /**
@@ -45,6 +64,9 @@ export const DEFAULT_INK: Ink = {
   bubbleStrokeMm: 0.25,
   boxStroke: 36,
   boxStrokeMm: 0.35,
+  // The generator prints the letter in the same grey as the outline.
+  bubbleLabel: 126,
+  bubbleLabelAreaMm2: 0.64,
 };
 
 /** One pencil mark a student made, aimed at one bubble of one group. */
@@ -71,6 +93,8 @@ export interface RenderOptions {
   readonly marks?: readonly PencilMark[];
   /** Draws the header and sidebar frames. On by default, since the sheet has them. */
   readonly furniture?: boolean;
+  /** Draws the letter inside each bubble. On by default, since the sheet has it. */
+  readonly labels?: boolean;
 }
 
 function drawFurniture(image: GrayImage, pxPerMm: number, layout: SheetLayout, ink: Ink): void {
@@ -140,6 +164,31 @@ export function renderSheet(layout: SheetLayout, options: RenderOptions = {}): G
         ink.bubbleStrokeMm,
         ink.bubbleStroke,
       );
+    }
+  }
+
+  // The letter inside the bubble, wherever the layout says one is printed.
+  // Drawn as its ink area rather than as a glyph, because the engine measures a
+  // mean over the disc and a real letter's shape does not change that mean.
+  if (options.labels !== false) {
+    const side = Math.sqrt(ink.bubbleLabelAreaMm2);
+    for (const column of layout.questionColumns) {
+      for (const row of column.rows) {
+        if (!row.symbolsInBubbles) continue;
+        for (const bubble of row.bubbles) {
+          fillRect(
+            image,
+            pxPerMm,
+            {
+              xMm: bubble.cxMm - side / 2,
+              yMm: bubble.cyMm - side / 2,
+              wMm: side,
+              hMm: side,
+            },
+            ink.bubbleLabel,
+          );
+        }
+      }
     }
   }
 

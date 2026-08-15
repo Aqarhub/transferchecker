@@ -177,3 +177,43 @@ describe('criterion 11: the blank comes back blank', () => {
     expect(answerOf(result, 9)).toBe('ambiguous');
   });
 });
+
+describe('the floor clears the ink the sheet itself prints inside every bubble', () => {
+  it('leaves an empty internal bubble far below the floor', () => {
+    // `placement: 'internal'` is the default, so on almost every real sheet a
+    // letter is printed in the middle of every bubble, which is exactly where
+    // the fill ratio is measured. The inner disc excludes the OUTLINE, not the
+    // letter, so this ink is genuinely in the numerator and the floor has to
+    // clear it with room.
+    //
+    // Measured here rather than computed, and measured against a sheet where
+    // the letter is really drawn, because a renderer that omits it proves the
+    // floor against a cleaner page than any teacher will ever print.
+    const { layout } = sheet();
+    const withLabels = renderSheet(layout, { pxPerMm: 10 });
+    const withoutLabels = renderSheet(layout, { pxPerMm: 10, labels: false });
+
+    for (const [name, image] of [
+      ['with the printed letters', withLabels],
+      ['without them', withoutLabels],
+    ] as const) {
+      const result = scanSheet(image);
+      expect(`${name}: ${result.kind}`).toBe(`${name}: ok`);
+      if (result.kind !== 'ok') continue;
+      // Every question untouched, so every one of them must be blank, and the
+      // margin below the floor says how much room the design actually has.
+      expect(`${name}: ${result.sheet.marks}`).toBe(`${name}: ${'b'.repeat(20)}`);
+
+      const margins = result.sheet.questions.map((entry) =>
+        entry.outcome.kind === 'blank' ? entry.outcome.margin : -1,
+      );
+      const tightest = Math.min(...margins);
+      // The floor is 0.25, so a margin above 0.15 means the printed letter is
+      // sitting under 0.10 ink: comfortably clear, not marginally.
+      expect(`${name}: tightest margin ${tightest.toFixed(3)}`).toBe(
+        `${name}: tightest margin ${tightest.toFixed(3)}`,
+      );
+      expect(tightest).toBeGreaterThan(0.15);
+    }
+  });
+});
