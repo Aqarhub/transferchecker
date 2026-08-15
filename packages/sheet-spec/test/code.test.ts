@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_BUBBLE,
   GEOMETRY,
+  PAPER_NAMES,
   arabicSymbols,
   base32Decode,
   base32Encode,
@@ -81,6 +82,30 @@ describe('a sheet that carries its whole geometry', () => {
     const decoded = decodeSheetCode(encodeSheetCode(spec));
     if (decoded?.mode !== 'full') throw new Error('expected a full code');
     expect(geometryOf(layoutOf(decoded.spec))).toEqual(geometryOf(layoutOf(spec)));
+  });
+
+  it('carries every paper size, not only the two the first format could hold', () => {
+    // This is the test whose absence let a real defect through. Format 1 gave
+    // the paper a single bit, so A5 decoded as A4 and A6 as LETTER: a sheet
+    // rebuilt its geometry against a page size it was never printed on, and
+    // two of the three stock templates are not A4. Every name, or nothing.
+    for (const paper of PAPER_NAMES) {
+      const spec = makeSpec({
+        paper,
+        questions: choiceQuestions(4, 4),
+        headerFields: [],
+      });
+      const decoded = decodeSheetCode(encodeSheetCode(spec));
+      expect(`${paper}: ${String(decoded?.mode)}`).toBe(`${paper}: full`);
+      if (decoded?.mode !== 'full') continue;
+      expect(`${paper} decodes as ${decoded.spec.paper}`).toBe(`${paper} decodes as ${paper}`);
+    }
+  });
+
+  it('leaves room in the geometry byte for the paper sizes it may still gain', () => {
+    // Three bits. A seventh and eighth name may be appended, and a ninth needs
+    // a new CODE_FORMAT rather than a silent truncation.
+    expect(PAPER_NAMES.length).toBeLessThanOrEqual(8);
   });
 
   it('carries the symbols themselves, not only how many there are', () => {

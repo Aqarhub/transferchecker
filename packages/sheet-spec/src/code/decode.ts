@@ -118,8 +118,10 @@ export function decodeSheetBytes(bytes: Uint8Array): DecodedCode | null {
 
   const geometry = byte(reader);
   if (geometry === null) return null;
-  const paper = PAPER_NAMES[geometry >> 7];
-  const columnCount = (geometry >> 4) & 0x07;
+  // Three bits each, matching the format 2 packing in encode.ts. Format 1 gave
+  // the paper one bit and lost every size past LETTER.
+  const paper = PAPER_NAMES[(geometry >> 5) & 0x07];
+  const columnCount = (geometry >> 2) & 0x07;
   if (paper === undefined) return null;
 
   const metrics: number[] = [];

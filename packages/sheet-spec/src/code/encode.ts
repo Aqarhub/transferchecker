@@ -16,7 +16,7 @@ import { base32Encode } from './base32';
 import { CUSTOM_SET, symbolSetId } from './symbols';
 import { uuidToBytes } from './uuid';
 
-export const CODE_FORMAT = 1;
+export const CODE_FORMAT = 2;
 
 const utf8 = new TextEncoder();
 
@@ -80,9 +80,21 @@ export function encodeSheetBytes(spec: SheetSpec): Uint8Array {
   bytes.push(...uuidToBytes(spec.templateId));
   if (short) return Uint8Array.from(bytes);
 
+  // Three bits of paper and three of columns, with the low two spare.
+  //
+  // Format 1 gave the paper a single bit, which silently truncated every paper
+  // past LETTER: an A5 sheet encoded a geometry byte of zero and decoded as A4,
+  // so a scanner rebuilt the wrong page size and every bubble coordinate with
+  // it. Two of the three stock templates are not A4, so this was the ordinary
+  // path rather than an edge. Format 2 is the fix, and the version is bumped
+  // rather than the packing quietly corrected, because a format 1 sheet should
+  // now be refused rather than graded against a page size it never had.
   const paper = PAPER_NAMES.indexOf(spec.paper);
   const columns = spec.columns === 'auto' ? 0 : spec.columns;
-  bytes.push((paper << 7) | (columns << 4));
+  if (paper < 0 || paper > 7 || columns < 0 || columns > 7) {
+    throw new Error('sheet code: paper or column count does not fit the geometry byte');
+  }
+  bytes.push((paper << 5) | (columns << 2));
 
   const { radiusMm, pitchXMm, pitchYMm, gridPitchYMm } = spec.bubble;
   for (const value of [radiusMm, pitchXMm, pitchYMm, gridPitchYMm]) {
