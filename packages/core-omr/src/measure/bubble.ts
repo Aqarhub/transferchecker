@@ -45,6 +45,24 @@ export interface BubbleReading {
    * paper, in which case `escape` means nothing and no decision may use it.
    */
   readonly escapeMeasured: boolean;
+  /**
+   * How lopsided the ring's ink is, left against right and top against bottom.
+   *
+   * This is the sheet's only per bubble registration probe. A registration
+   * error puts the ring's inner band on the printed outline on one side and on
+   * clean paper on the other, and the outline is printed on EVERY bubble of
+   * every placement, unlike the letter inside it. Per bubble it is noise and a
+   * circled letter moves it; over a whole sheet its median is a measurement.
+   *
+   * It matters because nothing else on the sheet can see a sideways error at
+   * all: every timing mark sits at one x, a millimetre from the two corners the
+   * homography already pins exactly, so a curl about a vertical axis reports a
+   * residual near zero while the middle of the page walks off its bubbles.
+   */
+  readonly asymX: number;
+  readonly asymY: number;
+  /** False where a printed label masks one side of the ring, so asymX means nothing. */
+  readonly asymXMeasured: boolean;
 }
 
 /** Ink at or above this fraction counts toward coverage. */
@@ -147,6 +165,9 @@ export function measureBubble(
 
   let escapeTotal = 0;
   let escapeCount = 0;
+  const half = { left: 0, right: 0, top: 0, bottom: 0 };
+  const seen = { left: 0, right: 0, top: 0, bottom: 0 };
+
   for (const point of ring.usable ? ringLattice(ring) : []) {
     // An external label sits inside the ring on one side, so that side is not
     // measured. Masking is cheaper than pretending the printed letter is a mark.
@@ -155,9 +176,28 @@ export function measureBubble(
     const xMm = cx + point.dx * bubble.rMm;
     const yMm = cy + point.dy * bubble.rMm;
     const at = toImage(frame, xMm, yMm);
-    escapeTotal += inkRatio(reference, sampleAt(image, at.x, at.y));
+    const ink = inkRatio(reference, sampleAt(image, at.x, at.y));
+    escapeTotal += ink;
     escapeCount += 1;
+
+    if (point.dx > 0) {
+      half.right += ink;
+      seen.right += 1;
+    } else if (point.dx < 0) {
+      half.left += ink;
+      seen.left += 1;
+    }
+    if (point.dy > 0) {
+      half.bottom += ink;
+      seen.bottom += 1;
+    } else if (point.dy < 0) {
+      half.top += ink;
+      seen.top += 1;
+    }
   }
+
+  const meanOf = (sum: number, count: number): number => (count === 0 ? 0 : sum / count);
+  const asymXMeasured = ring.usable && labelSide === 'none' && seen.left > 0 && seen.right > 0;
 
   return {
     fill: counted === 0 ? 0 : total / counted,
@@ -165,5 +205,11 @@ export function measureBubble(
     saturation: counted === 0 ? 0 : saturated / counted,
     escape: escapeCount === 0 ? 0 : escapeTotal / escapeCount,
     escapeMeasured: ring.usable && escapeCount > 0,
+    asymX: asymXMeasured ? meanOf(half.right, seen.right) - meanOf(half.left, seen.left) : 0,
+    asymY:
+      ring.usable && seen.top > 0 && seen.bottom > 0
+        ? meanOf(half.bottom, seen.bottom) - meanOf(half.top, seen.top)
+        : 0,
+    asymXMeasured,
   };
 }
