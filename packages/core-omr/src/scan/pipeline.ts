@@ -232,6 +232,9 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
             (entry.outcome.kind === 'answer' || entry.outcome.kind === 'multiple') &&
             entry.outcome.uncertain,
         ).length,
+        escaped: questions.filter(
+          (entry) => entry.outcome.kind === 'answer' && entry.outcome.escaped,
+        ).length,
       },
     },
   };

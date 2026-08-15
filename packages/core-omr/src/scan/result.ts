@@ -49,6 +49,15 @@ export interface ScanQuality {
   readonly blanks: number;
   readonly ambiguous: number;
   readonly uncertain: number;
+  /**
+   * Answers whose mark left the bubble (defense د9).
+   *
+   * Counted rather than merely recorded in the marks string, because a tag the
+   * application never sees is data and not a defense: د9 exists because a
+   * strike through is darker than a shading, so it wins its own group and the
+   * student's real answer drops behind it.
+   */
+  readonly escaped: number;
 }
 
 export interface ScannedSheet {

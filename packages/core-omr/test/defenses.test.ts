@@ -310,4 +310,41 @@ describe('a question that asks for several answers is not ambiguity', () => {
     // And an untouched many question is blank, not "none of the above".
     expect(answerOf(result, 3)).toBe('blank');
   });
+
+  it('reads every box ticked as the answer, not as ambiguity', () => {
+    // The case a rule list gets wrong by ordering: "every bubble is marked"
+    // means ambiguous on a single answer question and means ALL OF THEM on a
+    // check all that apply one. The select branch has to run before the
+    // ambiguity rules, not after, or a student who correctly ticks everything
+    // gets a warning for being right.
+    const spec = stockTemplate('quick20', TEXT);
+    const many: SheetSpec = {
+      ...spec,
+      questions: spec.questions.map((question, index) =>
+        index < 1 ? { ...question, select: 'many' as const } : question,
+      ),
+    };
+    const planned = layoutSheet(many);
+    expect(planned.kind).toBe('ok');
+    if (planned.kind !== 'ok') return;
+    const layout = planned.layout;
+
+    const image = renderSheet(layout, {
+      pxPerMm: 10,
+      marks: ['A', 'B', 'C', 'D'].map((symbol) => ({
+        groupId: 'q:1',
+        symbol,
+        coverage: 0.9,
+        value: PENCIL,
+      })),
+    });
+
+    const result = scanSheet(image);
+    expect(result.kind).toBe('ok');
+    if (result.kind !== 'ok') return;
+    const outcome = result.sheet.questions.find((entry) => entry.question === 1)?.outcome;
+    expect(outcome?.kind).toBe('multiple');
+    if (outcome?.kind === 'multiple') expect([...outcome.symbols]).toEqual(['A', 'B', 'C', 'D']);
+    expect(result.sheet.quality.ambiguous).toBe(0);
+  });
 });
