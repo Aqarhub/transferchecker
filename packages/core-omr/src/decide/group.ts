@@ -146,13 +146,36 @@ export function decideGroup(input: GroupInput, thresholds: Thresholds): GroupOut
   };
 }
 
-/** One character per question, the alphabet defense د20 asks the record to keep. */
+/**
+ * One character per question, the record defense د20 asks the paper to keep.
+ *
+ *   c  clean          the rule decided it with room to spare
+ *   u  uncertain      decided, but close to a threshold or not stable
+ *   d  double         ambiguous: two marks close, or every bubble marked
+ *   b  blank          the student left it, and that is their decision
+ *   e  eraser trace   ink under the floor that is not the answer
+ *   x  escaped        the mark left its bubble: a circle, a cross, rough work
+ *
+ * SIX symbols where د20 names five. The sixth is `x`, and the addition is
+ * deliberate: defense د9 gives ink outside the bubble its own flag precisely so
+ * it does not dissolve into the fill ratio, and د20's alphabet was written
+ * before that flag had anywhere to live in the stored record. Folding `x` into
+ * `e` would put a circled letter and a rubbed out answer under one character,
+ * and the whole point of storing this string is that an appeal can ask which of
+ * the two happened on question seven.
+ *
+ * Precedence runs from least to most specific: an uncertain answer is reported
+ * as uncertain whatever else is true of it, because that is the flag the teacher
+ * has to act on.
+ */
 export function markOf(outcome: GroupOutcome): string {
   switch (outcome.kind) {
     case 'blank':
       return outcome.trace ? 'e' : 'b';
     case 'answer':
-      return outcome.uncertain ? 'u' : outcome.trace || outcome.escaped ? 'e' : 'c';
+      if (outcome.uncertain) return 'u';
+      if (outcome.escaped) return 'x';
+      return outcome.trace ? 'e' : 'c';
     case 'multiple':
       return outcome.uncertain ? 'u' : 'c';
     case 'ambiguous':

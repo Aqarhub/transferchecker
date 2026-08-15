@@ -200,7 +200,7 @@ describe('defense د9: ink that left its bubble is flagged, not averaged away', 
     expect(spilled.symbol).toBe('B');
     expect(spilled.escaped).toBe(true);
     expect(clean.escaped).toBe(false);
-    expect(result.sheet.marks[2]).toBe('e');
+    expect(result.sheet.marks[2]).toBe('x');
   });
 });
 
@@ -239,5 +239,75 @@ describe('defense د12: a timing mark that cannot be read stops the sheet', () =
     if (result.reason.kind !== 'rows_missing') return;
     expect(result.reason.found).toBe(result.reason.expected - 1);
     expect(messageKeyOf(result.reason)).toBe('scan.reject.rowsMissing');
+  });
+});
+
+describe('defense د20: the record keeps what the appeal will ask about', () => {
+  it('marks an eraser ghost apart from a clean answer and from a spill', () => {
+    const { layout } = sheet();
+    const image = renderSheet(layout, {
+      pxPerMm: 10,
+      marks: [
+        // Answered C, with B rubbed out. What an eraser leaves is a rim: the
+        // middle comes clean and the edge does not.
+        { groupId: 'q:2', symbol: 'C', coverage: 0.9, value: PENCIL },
+        { groupId: 'q:2', symbol: 'B', coverage: 0.85, value: 175, erased: true },
+        { groupId: 'q:6', symbol: 'C', coverage: 0.9, value: PENCIL },
+      ],
+    });
+
+    const result = scanSheet(image);
+    expect(result.kind).toBe('ok');
+    if (result.kind !== 'ok') return;
+
+    // The answer is still C. What changes is that the record says a second
+    // bubble carried ink, so an appeal about this question has an answer.
+    expect(answerOf(result, 2)).toBe('C');
+    expect(answerOf(result, 6)).toBe('C');
+    expect(result.sheet.marks[1]).toBe('e');
+    expect(result.sheet.marks[5]).toBe('c');
+  });
+});
+
+describe('a question that asks for several answers is not ambiguity', () => {
+  it('reads every marked bubble, and reads none as blank', () => {
+    const spec = stockTemplate('quick20', TEXT);
+    // The stock templates are all single answer, so this is built by hand: it
+    // is the one path in the engine that no stock sheet exercises.
+    const many: SheetSpec = {
+      ...spec,
+      questions: spec.questions.map((question, index) =>
+        index < 3 ? { ...question, select: 'many' as const } : question,
+      ),
+    };
+    const planned = layoutSheet(many);
+    expect(planned.kind).toBe('ok');
+    if (planned.kind !== 'ok') return;
+    const layout = planned.layout;
+
+    const image = renderSheet(layout, {
+      pxPerMm: 10,
+      marks: [
+        { groupId: 'q:1', symbol: 'A', coverage: 0.9, value: PENCIL },
+        { groupId: 'q:1', symbol: 'C', coverage: 0.9, value: PENCIL },
+        { groupId: 'q:2', symbol: 'B', coverage: 0.9, value: PENCIL },
+      ],
+    });
+
+    const result = scanSheet(image);
+    expect(result.kind).toBe('ok');
+    if (result.kind !== 'ok') return;
+
+    const first = result.sheet.questions.find((entry) => entry.question === 1)?.outcome;
+    expect(first?.kind).toBe('multiple');
+    if (first?.kind === 'multiple') expect([...first.symbols]).toEqual(['A', 'C']);
+
+    // A single mark on a many question is still an answer, not a failure.
+    const second = result.sheet.questions.find((entry) => entry.question === 2)?.outcome;
+    expect(second?.kind).toBe('multiple');
+    if (second?.kind === 'multiple') expect([...second.symbols]).toEqual(['B']);
+
+    // And an untouched many question is blank, not "none of the above".
+    expect(answerOf(result, 3)).toBe('blank');
   });
 });
