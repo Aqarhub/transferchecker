@@ -141,7 +141,7 @@ export function decideGroup(input: GroupInput, thresholds: Thresholds): GroupOut
     symbol: at(input.symbols, winner) ?? '?',
     margin,
     uncertain: margin < thresholds.uncertainMargin,
-    escaped: (reading?.escape ?? 0) >= thresholds.escapeInk,
+    escaped: reading?.escapeMeasured === true && reading.escape >= thresholds.escapeInk,
     trace: hasTrace(input, thresholds, winner),
   };
 }

@@ -14,11 +14,12 @@
 // bubble, so it inflates every fill ratio by a constant that then has to be
 // subtracted somewhere. Measuring inside it removes the constant instead.
 //
-// The ESCAPE RING from 1.1 to 1.4 radii holds no printed ink and no neighbouring
-// bubble by construction: the nearest neighbour's edge is 3.6 mm away and the
-// next row is 5 mm. Ink there means the mark left its bubble, which is the
-// signature of a circled letter, a cross, a strike through and rough work, and
-// it earns its own flag instead of dissolving into the fill ratio.
+// The ESCAPE RING holds no printed ink and no neighbouring bubble, so ink there
+// means the mark left its bubble: the signature of a circled letter, a cross, a
+// strike through and rough work, and it earns its own flag instead of dissolving
+// into the fill ratio. Where the ring may sit is not a fixed multiple of the
+// radius; it is clamped per sheet against the bubble's own printed outline and
+// against the neighbour's, and ring.ts explains why with the arithmetic.
 
 import type { Bubble } from '@transferchecker/sheet-spec';
 import type { Frame } from '../geometry/frame';
@@ -27,6 +28,7 @@ import { sampleAt } from '../image/gray';
 import type { GrayImage } from '../image/gray';
 import { inkRatio, referenceAt } from './photometry';
 import type { PhotometricField } from './photometry';
+import type { Ring } from './ring';
 
 export interface BubbleReading {
   /** Mean ink over the inner disc, 0 for paper and 1 for solid printed ink. */
@@ -38,6 +40,11 @@ export interface BubbleReading {
   readonly saturation: number;
   /** Mean ink in the escape ring: the mark that left its bubble. */
   readonly escape: number;
+  /**
+   * False when this sheet's geometry leaves no room for a ring that holds only
+   * paper, in which case `escape` means nothing and no decision may use it.
+   */
+  readonly escapeMeasured: boolean;
 }
 
 /** Ink at or above this fraction counts toward coverage. */
@@ -63,8 +70,6 @@ const EXCESS_FRACTION = 0.04;
 const EXCESS_FLOOR = 8;
 
 const INNER = 0.75;
-const RING_INNER = 1.1;
-const RING_OUTER = 1.4;
 
 /**
  * The sample lattice, in units of the bubble radius.
@@ -90,7 +95,20 @@ function latticeIn(step: number, low: number, high: number): { dx: number; dy: n
 }
 
 const DISC = latticeIn(INNER / 8, 0, INNER);
-const RING = latticeIn((RING_OUTER - RING_INNER) / 2.5, RING_INNER, RING_OUTER);
+
+// The ring is clamped per sheet, so its lattice is not a constant. It is built
+// once per distinct geometry rather than per bubble, because a hundred question
+// sheet measures 540 bubbles seven times over.
+const RING_CACHE = new Map<string, { dx: number; dy: number }[]>();
+
+function ringLattice(ring: Ring): { dx: number; dy: number }[] {
+  const key = `${ring.inner.toFixed(3)}:${ring.outer.toFixed(3)}`;
+  const cached = RING_CACHE.get(key);
+  if (cached !== undefined) return cached;
+  const built = latticeIn((ring.outer - ring.inner) / 2.5, ring.inner, ring.outer);
+  RING_CACHE.set(key, built);
+  return built;
+}
 
 /** Where a choice letter is printed beside its bubble, so the ring is masked there. */
 export type LabelSide = 'none' | 'left' | 'right';
@@ -102,6 +120,7 @@ export function measureBubble(
   bubble: Bubble,
   offsetYMm: number,
   labelSide: LabelSide,
+  ring: Ring,
 ): BubbleReading {
   const cx = bubble.cxMm;
   const cy = bubble.cyMm + offsetYMm;
@@ -128,7 +147,7 @@ export function measureBubble(
 
   let escapeTotal = 0;
   let escapeCount = 0;
-  for (const point of RING) {
+  for (const point of ring.usable ? ringLattice(ring) : []) {
     // An external label sits inside the ring on one side, so that side is not
     // measured. Masking is cheaper than pretending the printed letter is a mark.
     if (labelSide === 'left' && point.dx < 0) continue;
@@ -145,5 +164,6 @@ export function measureBubble(
     coverage: counted === 0 ? 0 : covered / counted,
     saturation: counted === 0 ? 0 : saturated / counted,
     escape: escapeCount === 0 ? 0 : escapeTotal / escapeCount,
+    escapeMeasured: ring.usable && escapeCount > 0,
   };
 }

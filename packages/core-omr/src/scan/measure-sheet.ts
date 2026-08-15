@@ -14,6 +14,8 @@ import type { GrayImage } from '../image/gray';
 import { measureBubble } from '../measure/bubble';
 import type { LabelSide } from '../measure/bubble';
 import type { PhotometricField } from '../measure/photometry';
+import { ringFor } from '../measure/ring';
+import type { Ring } from '../measure/ring';
 import { rowCorrectionMm } from '../measure/timing';
 import type { RowMark } from '../measure/timing';
 
@@ -40,9 +42,18 @@ function readGroup(
   many: boolean,
   labelSide: LabelSide,
   thresholds: Thresholds,
+  ring: Ring,
 ): GroupResult {
   const readings = bubbles.map((bubble) =>
-    measureBubble(image, frame, field, bubble, rowCorrectionMm(marks, bubble.cyMm), labelSide),
+    measureBubble(
+      image,
+      frame,
+      field,
+      bubble,
+      rowCorrectionMm(marks, bubble.cyMm),
+      labelSide,
+      ring,
+    ),
   );
   const first = bubbles[0];
   return {
@@ -65,6 +76,13 @@ export function measureSheet(
   spec: SheetSpec,
   thresholds: Thresholds,
 ): SheetPass {
+  // One ring geometry for the whole sheet: every bubble on it shares a radius
+  // and the closest pitch is what the ring has to clear.
+  const ring = ringFor(
+    spec.bubble.radiusMm,
+    Math.min(spec.bubble.pitchXMm, spec.bubble.pitchYMm, spec.bubble.gridPitchYMm),
+  );
+
   const questions: GroupResult[] = [];
   for (const column of layout.questionColumns) {
     for (const row of column.rows) {
@@ -82,6 +100,7 @@ export function measureSheet(
           // side of the escape ring holds printed ink and is not measured.
           question?.placement === 'external' ? 'left' : 'none',
           thresholds,
+          ring,
         ),
       );
     }
@@ -103,6 +122,7 @@ export function measureSheet(
         false,
         'none',
         thresholds,
+        ring,
       ),
     ),
   }));
