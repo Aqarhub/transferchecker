@@ -36,3 +36,27 @@ export { gradeAnswers, gradeStored } from './grade';
 export type { Grade, QuestionGrade } from './grade';
 
 export { answerOf, answersOf, marksReview } from './read';
+
+export { BOM, detectDelimiter, parseCsv, startsFormula, writeCsv, writeField } from './csv';
+export type { CsvOptions } from './csv';
+
+export { readRoster } from './roster';
+export type { Roster, RosterFault, Student } from './roster';
+
+export {
+  RESULT_HEADINGS,
+  cellText,
+  date,
+  isAsciiCell,
+  number,
+  resultsTable,
+  text,
+} from './results';
+export type { Cell, ResultRow, Table } from './results';
+
+export { auditTable, exportResults, resultsCsv, resultsXlsx } from './export';
+export type { ExportFault, Exported } from './export';
+
+export { writeXlsx } from './xlsx';
+export { crc32, writeZip } from './zip';
+export type { ZipEntry } from './zip';
