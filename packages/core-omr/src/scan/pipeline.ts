@@ -42,6 +42,25 @@ import type { FieldReading, FieldState, QuestionReading, ScanResult } from './re
  */
 const MAX_FIDUCIAL_ERROR = 0.02;
 
+/**
+ * How unequal the four corner squares may look before the page is too steep to
+ * read rather than too far away.
+ *
+ * All four are the same 8 mm of printed ink, so the ratio between the largest
+ * and the smallest measured one is perspective and nothing else. [measured] It
+ * is 1.00 square on, 1.36 at the steepest frame that still decodes, and 2.07 to
+ * 2.15 past it. The threshold sits between those two, and it only ever changes
+ * the WORDS of a refusal that was going to happen anyway.
+ */
+const MAX_FIDUCIAL_RATIO = 1.6;
+
+/** The largest of the four corner squares over the smallest, or 1 when unknown. */
+function steepness(sidesPx: readonly number[]): number {
+  const usable = sidesPx.filter((side) => Number.isFinite(side) && side > 1);
+  if (usable.length < 2) return 1;
+  return Math.max(...usable) / Math.min(...usable);
+}
+
 export interface ScanOptions {
   readonly thresholds?: Thresholds;
   /**
@@ -124,10 +143,19 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
   }
 
   const code = readSheetCode(image, found.quad);
-  if (code.kind === 'too_small') {
-    return { kind: 'rejected', reason: { kind: 'code_too_small', modulePx: code.modulePx } };
+  if (code.kind !== 'ok') {
+    // Why the code could not be read decides what the teacher is told, and the
+    // page's own angle is the one cause that "come closer" would send them the
+    // wrong way about.
+    const ratio = steepness(found.quad.sidesPx);
+    if (ratio > MAX_FIDUCIAL_RATIO) {
+      return { kind: 'rejected', reason: { kind: 'too_steep', ratio } };
+    }
+    if (code.kind === 'too_small') {
+      return { kind: 'rejected', reason: { kind: 'code_too_small', modulePx: code.modulePx } };
+    }
+    return { kind: 'rejected', reason: { kind: 'code_unreadable' } };
   }
-  if (code.kind !== 'ok') return { kind: 'rejected', reason: { kind: 'code_unreadable' } };
 
   const spec =
     code.decoded.mode === 'full'

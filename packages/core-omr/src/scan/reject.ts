@@ -15,6 +15,17 @@ export type Rejection =
   | { readonly kind: 'no_sheet'; readonly candidates: number }
   | { readonly kind: 'code_unreadable' }
   | { readonly kind: 'code_too_small'; readonly modulePx: number }
+  /**
+   * The page is at too steep an angle to read, which is a different instruction
+   * to the teacher than "come closer" and was being reported as that one.
+   *
+   * [measured] The four corner squares are the same 8 mm of ink, so the ratio
+   * between the largest and the smallest measured one is a direct reading of
+   * how far the page is from square on: 1.00 flat, 1.36 at the steepest frame
+   * the engine still reads (10 degrees of yaw with 7 of pitch at 1440p), and
+   * 2.07 to 2.15 beyond it, where the code stops decoding.
+   */
+  | { readonly kind: 'too_steep'; readonly ratio: number }
   | { readonly kind: 'template_unknown'; readonly templateId: string }
   | { readonly kind: 'not_this_geometry'; readonly area: string; readonly axis: string }
   /**
@@ -58,6 +69,8 @@ export function messageKeyOf(reason: Rejection): string {
       return 'scan.reject.codeUnreadable';
     case 'code_too_small':
       return 'scan.reject.comeCloser';
+    case 'too_steep':
+      return 'scan.reject.holdFlatter';
     case 'template_unknown':
       return 'scan.reject.templateUnknown';
     case 'not_this_geometry':
@@ -89,6 +102,7 @@ export function isFrameFault(reason: Rejection): boolean {
   switch (reason.kind) {
     case 'glare':
     case 'code_too_small':
+    case 'too_steep':
     case 'no_sheet':
     case 'code_unreadable':
       return true;
