@@ -120,3 +120,46 @@ export function pxPerMmAt(frame: Frame, xMm: number, yMm: number): number {
 export function toPaper(frame: Frame, x: number, y: number): Point {
   return project(frame.toPaper, x, y);
 }
+
+/**
+ * The printed corner square's side, measured back through the map its own four
+ * centres define.
+ *
+ * This is the one measurement the map cannot absorb. Four correspondences fix
+ * all eight degrees of freedom of a homography exactly, so the four CENTRES can
+ * never disprove themselves: any four points solve perfectly against any other
+ * four. But each square is also a printed 8 mm object, and its size was never
+ * fed to the solve, so pushing it back through the map is an independent test
+ * of whether the map is the right one.
+ *
+ * [measured] On every frame the engine must accept, flat renders at 6 and 8
+ * pixels per millimetre and photographs at 1080p and 1440p with tilt, blur,
+ * noise and a shadow, this returns between 7.984 mm and 8.000 mm. On an A4
+ * carrier holding two A5 sheets, where the detector locks onto the outer four
+ * of the eight squares and the map is stretched 2.24 times in x, it returns
+ * 4.97 mm.
+ *
+ * A uniform print scale is absorbed exactly, which is correct: the sheet is
+ * still self consistent and د16 says a scaled page is undetectable from its own
+ * content and harmless. An anisotropic stretch is absorbed too, because the
+ * side comes from an ink area and the local scale is the mean of both axes, and
+ * that is also correct: a sheet stretched with its own furniture still grades.
+ */
+export function fiducialSideMm(
+  frame: Frame,
+  layout: SheetLayout,
+  sidesPx: readonly number[],
+): number {
+  const usable = sidesPx.filter((side) => Number.isFinite(side) && side > 1);
+  if (usable.length === 0 || layout.fiducials.length === 0) return GEOMETRY.fiducialMm;
+
+  const meanSidePx = usable.reduce((sum, side) => sum + side, 0) / usable.length;
+  // Averaged over the four corners rather than paired with them, because the
+  // sides are measured in the detector's own order and the corners are read in
+  // whichever of the four quarter turns decoded the code.
+  const scales = layout.fiducials.map((rect) =>
+    pxPerMmAt(frame, rect.xMm + rect.wMm / 2, rect.yMm + rect.hMm / 2),
+  );
+  const meanScale = scales.reduce((sum, scale) => sum + scale, 0) / scales.length;
+  return meanScale > 0 ? meanSidePx / meanScale : GEOMETRY.fiducialMm;
+}

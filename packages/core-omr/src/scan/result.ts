@@ -45,6 +45,17 @@ export interface ScanQuality {
   /** Timing mark residual: how well the sheet's middle matched its corners in y. */
   readonly timingResidualMm: number;
   /**
+   * How many timing marks were found, of how many the sheet prints.
+   *
+   * Published because the engine no longer refuses at the first missing one: a
+   * fifth of the strip may be occluded and the rows in between are registered
+   * from their neighbours. A teacher whose sheets keep coming back at 30 of 34
+   * has a printer or a pen habit to fix, and that is only visible if the number
+   * leaves the engine.
+   */
+  readonly rowsFound: number;
+  readonly rowsExpected: number;
+  /**
    * The same measurement in x, from the anchor marks, and **null when the sheet
    * printed none**.
    *

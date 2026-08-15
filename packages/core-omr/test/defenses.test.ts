@@ -10,12 +10,15 @@
 
 import { describe, expect, it } from 'vitest';
 import { layoutSheet, stockTemplate } from '@transferchecker/sheet-spec';
-import type { SheetLayout, SheetSpec } from '@transferchecker/sheet-spec';
+import type { Rect, SheetLayout, SheetSpec } from '@transferchecker/sheet-spec';
+import { createGray, sampleAt } from '../src/image/gray';
+import type { GrayImage } from '../src/image/gray';
+import { MAX_RESIDUAL_RMS_MM } from '../src/measure/timing';
 import { scanSheet } from '../src/scan/pipeline';
 import type { ScanResult } from '../src/scan/result';
 import { messageKeyOf } from '../src/scan/reject';
-import { renderSheet } from '../tools/render';
-import type { PencilMark } from '../tools/render';
+import { DEFAULT_INK, renderSheet } from '../tools/render';
+import type { Ink, PencilMark } from '../tools/render';
 import { photograph } from '../tools/photograph';
 
 const TEXT = {
@@ -204,41 +207,220 @@ describe('defense د9: ink that left its bubble is flagged, not averaged away', 
   });
 });
 
-describe('defense د12: a timing mark that cannot be read stops the sheet', () => {
-  it('refuses by name rather than renumbering every row below it', () => {
+describe('defense د16: the corner squares are measured, not only used', () => {
+  it('refuses a frame holding two sheets instead of grading the wrong geometry', () => {
+    // Four correspondences fix all eight degrees of freedom, so the corner
+    // CENTRES can never disprove themselves: any four points solve perfectly
+    // against any other four. What the solve never consumed is the square's own
+    // printed size, so pushing 8 mm of ink back through the map is the one
+    // independent check available.
+    //
+    // The frame here is what the 2 up print path puts on a desk: an A4 carrier
+    // holding two A5 sheets, eight corner squares, and the detector locks onto
+    // the outer four. [measured] The map comes out stretched 2.24 times in x
+    // and the 8 mm square reads back as 4.97 mm. Before this gate the sheet got
+    // as far as the anchor stage and was refused there, which named the wrong
+    // cause: the anchors are missing because the map is wrong, not the reverse.
     const { layout } = sheet();
-    const flat = renderSheet(layout, {
-      pxPerMm: 10,
-      marks: answerEvery(layout, ['A', 'B', 'C', 'D']),
-    });
-
-    // A pen stroke over one mark, drawn as paper: the mark is simply gone. This
-    // is the failure that does not damage a grade, it invents a whole paper.
-    const covered = layout.timingMarks[6];
-    expect(covered).toBeDefined();
-    if (covered === undefined) return;
-    for (
-      let y = Math.round((covered.yMm - 1) * 10);
-      y <= Math.round((covered.yMm + covered.hMm + 1) * 10);
-      y += 1
-    ) {
-      for (
-        let x = Math.round((covered.xMm - 1) * 10);
-        x <= Math.round((covered.xMm + covered.wMm + 1) * 10);
-        x += 1
-      ) {
-        if (x < 0 || y < 0 || x >= flat.width || y >= flat.height) continue;
-        flat.data[y * flat.stride + x] = 216;
+    const one = renderSheet(layout, { pxPerMm: 8 });
+    const carrier = createGray(Math.round(297 * 8), Math.round(210 * 8), 216);
+    for (const originMm of [0, 149]) {
+      const dx = Math.round(originMm * 8);
+      for (let y = 0; y < one.height && y < carrier.height; y += 1) {
+        for (let x = 0; x < one.width && dx + x < carrier.width; x += 1) {
+          carrier.data[y * carrier.stride + dx + x] = one.data[y * one.stride + x] ?? 216;
+        }
       }
     }
 
-    const result = scanSheet(flat);
+    const result = scanSheet(carrier, { perturb: false });
+    expect(result.kind).toBe('rejected');
+    if (result.kind !== 'rejected') return;
+    expect(result.reason.kind).toBe('not_one_sheet');
+    if (result.reason.kind !== 'not_one_sheet') return;
+    expect(result.reason.fiducialMm).toBeLessThan(6);
+    expect(messageKeyOf(result.reason)).toBe('scan.reject.notOneSheet');
+  });
+
+  it('grades a sheet whose whole page was stretched, because that still reads', () => {
+    // The other half of د16: a print scale, even an uneven one, carries the
+    // furniture with it, so the sheet is still self consistent and still
+    // grades. A gate that refused this would be refusing a correct sheet.
+    const { layout } = sheet();
+    const flat = renderSheet(layout, {
+      pxPerMm: 8,
+      marks: answerEvery(layout, ['A', 'B', 'C', 'D']),
+    });
+    const stretch = 1.06;
+    const taller = createGray(flat.width, Math.round(flat.height * stretch), 216);
+    for (let y = 0; y < taller.height; y += 1) {
+      for (let x = 0; x < taller.width; x += 1) {
+        taller.data[y * taller.stride + x] = sampleAt(flat, x, y / stretch);
+      }
+    }
+
+    const clean = scanSheet(flat, { perturb: false });
+    const result = scanSheet(taller, { perturb: false });
+    expect(result.kind).toBe('ok');
+    if (result.kind !== 'ok' || clean.kind !== 'ok') return;
+    expect(result.sheet.marks).toBe(clean.sheet.marks);
+  });
+});
+
+describe('defense د8: the ink floor is a fraction AND an absolute darkening', () => {
+  /** The same sheet printed with weaker and weaker toner. */
+  const paletteFor = (inkValue: number): Ink => ({
+    ...DEFAULT_INK,
+    ink: inkValue,
+    bubbleStroke: Math.max(inkValue, DEFAULT_INK.bubbleStroke),
+    bubbleLabel: Math.max(inkValue, DEFAULT_INK.bubbleLabel),
+    boxStroke: Math.max(inkValue, DEFAULT_INK.boxStroke),
+  });
+
+  it('calls the same faint smudge blank however weak the toner is', () => {
+    // Eleven grey levels of uniform darkening over one bubble: show through
+    // from the back of the page, or toner spatter. It is the same physical ink
+    // on every sheet here, and the only thing that changes is the printed
+    // contrast it is measured against.
+    //
+    // [measured] With one floor, a fraction of this sheet's own swing, it was
+    // blank at printed contrasts of 196, 96 and 56 and stopped being blank at
+    // 40, which the photometry stage still accepts. The same smudge, a
+    // different answer, decided by how tired the printer was.
+    const { layout } = sheet();
+    for (const inkValue of [20, 120, 160, 176]) {
+      const contrast = DEFAULT_INK.paper - inkValue;
+      const image = renderSheet(layout, {
+        pxPerMm: 10,
+        ink: paletteFor(inkValue),
+        marks: [{ groupId: 'q:3', symbol: 'C', coverage: 1, value: DEFAULT_INK.paper - 11 }],
+      });
+      const result = scanSheet(image, { perturb: false });
+      const label = `contrast ${String(contrast)}`;
+      expect(`${label}: ${result.kind}`).toBe(`${label}: ok`);
+      if (result.kind !== 'ok') continue;
+      expect(`${label}: ${answerOf(result, 3)}`).toBe(`${label}: blank`);
+    }
+  });
+
+  it('still reads a real pencil on the weakest sheet it accepts', () => {
+    // The floor may not buy its safety by refusing answers. [computed] A soft
+    // pencil on a sheet whose toner is only 40 levels darker than its paper
+    // still darkens the disc by about 36 levels, which is twice the floor.
+    const { layout } = sheet();
+    const image = renderSheet(layout, {
+      pxPerMm: 10,
+      ink: paletteFor(176),
+      marks: [{ groupId: 'q:3', symbol: 'C', coverage: 0.92, value: DEFAULT_INK.paper - 36 }],
+    });
+    const result = scanSheet(image, { perturb: false });
+    expect(result.kind).toBe('ok');
+    if (result.kind !== 'ok') return;
+    expect(answerOf(result, 3)).toBe('C');
+  });
+});
+
+describe('defense د12: the timing strip is read, and believed only where it agrees', () => {
+  /** Paints over a printed mark, which is what a pen stroke down the margin does. */
+  const cover = (image: GrayImage, rect: Rect, pxPerMm: number): void => {
+    for (
+      let y = Math.round((rect.yMm - 1) * pxPerMm);
+      y <= Math.round((rect.yMm + rect.hMm + 1) * pxPerMm);
+      y += 1
+    ) {
+      for (
+        let x = Math.round((rect.xMm - 1) * pxPerMm);
+        x <= Math.round((rect.xMm + rect.wMm + 1) * pxPerMm);
+        x += 1
+      ) {
+        if (x < 0 || y < 0 || x >= image.width || y >= image.height) continue;
+        image.data[y * image.stride + x] = 216;
+      }
+    }
+  };
+
+  it('grades the sheet with one mark gone, and numbers the rows the same', () => {
+    // Acceptance criterion 15 asks for the numbering to survive a fifth of the
+    // strip being occluded. Refusing at the first missing mark failed it
+    // outright, and a pen line down the left margin is a named failure mode
+    // rather than an exotic one, so the row registers from its neighbours.
+    const { layout } = sheet();
+    const options = { pxPerMm: 10, marks: answerEvery(layout, ['A', 'B', 'C', 'D']) };
+    const clean = scanSheet(renderSheet(layout, options));
+
+    const damaged = renderSheet(layout, options);
+    const covered = layout.timingMarks[6];
+    expect(covered).toBeDefined();
+    if (covered === undefined) return;
+    cover(damaged, covered, 10);
+
+    const result = scanSheet(damaged);
+    expect(result.kind).toBe('ok');
+    if (result.kind !== 'ok' || clean.kind !== 'ok') return;
+    // Every letter identical to the undamaged read: nothing renumbered, and
+    // the row whose own mark is gone is registered from the rows around it.
+    expect(result.sheet.marks).toBe(clean.sheet.marks);
+    expect(result.sheet.questions.map((entry) => answerOf(result, entry.question))).toEqual(
+      clean.sheet.questions.map((entry) => answerOf(clean, entry.question)),
+    );
+    // And it says so rather than hiding it.
+    expect(result.sheet.quality.rowsFound).toBe(result.sheet.quality.rowsExpected - 1);
+  });
+
+  it('refuses by name when too much of the strip is gone', () => {
+    const { layout } = sheet();
+    const image = renderSheet(layout, {
+      pxPerMm: 10,
+      marks: answerEvery(layout, ['A', 'B', 'C', 'D']),
+    });
+    // Three in a row: past what interpolation can bridge without inventing a
+    // row, whatever the fraction says.
+    for (const row of [3, 4, 5]) {
+      const rect = layout.timingMarks[row];
+      if (rect === undefined) continue;
+      cover(image, rect, 10);
+    }
+
+    const result = scanSheet(image);
     expect(result.kind).toBe('rejected');
     if (result.kind !== 'rejected') return;
     expect(result.reason.kind).toBe('rows_missing');
     if (result.reason.kind !== 'rows_missing') return;
-    expect(result.reason.found).toBe(result.reason.expected - 1);
+    expect(result.reason.found).toBe(result.reason.expected - 3);
     expect(messageKeyOf(result.reason)).toBe('scan.reject.rowsMissing');
+  });
+
+  it('drops a mark printed out of place instead of dragging its row with it', () => {
+    // [measured] On `full100` one mark printed 3.0 mm out of place gives an RMS
+    // of 0.486 mm, which passed the old single gate of 0.5 mm, and the engine
+    // then applied it: that row's sample lattice moved 2.613 mm off its
+    // bubbles, which is 1.7 disc radii, and the row came back blank with no
+    // warning. A root mean square divides one bad row by the square root of the
+    // count, so it cannot see a single bad row at all.
+    const { layout } = sheet();
+    const options = { pxPerMm: 10, marks: answerEvery(layout, ['A', 'B', 'C', 'D']) };
+    const clean = scanSheet(renderSheet(layout, options));
+
+    const misprinted: SheetLayout = {
+      ...layout,
+      timingMarks: layout.timingMarks.map((rect, row) =>
+        row === 4 ? { ...rect, yMm: rect.yMm + 2 } : rect,
+      ),
+    };
+    const result = scanSheet(renderSheet(misprinted, options));
+
+    expect(result.kind).toBe('ok');
+    if (result.kind !== 'ok' || clean.kind !== 'ok') return;
+    expect(result.sheet.marks).toBe(clean.sheet.marks);
+    expect(result.sheet.quality.timingResidualMm).toBeLessThan(MAX_RESIDUAL_RMS_MM);
+    // TWO rows lost, not one, and that is measured rather than assumed: at this
+    // sheet's 12 mm pitch the search window reaches 9 mm, which clears a
+    // correctly printed neighbour by 1.05 mm, so a mark displaced by 2 mm puts
+    // 0.95 mm of its own body inside the next row's window and drags that
+    // centroid 1.750 mm off. Both rows fail the per mark gate and both are
+    // dropped. Dropping the pair is the safe answer: neither position is
+    // believed, nothing is renumbered, and the letters come back identical.
+    expect(result.sheet.quality.rowsFound).toBe(result.sheet.quality.rowsExpected - 2);
   });
 });
 

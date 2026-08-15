@@ -33,6 +33,16 @@ import type { Ring } from './ring';
 export interface BubbleReading {
   /** Mean ink over the inner disc, 0 for paper and 1 for solid printed ink. */
   readonly fill: number;
+  /**
+   * The paper to toner separation this bubble's ink was measured against, in
+   * grey levels.
+   *
+   * Carried because `fill` is a fraction of it, and the same fraction is a
+   * different physical amount of ink on a fresh sheet and on a third generation
+   * photocopy. The decision needs both: a fraction of this sheet, and an
+   * absolute darkening that no amount of weak toner can inflate.
+   */
+  readonly spanLevels: number;
   /** Fraction of the disc that is at least half ink. A light full shading and a
    *  heavy half mark have the same fill and very different coverage. */
   readonly coverage: number;
@@ -201,6 +211,7 @@ export function measureBubble(
 
   return {
     fill: counted === 0 ? 0 : total / counted,
+    spanLevels: Math.max(0, reference.white - reference.black),
     coverage: counted === 0 ? 0 : covered / counted,
     saturation: counted === 0 ? 0 : saturated / counted,
     escape: escapeCount === 0 ? 0 : escapeTotal / escapeCount,

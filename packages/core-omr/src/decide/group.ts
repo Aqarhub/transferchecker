@@ -55,28 +55,49 @@ export interface GroupInput {
 
 const at = <T>(list: readonly T[], index: number): T | undefined => list[index];
 
+/**
+ * The floor this group is actually judged against, in ink units.
+ *
+ * Two floors, and the stricter wins. `minInk` is a fraction of this sheet's own
+ * paper to toner swing, which is the only way an absolute number survives a
+ * shadow. `minAbsDark` is a number of grey levels, which is the only way a
+ * fraction survives weak toner: at the 40 level separation the photometry stage
+ * still accepts, 0.25 ink is ten grey levels, and ten levels is dust.
+ *
+ * Expressed as one number rather than as a second comparison because every rule
+ * below it, blank, all marked, the floor margin and the trace flag, is written
+ * against a floor in ink units, and giving them the raised floor keeps one rule
+ * instead of two that can disagree.
+ */
+function inkFloorOf(input: GroupInput, thresholds: Thresholds): number {
+  // The weakest reference in the group decides, because a floor that holds for
+  // the best lit bubble of a group and not the worst is not a floor.
+  const spans = input.readings.map((reading) => reading.spanLevels).filter((span) => span > 0);
+  if (spans.length === 0) return thresholds.minInk;
+  return Math.max(thresholds.minInk, thresholds.minAbsDark / Math.min(...spans));
+}
+
 function decideMany(input: GroupInput, thresholds: Thresholds): GroupOutcome {
+  // The absolute floor applies here too: on a weak sheet the "on" threshold is
+  // raised to whatever fraction 18 grey levels comes to.
+  const onLevel = Math.max(thresholds.manyOn, inkFloorOf(input, thresholds));
   const indexes: number[] = [];
   let margin = 1;
   let uncertain = false;
 
   for (const [index, reading] of input.readings.entries()) {
-    const on = reading.fill >= thresholds.manyOn;
+    const on = reading.fill >= onLevel;
     const off = reading.fill <= thresholds.manyOff;
     if (on) indexes.push(index);
     // The gap between on and off is the grey band, and a bubble sitting in it
     // is exactly what "do not guess" was written for.
     if (!on && !off) uncertain = true;
-    const distance = on
-      ? reading.fill - thresholds.manyOn
-      : off
-        ? thresholds.manyOff - reading.fill
-        : 0;
+    const distance = on ? reading.fill - onLevel : off ? thresholds.manyOff - reading.fill : 0;
     margin = Math.min(margin, distance);
   }
 
   if (indexes.length === 0) {
-    return { kind: 'blank', margin, trace: hasTrace(input, thresholds, -1) };
+    return { kind: 'blank', margin, trace: hasTrace(input, thresholds, -1, onLevel) };
   }
   return {
     kind: 'multiple',
@@ -88,10 +109,15 @@ function decideMany(input: GroupInput, thresholds: Thresholds): GroupOutcome {
 }
 
 /** A bubble that is not the answer but carries more ink than clean paper does. */
-function hasTrace(input: GroupInput, thresholds: Thresholds, winner: number): boolean {
+function hasTrace(
+  input: GroupInput,
+  thresholds: Thresholds,
+  winner: number,
+  floor: number,
+): boolean {
   return input.readings.some(
     (reading, index) =>
-      index !== winner && reading.fill >= thresholds.traceInk && reading.fill < thresholds.minInk,
+      index !== winner && reading.fill >= thresholds.traceInk && reading.fill < floor,
   );
 }
 
@@ -103,21 +129,22 @@ export function decideGroup(input: GroupInput, thresholds: Thresholds): GroupOut
 
   if (input.many) return decideMany(input, thresholds);
 
+  const floor = inkFloorOf(input, thresholds);
   const fills = input.readings.map((reading) => reading.fill);
   const top = Math.max(...fills);
 
-  if (top < thresholds.minInk) {
+  if (top < floor) {
     return {
       kind: 'blank',
-      margin: thresholds.minInk - top,
-      trace: hasTrace(input, thresholds, -1),
+      margin: floor - top,
+      trace: hasTrace(input, thresholds, -1, floor),
     };
   }
 
   const lowest = Math.min(...fills);
-  if (lowest >= thresholds.minInk) {
+  if (lowest >= floor) {
     // Every bubble is marked. The old rule would have taken the darkest.
-    return { kind: 'ambiguous', reason: 'all_marked', margin: lowest - thresholds.minInk };
+    return { kind: 'ambiguous', reason: 'all_marked', margin: lowest - floor };
   }
 
   let winner = 0;
@@ -127,7 +154,7 @@ export function decideGroup(input: GroupInput, thresholds: Thresholds): GroupOut
   // The winner's own ratio is one by construction, so the two live constraints
   // are the floor underneath it and the runner up behind it. The margin is the
   // nearer of the two, in ink units so it can be compared with the floor.
-  const floorMargin = top - thresholds.minInk;
+  const floorMargin = top - floor;
   const runnerUpMargin = thresholds.runnerUpRatio * top - second;
   if (runnerUpMargin < 0) {
     return { kind: 'ambiguous', reason: 'two_close', margin: -runnerUpMargin };
@@ -142,7 +169,7 @@ export function decideGroup(input: GroupInput, thresholds: Thresholds): GroupOut
     margin,
     uncertain: margin < thresholds.uncertainMargin,
     escaped: reading?.escapeMeasured === true && reading.escape >= thresholds.escapeInk,
-    trace: hasTrace(input, thresholds, winner),
+    trace: hasTrace(input, thresholds, winner, floor),
   };
 }
 

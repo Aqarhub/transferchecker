@@ -13,7 +13,7 @@
 // own geometry does not need a general document scanner, and warping the frame
 // would cost a pass over millions of pixels in order to throw detail away.
 
-import { layoutSheet } from '@transferchecker/sheet-spec';
+import { GEOMETRY, layoutSheet } from '@transferchecker/sheet-spec';
 import type { SheetLayout, SheetSpec } from '@transferchecker/sheet-spec';
 import { readSheetCode } from '../code/index';
 import { markOf } from '../decide/group';
@@ -21,7 +21,7 @@ import type { GroupOutcome } from '../decide/group';
 import { DEFAULT_THRESHOLDS } from '../decide/thresholds';
 import type { Thresholds } from '../decide/thresholds';
 import { findFiducials } from '../geometry/fiducials';
-import { paperFrame } from '../geometry/frame';
+import { fiducialSideMm, paperFrame } from '../geometry/frame';
 import type { GrayImage } from '../image/gray';
 import { readAnchors } from '../measure/anchor';
 import { photometryOf } from '../measure/photometry';
@@ -30,6 +30,17 @@ import { groupsOf, identityOf, measureSheet } from './measure-sheet';
 import type { GroupResult, SheetPass } from './measure-sheet';
 import { perturbFrame, perturbationsFor } from './perturb';
 import type { FieldReading, FieldState, QuestionReading, ScanResult } from './result';
+
+/**
+ * How far the printed corner square may measure from its 8 mm before the four
+ * points are not one sheet's four points.
+ *
+ * [measured] Two percent, against a worst legitimate reading of 0.2 percent
+ * over flat renders and photographs with tilt, blur, noise and shadow, and
+ * against 38 percent on an A4 carrier holding two A5 sheets. Ten times the
+ * noise and a fifth of the signal.
+ */
+const MAX_FIDUCIAL_ERROR = 0.02;
 
 export interface ScanOptions {
   readonly thresholds?: Thresholds;
@@ -145,6 +156,13 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
     return { kind: 'rejected', reason: { kind: 'not_this_geometry', area: 'sheet', axis: 'both' } };
   }
 
+  // The corner squares are 8 mm of printed ink, and their size was never fed to
+  // the solve, so it is the only thing about the map the map cannot absorb.
+  const sideMm = fiducialSideMm(frame, layout, found.quad.sidesPx);
+  if (Math.abs(sideMm - GEOMETRY.fiducialMm) / GEOMETRY.fiducialMm > MAX_FIDUCIAL_ERROR) {
+    return { kind: 'rejected', reason: { kind: 'not_one_sheet', fiducialMm: sideMm } };
+  }
+
   const timing = readTimingMarks(image, frame, layout);
   if (timing.kind === 'missing') {
     return {
@@ -200,22 +218,30 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
     };
   }
 
+  // Defense د13. Each member nudges the MAP, and everything that depends on the
+  // map is then derived again, including the timing marks: reusing the base
+  // pass's marks would leave every row correction identical under every member,
+  // so nothing whose source is a mark centroid would be visible to criterion 12
+  // at all, and the set would be testing half the pipeline while reporting on
+  // all of it. The cost is one extra strip reading per member.
   const unstable =
     options.perturb === false
       ? new Set<string>()
       : downgradeUnstable(
           base,
-          perturbationsFor(frame).map((nudge) =>
-            measureSheet(
+          perturbationsFor(frame).map((nudge) => {
+            const moved = perturbFrame(frame, nudge);
+            const shifted = readTimingMarks(image, moved, layout);
+            return measureSheet(
               image,
-              perturbFrame(frame, nudge),
+              moved,
               field,
-              timing.marks,
+              shifted.kind === 'ok' ? shifted.marks : timing.marks,
               layout,
               spec,
               thresholds,
-            ),
-          ),
+            );
+          }),
         );
 
   const questions: QuestionReading[] = base.questions.map((group) => ({
@@ -247,6 +273,8 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
       quality: {
         modulePx: code.modulePx,
         timingResidualMm: timing.residualMm,
+        rowsFound: timing.found,
+        rowsExpected: timing.expected,
         anchorResidualMm: anchors.kind === 'ok' ? anchors.residualMm : null,
         contrast: field.contrast,
         blanks: questions.filter((entry) => entry.outcome.kind === 'blank').length,

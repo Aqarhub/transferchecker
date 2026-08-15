@@ -17,6 +17,14 @@ export type Rejection =
   | { readonly kind: 'code_too_small'; readonly modulePx: number }
   | { readonly kind: 'template_unknown'; readonly templateId: string }
   | { readonly kind: 'not_this_geometry'; readonly area: string; readonly axis: string }
+  /**
+   * The corner squares do not measure 8 mm under the map their own centres
+   * define, so the four points the whole scan rests on are not the four points
+   * of one sheet. Two sheets in one frame is the case that produces it: the
+   * detector locks onto the outer four of eight squares and the map comes out
+   * stretched, which [measured] reads the 8 mm square back as 4.97 mm.
+   */
+  | { readonly kind: 'not_one_sheet'; readonly fiducialMm: number }
   | { readonly kind: 'rows_missing'; readonly expected: number; readonly found: number }
   /**
    * An anchor mark that is not where the geometry says it is, by more than the
@@ -54,6 +62,8 @@ export function messageKeyOf(reason: Rejection): string {
       return 'scan.reject.templateUnknown';
     case 'not_this_geometry':
       return 'scan.reject.notThisGeometry';
+    case 'not_one_sheet':
+      return 'scan.reject.notOneSheet';
     case 'rows_missing':
       return 'scan.reject.rowsMissing';
     case 'anchors_missing':
@@ -84,6 +94,7 @@ export function isFrameFault(reason: Rejection): boolean {
       return true;
     case 'template_unknown':
     case 'not_this_geometry':
+    case 'not_one_sheet':
     case 'rows_missing':
     case 'anchors_missing':
     case 'sheet_not_flat':

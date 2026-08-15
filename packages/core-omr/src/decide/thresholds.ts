@@ -33,6 +33,27 @@ export interface Thresholds {
   readonly minInk: number;
 
   /**
+   * The second floor, in GREY LEVELS rather than in ink units.
+   *
+   * `minInk` is a fraction of this sheet's own paper to toner swing, and that
+   * swing is not a constant: `photometryOf` accepts a frame down to 40 levels
+   * of separation, so on a third generation photocopy 0.25 ink is an absolute
+   * darkening of only ten grey levels. [measured] Ten levels is what show
+   * through from the back of the page, a fly speck or toner spatter puts on a
+   * bubble: rendering a uniform eleven level smudge over one bubble of a
+   * quick20 sheet returns `blank` at every printed contrast from 196 down to
+   * 56, and at 40 it stops being blank. The same physical smudge, the same
+   * absolute ink, a different answer, decided by how tired the printer was.
+   *
+   * Eighteen levels is the floor that closes it: [computed] a soft pencil on
+   * that same weak sheet reads 0.9 x 40 = 36 levels and passes with room, while
+   * no speck reaches 18 whatever the toner does. The two floors are checked
+   * together and the stricter one wins, which on any healthy sheet is `minInk`.
+   * [reasoned] The exact level is a golden set question. Its existence is not.
+   */
+  readonly minAbsDark: number;
+
+  /**
    * The relative rule, unchanged from the plan's rule 1 and reached only after
    * the floor has been cleared. A bubble is the answer when it holds at least
    * this share of the darkest bubble in its group.
@@ -89,6 +110,7 @@ export interface Thresholds {
 
 export const DEFAULT_THRESHOLDS: Thresholds = {
   minInk: 0.25,
+  minAbsDark: 18,
   answerRatio: 0.65,
   runnerUpRatio: 0.45,
   uncertainMargin: 0.08,
