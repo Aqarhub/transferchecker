@@ -2,3 +2,8 @@ pnpm-lock.yaml
 docs/mockups/
 coverage/
 SKILLS/
+
+# The golden set's spec.json and truth.json are bound to manifest.json by
+# SHA-256, so reformatting them changes their bytes and breaks the hash the
+# loader checks. They are data under a checksum, not source under a style.
+packages/core-omr/test/golden/

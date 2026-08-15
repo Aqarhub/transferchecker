@@ -4,14 +4,16 @@
 // expectation comes from `truth.ts`, which reads the marks the case asked for,
 // and this file only compares.
 
+import type { SheetLayout } from '@transferchecker/sheet-spec';
 import type { GroupOutcome } from '../../src/decide/group';
+import { markOf } from '../../src/decide/group';
 import type { Thresholds } from '../../src/decide/thresholds';
 import { scanSheet } from '../../src/scan/pipeline';
 import type { ScanResult } from '../../src/scan/result';
-import type { GoldenCase, Stratum } from './corpus';
+import type { GoldenCase } from './corpus';
 import { sheetOf } from './corpus';
 import { imageOf } from './image';
-import { expectedOf, verdictOf } from './truth';
+import { expectedOf, names, verdictOf } from './truth';
 import type { Expected, Verdict } from './truth';
 
 export interface QuestionRecord {
@@ -22,23 +24,56 @@ export interface QuestionRecord {
   /** How far the decision was from the threshold it would have had to cross. */
   readonly margin: number;
   /**
-   * Whether the engine actually named a letter here.
+   * Whether the engine named a letter here AND claimed to be sure of it.
    *
-   * The margin only means something on these. A blank's margin is the distance
-   * DOWN to the floor, so an engine blinded by raising the floor reports the
-   * widest margins in the corpus: [measured] `minInk` at 0.99 reads nothing at
-   * all, 185 of 229 answered questions come back blank, and its first
-   * percentile margin is 0.849 against the working engine's 0.119. A leading
-   * indicator that rewards blindness is worse than none.
+   * The margin only means something on these, and for two separate reasons. A
+   * blank's margin is the distance DOWN to the floor, so an engine blinded by
+   * raising the floor reports the widest margins in the corpus: [measured]
+   * `minInk` at 0.99 reads nothing at all, 185 of 229 answered questions come
+   * back blank, and its first percentile margin is 0.849 against the working
+   * engine's 0.119. And an answer the engine already flagged as uncertain is
+   * not a silent risk, it is a surfaced one, so leaving it in would let the
+   * corpus lower its own leading indicator every time it gains an honestly
+   * doubtful mark. What watches the size of that flagged population instead is
+   * the warning rate, which is a gate of its own.
    */
   readonly decided: boolean;
-  /** Whether the paper carried an answer here, which is the honest denominator. */
+  /**
+   * Whether the paper carried one unambiguous answer here.
+   *
+   * Deliberately narrower than "the paper carried something": a mark drawn at
+   * the edge of what a mark is (`either`) has no single right reading, so it
+   * cannot be in the denominator of a ratchet that asks whether answers still
+   * read. [measured] Both non correct questions of the quick tier are exactly
+   * that, and counting them dragged the probe set's baseline to 97.26 percent,
+   * under its own 98 percent floor, which disarmed the ratchet against every
+   * mutant it was written to catch.
+   */
   readonly answerable: boolean;
+  /** Whether the engine came back with the letter the paper carries, sure or not. */
+  readonly named: boolean;
+  /**
+   * Whether this question costs the teacher a look, as the stored record shows
+   * it: any mark character other than a clean answer or a blank.
+   *
+   * Taken from the record rather than from the verdict because the budget in
+   * acceptance criterion 14 is a promise about what a teacher opens, and a
+   * question the corpus scores `correct` because it was correctly called
+   * ambiguous still stops them.
+   */
+  readonly warned: boolean;
 }
 
 export interface CaseRecord {
   readonly id: string;
-  readonly stratum: Stratum;
+  /**
+   * A string rather than the synthetic `Stratum`, because tier 3 strata are
+   * environmental: `phone/daylight/flat` is the unit acceptance criterion 14
+   * asks for a separate accuracy floor on. Widening it here is what lets a real
+   * paper and a drawn one flow into the same report and the same gates instead
+   * of growing a second scoring path that can disagree with this one.
+   */
+  readonly stratum: string;
   readonly template: string;
   readonly why: string;
   /** 'graded' or the rejection cause, as the engine actually answered. */
@@ -87,28 +122,45 @@ function marksByQuestion(item: GoldenCase): Map<number, typeof item.marks> {
   return byQuestion;
 }
 
-export function runCase(item: GoldenCase, thresholds?: Thresholds): CaseRecord {
-  const started = Number(process.hrtime.bigint() / 1000n) / 1000;
-  const result: ScanResult = scanSheet(
-    imageOf(item),
-    thresholds === undefined ? {} : { thresholds },
-  );
-  const elapsedMs = Number(process.hrtime.bigint() / 1000n) / 1000 - started;
+/** What a scored sheet needs to know about itself, drawn or photographed. */
+export interface Scoreable {
+  readonly id: string;
+  readonly stratum: string;
+  readonly template: string;
+  readonly why: string;
+  /** 'graded' or the rejection cause this sheet is supposed to produce. */
+  readonly wanted: string;
+  readonly layout: SheetLayout;
+  /**
+   * The truth, per question, from the paper and never from the engine. Null for
+   * a question that has no truth yet, which is skipped rather than guessed.
+   */
+  readonly expectedFor: (question: number) => Expected | null;
+  readonly chars: GoldenCase['chars'];
+}
 
+/**
+ * Scoring one scan, shared by the drawn corpus and by real paper.
+ *
+ * One function rather than two, because the moment tier 3 gets its own copy of
+ * this loop the two definitions of a wrong answer start to drift, and the one
+ * that drifts is always the one nobody is running yet.
+ */
+export function scoreResult(sheet: Scoreable, result: ScanResult, elapsedMs: number): CaseRecord {
   const got = result.kind === 'ok' ? 'graded' : result.reason.kind;
-  const asked = got === item.expect;
+  const asked = got === sheet.wanted;
 
   // A refused sheet has no per question record, and that is not a hole in the
   // measurement: refusing when the case demanded a refusal is the correct
   // answer, and refusing when it did not is counted as the sheet failing.
   if (result.kind !== 'ok') {
     return {
-      id: item.id,
-      stratum: item.stratum,
-      template: item.template,
-      why: item.why,
+      id: sheet.id,
+      stratum: sheet.stratum,
+      template: sheet.template,
+      why: sheet.why,
       got,
-      wanted: item.expect,
+      wanted: sheet.wanted,
       asked,
       questions: [],
       counts: { ...EMPTY },
@@ -118,49 +170,80 @@ export function runCase(item: GoldenCase, thresholds?: Thresholds): CaseRecord {
     };
   }
 
-  const { layout } = sheetOf(item.template);
-  const aimed = marksByQuestion(item);
   const questions: QuestionRecord[] = [];
   const counts: Record<Verdict, number> = { ...EMPTY };
 
-  for (const column of layout.questionColumns) {
+  for (const column of sheet.layout.questionColumns) {
     for (const row of column.rows) {
       const reading = result.sheet.questions.find((entry) => entry.question === row.question);
       if (reading === undefined) continue;
-      const expected = expectedOf(aimed.get(row.question) ?? []);
+      const expected = sheet.expectedFor(row.question);
+      if (expected === null) continue;
       const verdict = verdictOf(expected, reading.outcome);
+      const outcome = reading.outcome;
+      const sure = (outcome.kind === 'answer' || outcome.kind === 'multiple') && !outcome.uncertain;
+      const mark = markOf(outcome);
       counts[verdict] += 1;
       questions.push({
         question: row.question,
         expected,
-        outcome: label(reading.outcome),
+        outcome: label(outcome),
         verdict,
-        margin: 'margin' in reading.outcome ? reading.outcome.margin : 0,
-        decided: reading.outcome.kind === 'answer' || reading.outcome.kind === 'multiple',
-        answerable: expected.kind === 'answer' || expected.kind === 'either',
+        margin: 'margin' in outcome ? outcome.margin : 0,
+        decided: sure,
+        answerable: expected.kind === 'answer',
+        named:
+          expected.kind === 'blank' || expected.kind === 'flagged'
+            ? false
+            : names(outcome, expected.symbol),
+        warned: mark !== 'c' && mark !== 'b',
       });
     }
   }
 
   return {
-    id: item.id,
-    stratum: item.stratum,
-    template: item.template,
-    why: item.why,
+    id: sheet.id,
+    stratum: sheet.stratum,
+    template: sheet.template,
+    why: sheet.why,
     got,
-    wanted: item.expect,
+    wanted: sheet.wanted,
     asked,
     questions,
     counts,
     marks: result.sheet.marks,
-    charFault: charFaultOf(item, result.sheet.marks),
+    charFault: charFaultOf(sheet.chars, result.sheet.marks),
     elapsedMs,
   };
 }
 
+export function runCase(item: GoldenCase, thresholds?: Thresholds): CaseRecord {
+  const started = Number(process.hrtime.bigint() / 1000n) / 1000;
+  const result: ScanResult = scanSheet(
+    imageOf(item),
+    thresholds === undefined ? {} : { thresholds },
+  );
+  const elapsedMs = Number(process.hrtime.bigint() / 1000n) / 1000 - started;
+
+  const aimed = marksByQuestion(item);
+  return scoreResult(
+    {
+      id: item.id,
+      stratum: item.stratum,
+      template: item.template,
+      why: item.why,
+      wanted: item.expect,
+      layout: sheetOf(item.template).layout,
+      expectedFor: (question) => expectedOf(aimed.get(question) ?? []),
+      chars: item.chars,
+    },
+    result,
+    elapsedMs,
+  );
+}
+
 /** What the marks string carried that the case did not ask for, or did not carry. */
-function charFaultOf(item: GoldenCase, marks: string): string {
-  const wanted = item.chars;
+function charFaultOf(wanted: GoldenCase['chars'], marks: string): string {
   if (wanted === undefined) return '';
   const present = new Set(marks);
 

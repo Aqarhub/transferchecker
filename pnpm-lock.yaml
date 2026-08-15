@@ -87,6 +87,9 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.10(@types/node@24.13.3)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.23.12))
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
 
   packages/sheet-pdf:
     dependencies:

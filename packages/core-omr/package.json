@@ -13,7 +13,8 @@
     "test": "vitest run",
     "lint": "eslint .",
     "golden": "tsx tools/golden/run.ts",
-    "golden:quick": "tsx tools/golden/run.ts --quick"
+    "golden:quick": "tsx tools/golden/run.ts --quick",
+    "import-shot": "tsx tools/import-shot.ts"
   },
   "dependencies": {
     "@transferchecker/sheet-spec": "workspace:*"
@@ -22,6 +23,7 @@
     "@types/node": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "zod": "catalog:"
   }
 }
