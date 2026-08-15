@@ -57,6 +57,12 @@ export type { Cell, ResultRow, Table } from './results';
 export { auditTable, exportResults, resultsCsv, resultsXlsx } from './export';
 export type { ExportFault, Exported } from './export';
 
+export { MIN_PAPERS_FOR_INDICES, analyseItems } from './item';
+export type { AnalysedPaper, ItemAnalysis, ItemStats, OptionCount } from './item';
+
+export { tagReport, tagScores, tagsOf } from './tags';
+export type { TagReport, TagScore, TaggedPaper } from './tags';
+
 export { writeXlsx } from './xlsx';
 export { crc32, writeZip } from './zip';
 export type { ZipEntry } from './zip';
