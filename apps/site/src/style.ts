@@ -42,7 +42,14 @@ header { padding-block: 3rem 1rem; }
 .brand { font-weight: 700; letter-spacing: 0.04em; color: var(--accent); margin: 0; }
 h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.25; margin: 0.4em 0 0.3em; }
 .lede { font-size: 1.15rem; color: var(--muted); margin: 0; }
+/* The language list. Eight names wrap on a phone, so it wraps by design rather
+   than scrolling or collapsing behind a control this page has no script to
+   open. Each item keeps a 44px touch height without a box around it. */
 .switch { margin-block: 1.5rem 0; }
+.switch ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0 1.1rem; padding: 0; margin: 0; }
+.switch li { margin: 0; }
+.switch a { display: inline-flex; align-items: center; min-height: 44px; font-size: 0.95rem; }
+.switch a[aria-current] { color: var(--ink); font-weight: 700; text-decoration: none; }
 a { color: var(--accent); }
 section { padding-block: 1.75rem; border-block-start: 1px solid var(--line); }
 h2 { font-size: 1.3rem; margin: 0 0 0.6em; }

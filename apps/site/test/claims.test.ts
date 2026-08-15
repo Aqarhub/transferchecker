@@ -78,18 +78,24 @@ describe('the site cannot publish an accuracy it has not measured', () => {
       expect(html).toMatch(/99\.8/);
     }
     // Per QUESTION, which is the whole of what the unit decision was about: the
-    // three readings are 250 to 1 apart on a fifty question sheet.
-    expect(COPY.ar.accuracy(MEASURED)).toContain('لكل سؤال');
-    expect(COPY.en.accuracy(MEASURED)).toContain('per question');
+    // three readings are 250 to 1 apart on a fifty question sheet. Checked in
+    // every language against the words that language declares, so a ninth
+    // translation cannot quietly drop the unit and still pass.
+    for (const locale of LOCALES) {
+      expect(COPY[locale].accuracy(MEASURED), locale).toContain(COPY[locale].unitWord);
+    }
   });
 
   it('never publishes an accuracy without the refusal and warning rates beside it', () => {
     // Acceptance criterion 14, carried into the copy: a high accuracy next to a
-    // high refusal rate is the same lie as guessing.
+    // high refusal rate is the same lie as guessing. Both sentences carry it,
+    // because a page that names the rates only when they are flattering is the
+    // same page as one that never names them.
     for (const locale of LOCALES) {
-      const said = COPY[locale].accuracy(MEASURED);
-      const both = locale === 'ar' ? ['الرفض', 'التحذير'] : ['refusal', 'warning'];
-      for (const word of both) expect(said).toContain(word);
+      for (const evidence of [UNMEASURED, MEASURED]) {
+        const said = COPY[locale].accuracy(evidence);
+        for (const word of COPY[locale].rateWords) expect(said, locale).toContain(word);
+      }
     }
   });
 });

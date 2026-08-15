@@ -15,6 +15,8 @@ import { DEFAULT_LOCALE, LOCALES } from './content';
 import { readEvidence } from './evidence';
 import type { Evidence } from './evidence';
 import { renderDocument } from './html';
+import { indexNowFile } from './indexnow';
+import { llmsFullOf, llmsIndex, llmsOf } from './llms';
 import { pageOf, pathOf, urlOf } from './pages';
 import { ROBOTS, sitemap } from './robots';
 import { STYLE } from './style';
@@ -33,15 +35,31 @@ export interface BuiltFile {
 }
 
 /** Everything the site is, as files, without touching a disk. */
-export function buildFiles(evidence: Evidence): BuiltFile[] {
-  const files: BuiltFile[] = LOCALES.map((locale) => ({
-    path: `${pathOf(locale)}index.html`.replace(/^\//, ''),
-    text: renderDocument(pageOf(locale, evidence), urlOf(DEFAULT_LOCALE)),
-  }));
+export function buildFiles(evidence: Evidence, indexNowKey?: string): BuiltFile[] {
+  const files: BuiltFile[] = [];
+
+  // Every language gets the same three files, from the same loop, which is what
+  // makes "in every language" a property of the build rather than a checklist.
+  for (const locale of LOCALES) {
+    const folder = pathOf(locale).replace(/^\//, '');
+    files.push({
+      path: `${folder}index.html`,
+      text: renderDocument(pageOf(locale, evidence), urlOf(DEFAULT_LOCALE)),
+    });
+    files.push({ path: `${folder}llms.txt`, text: llmsOf(locale, evidence) });
+    files.push({ path: `${folder}llms-full.txt`, text: llmsFullOf(locale, evidence) });
+  }
 
   files.push({ path: 'robots.txt', text: ROBOTS });
   files.push({ path: 'sitemap.xml', text: sitemap() });
+  // The index at the root, naming every language. Section 8's condition is that
+  // it is generated from the sitemap's own source, and it is: both read
+  // `LOCALE_INFO`, so neither can name a language the other has forgotten.
+  files.push({ path: 'llms.txt', text: llmsIndex() });
   files.push({ path: 'style.css', text: STYLE });
+
+  const key = indexNowFile(indexNowKey);
+  if (key !== null) files.push(key);
   // The bare root redirects nothing and guesses nothing: it is a page that
   // links to both languages, because sending a visitor by `Accept-Language`
   // would send every crawler away from the Arabic pages it came to read.
@@ -54,7 +72,8 @@ export function buildFiles(evidence: Evidence): BuiltFile[] {
 
 function main(): void {
   const out = resolve(process.argv[2] ?? 'out');
-  const files = buildFiles(readEvidence(reportPath()));
+  // The key never lives in the repository, so it is read here and not imported.
+  const files = buildFiles(readEvidence(reportPath()), process.env['INDEXNOW_KEY']);
   for (const file of files) {
     const target = join(out, file.path);
     mkdirSync(dirname(target), { recursive: true });

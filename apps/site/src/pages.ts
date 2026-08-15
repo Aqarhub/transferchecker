@@ -5,7 +5,7 @@
 // or a query parameter, because a subfolder inherits the domain's standing and
 // a crawler treats the set as one site.
 
-import { COPY, DEFAULT_LOCALE, LOCALES, SITE } from './content';
+import { COPY, LOCALE_INFO, LOCALES, SITE, localeOf } from './content';
 import type { Copy, Locale } from './content';
 import type { Evidence } from './evidence';
 import { escapeHtml } from './html';
@@ -25,13 +25,33 @@ const cards = (items: readonly { title: string; body: string }[]): string =>
     )
     .join('');
 
+/**
+ * The language switcher, and it is a real list rather than a toggle.
+ *
+ * Every language is named in its own name, which is the only naming a reader can
+ * be expected to recognise, and every link goes to the SAME page in the other
+ * language rather than to a home page. Each carries `hreflang` and `lang` so
+ * that a screen reader switches voice on the label and a crawler reads the
+ * relationship from the markup as well as from the head.
+ *
+ * It is rendered on the page rather than behind a control on purpose: this site
+ * ships no JavaScript, and a language menu that needs a script is a menu that
+ * does not exist for the crawlers section 1 is about.
+ */
+function switcher(copy: Copy, locale: Locale): string {
+  const links = LOCALE_INFO.map((entry) => {
+    const current = entry.code === locale ? ' aria-current="true"' : '';
+    return `<li><a href="${pathOf(entry.code)}" hreflang="${entry.code}" lang="${entry.code}"${current}>${escapeHtml(entry.name)}</a></li>`;
+  }).join('');
+  return `<nav class="switch" aria-label="${escapeHtml(copy.languagesTitle)}"><ul>${links}</ul></nav>`;
+}
+
 function bodyOf(copy: Copy, locale: Locale, evidence: Evidence): string {
-  const other = LOCALES.find((candidate) => candidate !== locale) ?? DEFAULT_LOCALE;
   return `<header>
 <p class="brand">${escapeHtml(copy.name)}</p>
 <h1>${escapeHtml(copy.tagline)}</h1>
 <p class="lede">${escapeHtml(copy.lede)}</p>
-<p class="switch"><a href="${pathOf(other)}" hreflang="${other}">${escapeHtml(copy.otherLanguage)}</a></p>
+${switcher(copy, locale)}
 </header>
 <main>
 <section id="steps"><h2>${escapeHtml(copy.stepsTitle)}</h2>${list(copy.steps)}</section>
@@ -83,7 +103,7 @@ export function pageOf(locale: Locale, evidence: Evidence): PageDocument {
   const copy = COPY[locale];
   return {
     locale,
-    dir: copy.dir,
+    dir: localeOf(locale).dir,
     title: copy.title,
     description: copy.description,
     // Self referencing, always. A canonical that points at the other language
