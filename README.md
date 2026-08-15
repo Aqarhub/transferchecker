@@ -33,6 +33,8 @@
 ```
 packages/sheet-spec/   مواصفة الورقة ومحرك التخطيط (TypeScript خالص، مُختبر)
 packages/sheet-pdf/    توليد الورقة PDF عبر Typst، بتشكيل عربي صحيح
+packages/core-omr/     محرك المسح، والمجموعة الذهبية بأدواتها
+packages/grading/      الترميز المخزَّن، ومفتاح الإجابة، والدرجة، وإعادة الحساب
 scripts/               أدوات المستودع
 docs/                  التوثيق
 ```
