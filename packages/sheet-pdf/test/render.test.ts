@@ -139,24 +139,40 @@ describe('renderSheetTypst', () => {
     }
   });
 
-  it('prints a letter once, either inside its bubble or beside it', () => {
-    // A letter inside a bubble is boxed to the bubble's own size, a letter
-    // beside it is boxed to the label slot, so the two are countable apart.
-    const inside = (source: string): number =>
-      countOf(source, /box\(width: 4\.4mm, height: 4\.4mm/g);
-    const beside = (source: string): number =>
+  it('prints a letter once: inside its bubble, beside it, or above the column', () => {
+    // A letter inside a bubble is boxed to the bubble's own size, and one that
+    // is not inside is boxed to the label slot, so the two are countable apart.
+    const sideMm = (layout: SheetLayout): string =>
+      String((layout.questionColumns[0]?.rows[0]?.bubbles[0]?.rMm ?? 0) * 2);
+    const inside = (source: string, layout: SheetLayout): number =>
+      countOf(
+        source,
+        new RegExp(`box\\(width: ${sideMm(layout)}mm, height: ${sideMm(layout)}mm`, 'g'),
+      );
+    const outside = (source: string): number =>
       countOf(source, /box\(width: 3\.2mm, align\(center/g);
 
     const internal = makeLayout();
     const external = makeLayout({ questions: choiceQuestions(40, latinSymbols(5), 'external') });
+    const header = makeLayout({ questions: choiceQuestions(40, latinSymbols(5), 'header') });
     const internalSource = renderSheetTypst(internal, makeOptions());
     const externalSource = renderSheetTypst(external, makeOptions());
+    const headerSource = renderSheetTypst(header, makeOptions());
 
-    expect(inside(internalSource)).toBe(questionBubbles(internal) + gridBubbles(internal));
-    expect(beside(internalSource)).toBe(0);
-    // Only the id grid keeps its digits inside the bubbles.
-    expect(inside(externalSource)).toBe(gridBubbles(external));
-    expect(beside(externalSource)).toBe(questionBubbles(external));
+    expect(inside(internalSource, internal)).toBe(
+      questionBubbles(internal) + gridBubbles(internal),
+    );
+    expect(outside(internalSource)).toBe(0);
+
+    // Only the id grid keeps its digits inside the bubbles in the other two.
+    expect(inside(externalSource, external)).toBe(gridBubbles(external));
+    expect(outside(externalSource)).toBe(questionBubbles(external));
+
+    // A header prints its letters once per block, not once per bubble, which is
+    // the whole reason it exists.
+    const blocks = header.questionColumns.reduce((n, c) => n + c.headers.length, 0);
+    expect(inside(headerSource, header)).toBe(gridBubbles(header));
+    expect(outside(headerSource)).toBe(blocks * 5);
   });
 
   it('prints an external letter to the left of the bubble it belongs to', () => {

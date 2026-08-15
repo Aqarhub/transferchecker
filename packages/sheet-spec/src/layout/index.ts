@@ -138,7 +138,7 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
   const gridWidthMm =
     sidebar.widthMm > 0 ? contentWidthMm - sidebar.widthMm - GEOMETRY.sidebarGapMm : contentWidthMm;
   const columnCount = resolveColumns(spec, gridWidthMm, bodyHeightMm);
-  const grid = planGrid(spec, contentLeftMm, bodyTopMm, columnCount);
+  const grid = planGrid(spec, contentLeftMm, bodyTopMm, columnCount, bodyHeightMm);
 
   if (grid.widthMm > gridWidthMm) {
     return {

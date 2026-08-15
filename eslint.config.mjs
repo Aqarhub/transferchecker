@@ -12,6 +12,10 @@ export default defineConfig(
     '**/.turbo/**',
     // Vendored reference material, not project source.
     'SKILLS/**',
+    // Research workflow scripts. They run in a host that allows a top level
+    // return and injects its own globals, so linting them as project source
+    // reports parse errors for code that is correct where it actually runs.
+    'docs/research/workflows/**',
   ]),
 
   {

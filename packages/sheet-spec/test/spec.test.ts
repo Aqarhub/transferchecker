@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_BUBBLE,
   SheetSpecSchema,
   arabicSymbols,
   digitSymbols,
@@ -56,6 +57,22 @@ describe('SheetSpecSchema', () => {
       ],
     });
     expect(spec.questions.map((question) => question.symbols.length)).toEqual([5, 2]);
+  });
+
+  it('rejects metrics whose bubbles would touch, however sane each number looks', () => {
+    // Every one of these is inside its own range. Only the combination is
+    // wrong, which is why it has to be checked across fields.
+    expect(reject({ bubble: { ...DEFAULT_BUBBLE, radiusMm: 3.5, pitchXMm: 5 } })).toBe(true);
+    expect(reject({ bubble: { ...DEFAULT_BUBBLE, radiusMm: 3.5, pitchYMm: 6 } })).toBe(true);
+    expect(reject({ bubble: { ...DEFAULT_BUBBLE, radiusMm: 3.5, gridPitchYMm: 5 } })).toBe(true);
+  });
+
+  it('leaves a millimetre of paper between one bubble and the next', () => {
+    // A mark that strays out of one bubble must not land inside its neighbour.
+    const { radiusMm, pitchXMm, pitchYMm, gridPitchYMm } = DEFAULT_BUBBLE;
+    for (const pitch of [pitchXMm, pitchYMm, gridPitchYMm]) {
+      expect(pitch - 2 * radiusMm).toBeGreaterThanOrEqual(1);
+    }
   });
 
   it('rejects a template id that is not a uuid', () => {

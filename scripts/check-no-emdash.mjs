@@ -17,7 +17,10 @@ const EM_DASH = '—';
 // the standards docs name the character they are banning.
 const SCANNED = /\.(ts|tsx|json|mdx|html|css)$/;
 const SKIPPED = new Set(['node_modules', '.git', '.next', '.turbo', 'dist', 'build', 'coverage']);
-const EXEMPT = /(^|\/)scripts\/check-no-emdash\.mjs$/;
+// This checker names the character it bans, and docs/research/raw holds agent
+// output kept verbatim as a record. Editing that record to satisfy a house
+// style would falsify it, and nobody reads it as product text.
+const EXEMPT = /(^|\/)(scripts\/check-no-emdash\.mjs|docs\/research\/raw\/.*)$/;
 
 /** Every scannable file under `dir`, skipping build output and dependencies. */
 function* walk(dir) {

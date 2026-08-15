@@ -1,7 +1,10 @@
 // Public surface of the sheet specification package.
 
-export { FIELD_WIDTH_MM, GEOMETRY, PAPER, PAPER_NAMES } from './paper';
-export type { PaperName, PaperSize } from './paper';
+export { FIELD_WIDTH_MM, GEOMETRY, PAPER, PAPER_FAMILIES, PAPER_NAMES } from './paper';
+export type { PaperFamily, PaperName, PaperSize } from './paper';
+
+export { smallestPaper } from './fit';
+export type { PaperChoice } from './fit';
 
 export {
   MAX_SYMBOLS,
@@ -53,6 +56,9 @@ export {
   encodeSheetCode,
 } from './code/index';
 export type { DecodedCode, QrMatrix } from './code/index';
+
+export { STOCK_TEMPLATES, stockQuestionCount, stockTemplate } from './templates';
+export type { StockTemplate, TemplateText } from './templates';
 
 export { layoutSheet } from './layout/index';
 export { columnWidthMm, questionWidthMm, resolveColumns } from './layout/grid';
