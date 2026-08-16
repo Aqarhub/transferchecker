@@ -15,14 +15,14 @@ import { ORG_A, ORG_B, USER_A, USER_B, freshDatabase, rows } from './harness';
 let client: PGlite;
 
 /** How many tables exist in total, including the two the session tests own. */
-const ALL_TABLES = 11;
+const ALL_TABLES = 13;
 
 /**
  * The tables scoped by plain organisation isolation, and the column each uses.
  *
- * `token_families` and `refresh_tokens` are deliberately absent: the first is
- * scoped tighter than an organisation (it is scoped to a person) and the second
- * is reachable by nobody at all. Both are covered in session.test.ts.
+ * `token_families` is scoped tighter than an organisation, to a person, and
+ * `refresh_tokens`, `credentials` and `login_attempts` are reachable by nobody
+ * at all. They are covered in session.test.ts and credentials.test.ts.
  */
 const TABLES: readonly (readonly [string, string])[] = [
   ['orgs', 'id'],
@@ -104,7 +104,9 @@ describe('the database refuses to be the only line of defence it is not', () => 
     const seen = found.map((policy) => policy.tablename);
     const expected = [...TABLES.map(([name]) => name), 'token_families'];
     expect([...seen].sort()).toEqual([...expected].sort());
-    expect(seen).not.toContain('refresh_tokens');
+    for (const unreachable of ['refresh_tokens', 'credentials', 'login_attempts']) {
+      expect(seen).not.toContain(unreachable);
+    }
     // `to authenticated` on every one. Without it the policy is evaluated for
     // anon as well, on a role that must never see a row.
     for (const policy of found)

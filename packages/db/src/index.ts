@@ -23,6 +23,18 @@ export { createAccount, planAccount } from './signup';
 
 export { hashToken, refreshSession, revokeFamily, startSession } from './session';
 
+export {
+  ARGON2,
+  DECOY_HASH,
+  attemptLogin,
+  emailKey,
+  forgetStaleAttempts,
+  hashPassword,
+  setPassword,
+  verifyPassword,
+} from './credentials';
+export type { LoginAttempt, LoginResult } from './credentials';
+
 export { auditIsolation, probeIsolation } from './audit';
 export type { Check } from './audit';
 

@@ -23,11 +23,13 @@ const migrations = await migrationFiles();
 const sql = migrations.map((file) => file.sql).join('\n');
 
 describe('the tables the plan asks for', () => {
-  it('is exactly the eleven, and the two extras are named for a reason', () => {
+  it('is exactly the thirteen, and the four extras are named for a reason', () => {
     expect([...Object.keys(named)].sort()).toEqual([
       'answer_keys',
       'consents',
+      'credentials',
       'exams',
+      'login_attempts',
       'orgs',
       'refresh_tokens',
       'scans',
@@ -45,6 +47,15 @@ describe('the tables the plan asks for', () => {
   it('has somewhere to keep a session, since no auth provider is doing it', () => {
     expect(columnsOf(schema.tokenFamilies)).toContain('revoked_reason');
     expect(columnsOf(schema.refreshTokens)).toContain('used_at');
+    expect(columnsOf(schema.credentials)).toContain('password_hash');
+  });
+
+  // The one table in the schema with no organisation, and it is deliberate: the
+  // row is written before anybody is anybody, for an address that may have no
+  // account, by a caller who has presented no token.
+  it('gives the pre-authentication counter no organisation to belong to', () => {
+    expect(columnsOf(schema.loginAttempts)).not.toContain('org_id');
+    expect(columnsOf(schema.loginAttempts)).toContain('email_hash');
   });
 
   // The load bearing decision in PLAN.md section 5: a million teachers at a
@@ -142,7 +153,8 @@ describe('the isolation column', () => {
   it('is on every table, and is the primary key on the organisation itself', () => {
     for (const [name, table] of Object.entries(named)) {
       const columns = columnsOf(table);
-      expect(name === 'orgs' ? columns.includes('id') : columns.includes('org_id')).toBe(true);
+      const expected = name === 'orgs' ? 'id' : name === 'login_attempts' ? 'email_hash' : 'org_id';
+      expect([name, columns.includes(expected)]).toEqual([name, true]);
     }
   });
 });
@@ -153,6 +165,7 @@ describe('the migrations', () => {
       '0000_bootstrap',
       '0001_tables',
       '0002_grants',
+      '0003_credentials',
     ]);
   });
 

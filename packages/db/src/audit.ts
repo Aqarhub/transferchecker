@@ -55,9 +55,15 @@ function text(row: Record<string, unknown>, column: string): string {
   return JSON.stringify(value);
 }
 
-/** Every table, and the one that must have no policy at all. */
-const UNREACHABLE = 'refresh_tokens';
-const EXPECTED_TABLES = 11;
+/**
+ * The tables that must have no policy and no privilege at all.
+ *
+ * A refresh token, a password hash and a failure counter are things the server
+ * handles. No signed in teacher has a use for any of them, so they are reachable
+ * by nobody rather than by the right organisation.
+ */
+const UNREACHABLE = ['refresh_tokens', 'credentials', 'login_attempts'] as const;
+const EXPECTED_TABLES = 13;
 
 export async function auditIsolation(db: Queryable): Promise<Check[]> {
   const checks: Check[] = [];
@@ -87,10 +93,13 @@ export async function auditIsolation(db: Queryable): Promise<Check[]> {
       from pg_policies where schemaname = 'public' order by tablename`),
   );
   const covered = new Set(policies.map((row) => text(row, 'tablename')));
+  const wronglyCovered = UNREACHABLE.filter((table) => covered.has(table));
   add(
-    'every table has a policy except the one that must reach nobody',
-    covered.size === EXPECTED_TABLES - 1 && !covered.has(UNREACHABLE),
-    `${String(covered.size)} covered, ${UNREACHABLE} deliberately not`,
+    'every table has a policy except the ones that must reach nobody',
+    covered.size === EXPECTED_TABLES - UNREACHABLE.length && wronglyCovered.length === 0,
+    wronglyCovered.length === 0
+      ? `${String(covered.size)} covered, ${UNREACHABLE.join(' and ')} deliberately not`
+      : `should have no policy: ${wronglyCovered.join(', ')}`,
   );
 
   const wrongRole = policies.filter((row) => text(row, 'roles') !== '{authenticated}');
@@ -126,14 +135,19 @@ export async function auditIsolation(db: Queryable): Promise<Check[]> {
     `${text(anon[0] ?? {}, 'n')} grants`,
   );
 
-  const onTokens = rowsOf(
-    await db.execute(sql`select count(*)::int as n from information_schema.role_table_grants
-      where grantee = 'authenticated' and table_name = ${UNREACHABLE}`),
+  const onSecrets = rowsOf(
+    await db.execute(sql`select table_name, count(*)::int as n
+      from information_schema.role_table_grants
+      where grantee in ('anon','authenticated')
+        and table_name in ('refresh_tokens','credentials','login_attempts')
+      group by table_name`),
   );
   add(
-    'a signed in client holds no privilege on the refresh tokens',
-    text(onTokens[0] ?? {}, 'n') === '0',
-    `${text(onTokens[0] ?? {}, 'n')} grants`,
+    'no client holds a privilege on a token, a password or a counter',
+    onSecrets.length === 0,
+    onSecrets.length === 0
+      ? 'none of the three is reachable'
+      : onSecrets.map((row) => `${text(row, 'table_name')}: ${text(row, 'n')}`).join(', '),
   );
 
   const functions = rowsOf(

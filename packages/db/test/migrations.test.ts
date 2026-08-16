@@ -76,6 +76,8 @@ describe('the migrations and the schema describe the same database', () => {
       .filter((column) => column.is_nullable === 'YES')
       .map((column) => `${column.table_name}.${column.column_name}`);
     expect([...nullable].sort()).toEqual([
+      'credentials.confirmed_at',
+      'login_attempts.last_failure_at',
       'refresh_tokens.used_at',
       'scans.student_ext_id',
       'students.name',

@@ -9,6 +9,7 @@ packages:
 # package.json so the mobile and web apps can never drift apart.
 catalog:
   '@electric-sql/pglite': '0.5.5'
+  '@node-rs/argon2': '2.1.0'
   '@eslint/js': '10.0.1'
   '@myriaddreamin/typst-ts-node-compiler': '0.7.0'
   '@types/node': '24.13.3'

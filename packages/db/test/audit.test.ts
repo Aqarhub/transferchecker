@@ -51,12 +51,19 @@ describe('a database somebody has broken', () => {
     expect(checks.find((check) => check.name.includes('app_metadata'))?.ok).toBe(false);
   });
 
-  it('notices the refresh tokens being granted to a signed in client', async () => {
-    const { client, db } = await freshDatabase();
-    await client.exec('grant select on refresh_tokens to authenticated');
-    const checks = await auditIsolation(db);
-    expect(checks.find((check) => check.name.includes('refresh tokens'))?.ok).toBe(false);
-  });
+  // The three tables a client must never reach: a token, a password hash and a
+  // failure counter. Granting any one of them is caught by the same check.
+  it.each(['refresh_tokens', 'credentials', 'login_attempts'])(
+    'notices %s being granted to a signed in client',
+    async (table) => {
+      const { client, db } = await freshDatabase();
+      await client.exec(`grant select on ${table} to authenticated`);
+      const checks = await auditIsolation(db);
+      const check = checks.find((entry) => entry.name.includes('token, a password'));
+      expect(check?.ok).toBe(false);
+      expect(check?.detail).toContain(table);
+    },
+  );
 
   it('notices anything granted to an anonymous caller', async () => {
     const { client, db } = await freshDatabase();
