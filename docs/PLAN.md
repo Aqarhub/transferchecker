@@ -149,6 +149,8 @@ CI يرفض أي PR ينزّل الدقة تحت **99.7% لكل سؤال** (ال
 
 ## 5) قاعدة البيانات
 
+> **نُفِّذ في 2026-08-16: `packages/db`**، تسعة جداول بـDrizzle وثلاث مهاجرات، **بلا `responses` وبلا أي عمود مشتقّ**. وثلاثة أعمدة أضيفت على السكتش أدناه وكلها من هذه الوثيقة: `users.org_id` و`answer_keys.org_id`، **لأن سطر التعليق الأول هنا يشترط `org_id` في كل جدول ثم يُسقطه من هذين**؛ و`users.country` من القسم 8ج. **والنظام القانوني لا يُخزَّن في `users`** لأنه `regimeOf(country)`، **وقاعدة `Max. Points` في هذا القسم نفسه تنطبق عليه حرفاً**.
+
 ```sql
 -- كل جدول فيه org_id للعزل من اليوم الأول
 users(id uuid pk, email citext unique, locale text, created_at)
@@ -304,6 +306,8 @@ scans(id uuid_v7 pk, org_id, exam_id, student_ext_id text,
 - النقل: TLS 1.2+ مع HSTS preload، وفرض Certificate Transparency على Android عبر Network Security Config. لا certificate pinning افتراضياً (توصية OWASP وAndroid الحالية: خطر الانقطاع يفوق المكسب)، ويضاف فقط عند طلب امتثال صريح مع pin احتياطي ومفتاح تعطيل عن بعد.
 
 **العزل (أهم بند):**
+
+> **نُفِّذ في 2026-08-16.** سياسة على **كل** جدول من التسعة، `to authenticated`، والمؤسسة من `app_metadata` وحدها. **والفحص بمحرك حقيقي لا بقراءة نصّ:** PostgreSQL تُقلع داخل عملية الاختبار، وتُطبَّق عليها ملفات المهاجرة نفسها، ثم تُحاول أربع عشرة حالة الوصول إلى صفوف مؤسسة أخرى قراءةً وكتابةً ونقلاً وحذفاً، **وبلا مؤسسة أصلاً**. التفصيل في `DEVLOG` بتاريخ 2026-08-16.
 
 ```sql
 alter table scans enable row level security;

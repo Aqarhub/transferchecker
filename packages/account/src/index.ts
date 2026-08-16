@@ -32,5 +32,8 @@ export type { Accepted, SignupContext, SignupProblem, SignupRequest, SignupResul
 export { familyMembers, refresh, rotate } from './session';
 export type { Family, RefreshInput, RefreshOutcome, RefusalReason, TokenRecord } from './session';
 
+export { BASE_DELAY_MS, FREE_ATTEMPTS, MAX_DELAY_MS, checkLogin, delayAfter } from './login';
+export type { Attempts, LoginInput, LoginOutcome, LoginRefusal } from './login';
+
 export { ConsentSchema, PolicyVersionSchema, consentFor, isCurrent, outstanding } from './consent';
 export type { Consent } from './consent';

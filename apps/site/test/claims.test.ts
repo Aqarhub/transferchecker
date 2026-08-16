@@ -11,6 +11,7 @@
 // impossible to undo by editing copy: a percentage on the page while the gate
 // is disarmed fails the build here.
 
+import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { buildFiles, reportPath } from '../src/build';
@@ -121,7 +122,9 @@ describe('the report this reads is the one the engine writes', () => {
 
   it('refuses a report whose shape it does not recognise', () => {
     // A shape this cannot parse must not become permission to publish.
-    const broken = readEvidence(new URL('./fixtures/not-a-report.json', import.meta.url).pathname);
+    const broken = readEvidence(
+      fileURLToPath(new URL('./fixtures/not-a-report.json', import.meta.url)),
+    );
     expect(broken.accuracy).toBeNull();
   });
 

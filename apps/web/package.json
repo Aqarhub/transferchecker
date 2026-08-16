@@ -10,8 +10,11 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@electric-sql/pglite": "catalog:",
+    "@transferchecker/db": "workspace:*",
     "@transferchecker/grading": "workspace:*",
-    "@transferchecker/ui": "workspace:*"
+    "@transferchecker/ui": "workspace:*",
+    "drizzle-orm": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

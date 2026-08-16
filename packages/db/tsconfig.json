@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    // Node for `crypto`, which the UUIDv7 generator needs for random bits, and
+    // for reading the migration files the local Postgres applies.
+    "types": ["node"]
+  },
+  "include": ["src", "test", "vitest.config.ts", "drizzle.config.ts"]
+}

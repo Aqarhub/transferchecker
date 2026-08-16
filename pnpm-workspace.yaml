@@ -8,10 +8,15 @@ packages:
 # Single source of dependency versions, referenced as "catalog:" from every
 # package.json so the mobile and web apps can never drift apart.
 catalog:
+  '@electric-sql/pglite': '0.5.5'
+  '@node-rs/argon2': '2.1.0'
   '@eslint/js': '10.0.1'
   '@myriaddreamin/typst-ts-node-compiler': '0.7.0'
   '@types/node': '24.13.3'
+  'drizzle-kit': '0.31.10'
+  'drizzle-orm': '0.45.2'
   eslint: '10.8.1'
+  postgres: '3.4.9'
   prettier: '3.9.6'
   qrcode-generator: '2.0.4'
   tsx: '4.23.12'
