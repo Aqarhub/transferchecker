@@ -220,7 +220,7 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
       'Antwortbogen als PDF drucken, mit dem Handy abfotografieren, Ergebnis in Sekunden. Läuft offline, kein Bild verlässt das Gerät.',
     summary:
       'Eine Handy-App, die gedruckte Antwortbögen mit der Kamera korrigiert. Zuerst für Arabisch entwickelt, vollständig offline, die gesamte Verarbeitung findet auf dem Gerät statt.',
-    tagline: 'Ein Bogen, ein Handy, das Ergebnis',
+    tagline: 'Ein Bogen, ein Handy, sofort das Ergebnis',
     lede: 'Sie entwerfen den Antwortbogen, drucken ihn als PDF aus und fotografieren jeden ausgefüllten Bogen mit dem Handy. Das Ergebnis steht in Sekunden. Die App arbeitet vollständig offline, die gesamte Verarbeitung findet auf dem Gerät statt.',
     stepsTitle: 'Drei Schritte',
     steps: [
@@ -243,7 +243,7 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         body: 'Liegt die Schwärzung eines Antwortfeldes zwischen den beiden Schwellenwerten, legt die App es Ihnen vor, statt stillschweigend zu entscheiden. Ein Bild, das durch Spiegelungen unbrauchbar ist, wird unter Angabe des Grundes abgelehnt und nicht unvollständig korrigiert.',
       },
       {
-        title: 'Aufgabenanalyse nach Themen',
+        title: 'Aufgabenanalyse und Kompetenzberichte',
         body: 'Sie sehen, welche Aufgabe schwer war, welche falsche Antwortmöglichkeit ausgerechnet die starken Schülerinnen und Schüler angelockt hat und wie die Klasse beim Thema „Brüche“ abgeschnitten hat. Einen Lösungsbogen, der falsch aussieht, meldet die App, bevor damit eine ganze Klasse falsch korrigiert wird.',
       },
     ],
@@ -274,7 +274,7 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
 
   es: {
     name: 'TransferChecker',
-    title: 'TransferChecker: corregir exámenes con el teléfono',
+    title: 'TransferChecker: corregir hojas de respuestas con el teléfono',
     description:
       'La hoja de respuestas se imprime en papel y se fotografía con el teléfono. La nota sale en segundos, sin conexión y sin subir ninguna foto.',
     summary:
@@ -302,7 +302,7 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         body: 'Cuando la oscuridad de una burbuja queda entre los dos umbrales, la aplicación se la muestra al profesor en lugar de decidir en silencio. Y si un reflejo estropea la foto, la rechaza indicando el motivo en vez de leer la hoja a medias.',
       },
       {
-        title: 'Análisis de ítems y temas etiquetados',
+        title: 'Análisis de ítems e informes por competencia',
         body: 'Muestra qué pregunta resultó difícil, qué distractor atrajo a los mejores alumnos y cómo fue la clase en el tema «fracciones». Y si la clave parece equivocada, avisa antes de corregir mal a toda la clase.',
       },
     ],
@@ -361,8 +361,8 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         body: 'Une case dont le noircissement tombe entre les deux seuils vous est montrée au lieu d’être tranchée en silence. De même, une photo gâchée par un reflet est refusée avec une cause nommée, jamais lue à moitié.',
       },
       {
-        title: 'Analyse par question et par thème',
-        body: 'Quelle question a fait chuter la classe, quel distracteur a attiré les bons élèves, ce que donne la classe sur un thème donné comme les fractions. Un corrigé qui semble faux est signalé avant d’avoir mal noté toute une classe.',
+        title: 'Analyse par question et par compétence',
+        body: 'Quelle question a été difficile, quel distracteur a attiré les bons élèves, ce que donne la classe sur un thème donné comme les fractions. Un corrigé qui semble faux est signalé avant d’avoir mal noté toute une classe.',
       },
     ],
     accuracyTitle: 'Nos chiffres, avec leur méthode',
@@ -399,7 +399,7 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     description:
       'OMR शीट डिज़ाइन करें, PDF छापें, हर शीट की फ़ोटो लें, नंबर तुरंत सामने। बिना इंटरनेट, और फ़ोटो फ़ोन से बाहर नहीं जातीं',
     summary:
-      'एक मोबाइल ऐप जो छपी हुई OMR शीट को कैमरे से जाँचता है। शीट और छपाई दोनों में अरबी पहले दिन से पूरी तरह सधी हुई, इंटरनेट की ज़रूरत नहीं, और सारा काम फ़ोन के अंदर ही होता है।',
+      'एक मोबाइल ऐप जो छपी हुई OMR शीट को कैमरे से जाँचता है। पहले अरबी के लिए बनाया गया, इंटरनेट की ज़रूरत नहीं, और सारा काम फ़ोन के अंदर ही होता है।',
     tagline: 'एक शीट, एक फ़ोन, और तुरंत नंबर',
     lede: 'OMR शीट आप डिज़ाइन करके छापते हैं, फ़ोन से हर बच्चे की शीट की फ़ोटो लेते हैं, और नंबर सेकंडों में सामने आ जाता है। ऐप पूरी तरह बिना इंटरनेट चलता है, और सारी प्रोसेसिंग फ़ोन के अंदर ही होती है।',
     stepsTitle: 'तीन चरण',
@@ -423,7 +423,7 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         body: 'जिस गोले का कालापन दोनों सीमाओं के बीच पड़ता है, उसे चुपचाप तय करने के बजाय शिक्षक को दिखाया जाता है, और जिस फ़ोटो को रोशनी की चमक ने बिगाड़ दिया हो, उसे आधा-अधूरा पढ़ने के बजाय कारण बताकर अस्वीकार कर दिया जाता है।',
       },
       {
-        title: 'प्रश्नवार विश्लेषण और टॉपिक टैग',
+        title: 'प्रश्नवार विश्लेषण और लर्निंग आउटकम टैग',
         body: 'कौन सा प्रश्न कठिन रहा, किस ग़लत विकल्प ने होशियार बच्चों को खींच लिया, और जिस टॉपिक पर आपने टैग लगाया है उसमें पूरी कक्षा कैसी रही। जो उत्तर कुंजी ग़लत लग रही हो, उस पर पूरी कक्षा की ग़लत जाँच होने से पहले ही निशान लग जाता है।',
       },
     ],
@@ -431,7 +431,7 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     accuracy: (evidence) =>
       evidence.accuracy === null
         ? `असली काग़ज़ पर हमने अपनी सटीकता अभी नापी नहीं है, और नापने से पहले कोई आँकड़ा नहीं छापेंगे। आज इंजन ${String(evidence.cases)} मामलों और ${String(evidence.questions)} प्रश्नों पर परखा गया है, जिन्हें टेस्ट खुद बनाता है, और इससे इतना ही साबित होता है कि जिन बचावों के नाम हमने गिनाए हैं वे सब काम कर रहे हैं, यह नहीं कि काग़ज़ पर सटीकता कितनी है। आँकड़ा तब छपेगा जब कम से कम ${String(evidence.papersNeeded)} छपी हुई शीट की फ़ोटो ली जा चुकी होंगी, और उसके साथ अस्वीकृति दर और चेतावनी दर भी छपेगी, क्योंकि ऊँची अस्वीकृति दर के साथ छपी ऊँची सटीकता वही झूठ है।`
-        : `छपी हुई शीट पर नापी गई सटीकता ${percent(evidence.accuracy)} प्रति प्रश्न, और यह हमेशा अस्वीकृति दर और चेतावनी दर के साथ ही छपती है। इकाई प्रश्न है, गोला नहीं और शीट भी नहीं, और पचास प्रश्नों की शीट पर इन तीनों में 250 गुना तक का फ़र्क़ पड़ता है।`,
+        : `मानक सैंपल सेट पर ${percent(evidence.accuracy)} प्रति प्रश्न सटीकता, और यह हमेशा अस्वीकृति दर और चेतावनी दर के साथ ही छपती है। इकाई प्रश्न है, गोला नहीं और शीट भी नहीं, और पचास प्रश्नों की शीट पर इन तीनों में 250 गुना फ़र्क़ पड़ता है।`,
     rateWords: ['अस्वीकृति दर', 'चेतावनी दर'],
     unitWord: 'प्रति प्रश्न',
     privacyTitle: 'फ़ोटो फ़ोन से बाहर नहीं जातीं',
@@ -505,7 +505,7 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
       { title: 'Pro', body: 'Form sınırı yok, özellikler aynı. Aradaki tek fark bir sayaç.' },
     ],
     pricingNote:
-      'Hiçbir özellik kilitli değil: çevrimdışı kullanım, eşitleme, madde analizi, kazanım raporları, dışa aktarma ve kendi tasarladığınız formlar ücretsiz pakette de var. Fatura kendiliğinden yenilenmez.',
+      'Hiçbir özellik kilitli değil: çevrimdışı kullanım, eşitleme, madde analizi, Excel’e aktarma ve kendi tasarladığınız formlar ücretsiz pakette de var. Fatura kendiliğinden yenilenmez.',
     languagesTitle: 'Diller',
     pageWord: 'Sayfa',
     listSeparator: ', ',
