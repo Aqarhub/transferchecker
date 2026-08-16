@@ -16,7 +16,8 @@
     "test": "vitest run",
     "lint": "eslint .",
     "generate": "drizzle-kit generate",
-    "migrate": "tsx src/migrate.ts"
+    "migrate": "tsx src/migrate.ts",
+    "verify": "tsx src/verify.ts"
   },
   "dependencies": {
     "@transferchecker/account": "workspace:*",

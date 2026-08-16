@@ -23,6 +23,9 @@ export { createAccount, planAccount } from './signup';
 
 export { hashToken, refreshSession, revokeFamily, startSession } from './session';
 
+export { auditIsolation, probeIsolation } from './audit';
+export type { Check } from './audit';
+
 export { REQUEST_ROLE, asAnonymous, asTenant } from './tenant';
 export type { Claims } from './tenant';
 export type { RefreshInput, StartSession } from './session';
