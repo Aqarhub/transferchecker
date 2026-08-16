@@ -36,6 +36,8 @@ export {
 export type { LoginAttempt, LoginResult } from './credentials';
 
 export { auditIsolation, probeIsolation } from './audit';
+export { diagnose, explain } from './diagnose';
+export type { Diagnosis } from './diagnose';
 export type { Check } from './audit';
 
 export { REQUEST_ROLE, asAnonymous, asTenant } from './tenant';

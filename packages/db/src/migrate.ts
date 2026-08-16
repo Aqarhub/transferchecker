@@ -10,6 +10,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { connect, settingsFromEnv } from './connect';
+import { explain } from './diagnose';
 import { migrationFiles } from './local';
 
 // `fileURLToPath` and NOT `url.pathname`. [measured on Windows] The latter
@@ -53,4 +54,23 @@ async function main(): Promise<void> {
   }
 }
 
-await main();
+/**
+ * Runs the tool and, when it fails to reach the database, says why in words.
+ *
+ * The error is still printed after the explanation rather than instead of it:
+ * the sentence is for whoever is setting this up, and the trace is for whoever
+ * they end up asking.
+ */
+async function run(work: () => Promise<void>): Promise<void> {
+  try {
+    await work();
+  } catch (error) {
+    const reason = explain(error);
+    if (reason === '') throw error;
+    process.stderr.write(`\n${reason}\n\n`);
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  }
+}
+
+await run(main);
