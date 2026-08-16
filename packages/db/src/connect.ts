@@ -12,6 +12,7 @@
 // BYPASSRLS [measured], so leaking it is not a leaked table, it is a leaked
 // database with every policy in it skipped.
 
+import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
@@ -99,4 +100,49 @@ export function connect(settings: Settings): Connection {
     ...(settings.pooled ? { prepare: false } : {}),
   });
   return { db: drizzle(client), close: () => client.end() };
+}
+
+/**
+ * Refuses to proceed on a connection that can skip every policy.
+ *
+ * THE GUARD EXISTS BECAUSE THE MISTAKE IS ONE LINE AND SILENT. Row level
+ * security is the whole isolation model, and a role carrying `BYPASSRLS` or
+ * superuser skips all of it, in every database, always. Put the migration
+ * account's password in the application's configuration once, by copying the
+ * wrong line out of a note, and every policy in the schema stops applying while
+ * every screen keeps working, every test stays green and the deployment check
+ * still passes, because none of them is looking at which credentials the server
+ * used.
+ *
+ * So the server asks the database who it is, at startup, and refuses to run if
+ * the answer is dangerous. [measured on the live instance] the owning account
+ * really does carry `rolbypassrls = t`, so this is not a hypothetical.
+ *
+ * Migrations call `connect` without this on purpose: applying a migration is
+ * exactly the work that needs the privileged account.
+ */
+export async function assertUnprivileged(connection: Connection): Promise<void> {
+  const found = await connection.db.execute<{
+    rolname: string;
+    rolsuper: boolean;
+    rolbypassrls: boolean;
+  }>(sql`select rolname, rolsuper, rolbypassrls from pg_roles where rolname = current_user`);
+
+  const rows = Array.isArray(found) ? found : [];
+  const role = rows[0];
+  if (role === undefined)
+    throw new Error('assertUnprivileged: the database did not say who we are');
+
+  const dangers = [role.rolsuper ? 'superuser' : '', role.rolbypassrls ? 'BYPASSRLS' : ''].filter(
+    (danger) => danger !== '',
+  );
+
+  if (dangers.length > 0) {
+    throw new Error(
+      `Refusing to serve requests as "${role.rolname}", which holds ${dangers.join(' and ')}. ` +
+        'A role with either skips every row level security policy in the database, so the ' +
+        'isolation between organisations would not apply and nothing would report it. ' +
+        'Use the application account, which owns nothing and holds neither.',
+    );
+  }
 }

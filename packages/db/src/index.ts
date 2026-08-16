@@ -37,6 +37,7 @@ export type { LoginAttempt, LoginResult } from './credentials';
 
 export { auditIsolation, probeIsolation } from './audit';
 export { diagnose, explain } from './diagnose';
+export { assertUnprivileged } from './connect';
 export type { Diagnosis } from './diagnose';
 export type { Check } from './audit';
 

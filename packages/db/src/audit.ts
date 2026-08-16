@@ -31,7 +31,7 @@ const isRow = (value: unknown): value is Record<string, unknown> =>
  * `execute` returns an array from one driver and `{ rows }` from another, and
  * this package deliberately does not know which one it is talking to.
  */
-function rowsOf(result: unknown): readonly Record<string, unknown>[] {
+export function rowsOf(result: unknown): readonly Record<string, unknown>[] {
   if (Array.isArray(result)) return result.filter(isRow);
   if (typeof result === 'object' && result !== null && 'rows' in result) {
     const inner: unknown = result.rows;
