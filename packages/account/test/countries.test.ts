@@ -17,7 +17,15 @@ import {
   regimeOf,
   slugOf,
 } from '../src/countries';
-import { LOCALES } from '../src/content';
+
+/**
+ * The languages the site publishes, restated rather than imported.
+ *
+ * A package must not import from an app, and this list is here only to prove
+ * that a country name resolves in each of them. The site owns the real registry
+ * and `apps/site/test/crawlers.test.ts` holds the two in step.
+ */
+const LOCALES = ['ar', 'en', 'de', 'es', 'fr', 'hi', 'tr', 'zh'];
 
 describe('the list is a standard, not a preference', () => {
   it('offers every officially assigned country except the ones named', () => {

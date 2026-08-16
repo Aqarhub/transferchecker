@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    // Node only for `crypto`, which the password check needs to compute a SHA-1
+    // prefix. Nothing here reads a file or opens a socket.
+    "types": ["node"]
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}

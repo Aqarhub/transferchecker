@@ -71,6 +71,9 @@ importers:
 
   apps/site:
     dependencies:
+      '@transferchecker/account':
+        specifier: workspace:*
+        version: link:../../packages/account
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -103,6 +106,22 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.23.12
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@types/node@24.13.3)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.23.12))
+
+  packages/account:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

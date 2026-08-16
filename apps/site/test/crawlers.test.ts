@@ -22,6 +22,7 @@ import { describe, expect, it } from 'vitest';
 import { buildFiles } from '../src/build';
 import { COPY, LOCALES, LOCALE_INFO, OWNER_WRITTEN, SITE } from '../src/content';
 import { indexNowFile } from '../src/indexnow';
+import { REGIME_LAW, audienceOf, regimeOf, slugOf } from '@transferchecker/account';
 import type { Evidence } from '../src/evidence';
 
 const UNMEASURED: Evidence = {
@@ -219,6 +220,40 @@ describe('the two language registries cannot drift apart', () => {
     // otherwise advertise a language the site cannot serve.
     const theirs = [...other.matchAll(/\{ code: '([a-z-]+)'/g)].map((match) => match[1]);
     expect(new Set(theirs)).toEqual(new Set<string>(LOCALES));
+  });
+});
+
+describe('every published language can carry a country in its URL', () => {
+  it('accepts a legal path for each of the eight, in a real market', () => {
+    // PLAN section 8ج: the country enters the URL where the content depends on
+    // it, which is the legal pages. That only works if every language the site
+    // publishes is one the account layer will accept in a slug, so a language
+    // added here without being published there would produce a marketing page
+    // with no policy behind it.
+    //
+    // The markets are the ones each language was actually written for, which is
+    // also a check that the pair is one a person could really be: `zh` with a
+    // Chinese country, `hi` with India, `ar` with the Gulf.
+    const markets: Readonly<Record<string, string>> = {
+      ar: 'AE',
+      en: 'GB',
+      de: 'DE',
+      es: 'ES',
+      fr: 'FR',
+      hi: 'IN',
+      tr: 'TR',
+      zh: 'CN',
+    };
+    for (const locale of LOCALES) {
+      const country = markets[locale];
+      expect(country, `${locale} has no market named`).toBeDefined();
+      if (country === undefined) continue;
+      const slug = slugOf(country, locale);
+      expect(audienceOf(slug, LOCALES), slug).toEqual({ country, language: locale });
+      // And every one of those countries reaches a regime with a named law, so
+      // no published language can land on a policy page with no statute on it.
+      expect(REGIME_LAW[regimeOf(country)].length, country).toBeGreaterThan(20);
+    }
   });
 });
 
