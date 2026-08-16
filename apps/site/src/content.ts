@@ -395,120 +395,117 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
 
   hi: {
     name: 'TransferChecker',
-    title: 'TransferChecker: फ़ोन से उत्तर पत्रक जाँचें, पहले अरबी',
+    title: 'TransferChecker: फ़ोन से OMR शीट जाँचें',
     description:
-      'उत्तर पत्रक बनाइए, PDF छापिए, फ़ोन से उसकी तस्वीर लीजिए, और अंक तुरंत पाइए। बिना इंटरनेट चलता है, और विद्यार्थियों की तस्वीरें उपकरण से बाहर नहीं जातीं',
+      'OMR शीट डिज़ाइन करें, PDF छापें, हर शीट की फ़ोटो लें, नंबर तुरंत सामने। बिना इंटरनेट, और फ़ोटो फ़ोन से बाहर नहीं जातीं',
     summary:
-      'एक मोबाइल ऐप जो कैमरे से छपे हुए उत्तर पत्रक जाँचता है, पहले अरबी में, पूरी तरह बिना इंटरनेट, और सारी प्रोसेसिंग उपकरण पर ही होती है।',
-    tagline: 'एक पत्रक, एक फ़ोन, और तुरंत अंक',
-    lede: 'आप उत्तर पत्रक बनाते और छापते हैं, शिक्षक उसे फ़ोन से खींचता है, और अंक सेकंडों में सामने आ जाते हैं। ऐप पूरी तरह बिना इंटरनेट चलता है और हर पिक्सल उपकरण पर ही संसाधित होता है।',
+      'एक मोबाइल ऐप जो छपी हुई OMR शीट को कैमरे से जाँचता है। शीट और छपाई दोनों में अरबी पहले दिन से पूरी तरह सधी हुई, इंटरनेट की ज़रूरत नहीं, और सारा काम फ़ोन के अंदर ही होता है।',
+    tagline: 'एक शीट, एक फ़ोन, और तुरंत नंबर',
+    lede: 'OMR शीट आप डिज़ाइन करके छापते हैं, फ़ोन से हर बच्चे की शीट की फ़ोटो लेते हैं, और नंबर सेकंडों में सामने आ जाता है। ऐप पूरी तरह बिना इंटरनेट चलता है, और सारी प्रोसेसिंग फ़ोन के अंदर ही होती है।',
     stepsTitle: 'तीन चरण',
     steps: [
-      '20, 50 या 100 प्रश्नों के तैयार साँचे से शुरू कीजिए, या अपना पत्रक प्रश्न दर प्रश्न बनाइए।',
-      'PDF को वास्तविक आकार में छापिए, पृष्ठ पर फ़िट किए बिना, फिर छूकर या हल किया हुआ पत्रक स्कैन करके उत्तर कुंजी बनाइए।',
-      'कक्षा के पत्रक एक एक करके खींचिए और परिणाम Excel में निर्यात कीजिए।',
+      '20, 50 या 100 प्रश्नों का तैयार टेम्पलेट लें, या अपनी शीट प्रश्न दर प्रश्न बनाएँ',
+      'PDF को असली साइज़ में छापें, पेज पर फ़िट न करें, फिर टैप करके या हल की हुई शीट स्कैन करके उत्तर कुंजी बना लें',
+      'एक एक करके हर शीट की फ़ोटो खींचें, और नतीजे Excel में एक्सपोर्ट करें',
     ],
-    featuresTitle: 'क्या अलग है',
+    featuresTitle: 'इसमें अलग क्या है',
     features: [
       {
-        title: 'अरबी पत्रक पर ही',
-        body: 'गोलों के चिह्न अरबी या लातीनी, नाम किसी भी भाषा में, और छपाई की फ़ाइल में सही अक्षर जुड़ाव, क्योंकि टाइपसेटिंग अरबी को सचमुच जोड़ती है, उसका अनुमान नहीं लगाती।',
+        title: 'शीट पर ही अरबी',
+        body: 'गोलों के निशान अरबी अक्षरों में रखें या रोमन में, लेबल किसी भी भाषा में, और PDF में अरबी के अक्षर सही तरह आपस में जुड़कर छपते हैं, क्योंकि छपाई अरबी को सचमुच जोड़ती है, उससे मिलती-जुलती शक्ल बनाकर नहीं छोड़ देती।',
       },
       {
-        title: 'पत्रक अपना परिचय स्वयं देता है',
-        body: 'पत्रक पर छपा कोड उसकी पूरी ज्यामिति रखता है, इसलिए जिस उपकरण ने वह साँचा कभी देखा ही नहीं, वह भी उसे बिना नेटवर्क और बिना खाते के जाँच लेता है।',
+        title: 'शीट अपनी जानकारी खुद रखती है',
+        body: 'शीट पर छपा कोड उसकी पूरी बनावट अपने अंदर समेटे रहता है, इसलिए जिस फ़ोन ने वह टेम्पलेट कभी देखा ही नहीं है, वह भी उसे बिना नेटवर्क और बिना अकाउंट के जाँच लेता है।',
       },
       {
-        title: 'यह कभी अनुमान नहीं लगाता',
-        body: 'दो सीमाओं के बीच पड़ा गोला चुपचाप तय करने के बजाय शिक्षक को दिखाया जाता है, और चमक से बिगड़ा फ़्रेम अधूरा पढ़ने के बजाय नामित कारण के साथ अस्वीकार कर दिया जाता है।',
+        title: 'यह कभी अंदाज़ा नहीं लगाता',
+        body: 'जिस गोले का कालापन दोनों सीमाओं के बीच पड़ता है, उसे चुपचाप तय करने के बजाय शिक्षक को दिखाया जाता है, और जिस फ़ोटो को रोशनी की चमक ने बिगाड़ दिया हो, उसे आधा-अधूरा पढ़ने के बजाय कारण बताकर अस्वीकार कर दिया जाता है।',
       },
       {
-        title: 'प्रश्न विश्लेषण और मानक टैग',
-        body: 'कौन सा प्रश्न कठिन था, किस विकल्प ने अच्छे विद्यार्थियों को खींचा, और भिन्नों में आपकी कक्षा कैसी रही। जो कुंजी ग़लत लगती है उसे पूरी कक्षा ग़लत जाँचे जाने से पहले चिह्नित कर दिया जाता है।',
+        title: 'प्रश्नवार विश्लेषण और टॉपिक टैग',
+        body: 'कौन सा प्रश्न कठिन रहा, किस ग़लत विकल्प ने होशियार बच्चों को खींच लिया, और जिस टॉपिक पर आपने टैग लगाया है उसमें पूरी कक्षा कैसी रही। जो उत्तर कुंजी ग़लत लग रही हो, उस पर पूरी कक्षा की ग़लत जाँच होने से पहले ही निशान लग जाता है।',
       },
     ],
-    accuracyTitle: 'हमारे आँकड़े, अपनी विधि के साथ',
+    accuracyTitle: 'हमारे आँकड़े, और उन्हें नापने का तरीक़ा',
     accuracy: (evidence) =>
       evidence.accuracy === null
-        ? `हमने अभी असली काग़ज़ पर अपनी शुद्धता नापी नहीं है, और उससे पहले कोई आँकड़ा प्रकाशित नहीं करेंगे। इंजन आज ${String(evidence.cases)} स्थितियों और ${String(evidence.questions)} प्रश्नों पर परखा गया है जिन्हें परीक्षण स्वयं बनाता है: इससे यह सिद्ध होता है कि हर नामित बचाव काम करता है, काग़ज़ पर शुद्धता का कोई आँकड़ा सिद्ध नहीं होता। यह आँकड़ा तब प्रकाशित होगा जब कम से कम ${String(evidence.papersNeeded)} छपे हुए पत्रक खींचे जा चुके हों, और वह अस्वीकृति दर तथा चेतावनी दर के साथ ही प्रकाशित होगा, क्योंकि ऊँची अस्वीकृति दर के बग़ल में ऊँची शुद्धता वही झूठ है।`
-        : `स्वर्ण संग्रह पर प्रति प्रश्न ${percent(evidence.accuracy)}, और यह सदा अस्वीकृति दर तथा चेतावनी दर के साथ ही प्रकाशित होती है। इकाई प्रश्न है, न गोला और न पत्रक, और पचास प्रश्नों के पत्रक पर ये तीनों पाठ 250 गुना अलग पड़ते हैं।`,
+        ? `असली काग़ज़ पर हमने अपनी सटीकता अभी नापी नहीं है, और नापने से पहले कोई आँकड़ा नहीं छापेंगे। आज इंजन ${String(evidence.cases)} मामलों और ${String(evidence.questions)} प्रश्नों पर परखा गया है, जिन्हें टेस्ट खुद बनाता है, और इससे इतना ही साबित होता है कि जिन बचावों के नाम हमने गिनाए हैं वे सब काम कर रहे हैं, यह नहीं कि काग़ज़ पर सटीकता कितनी है। आँकड़ा तब छपेगा जब कम से कम ${String(evidence.papersNeeded)} छपी हुई शीट की फ़ोटो ली जा चुकी होंगी, और उसके साथ अस्वीकृति दर और चेतावनी दर भी छपेगी, क्योंकि ऊँची अस्वीकृति दर के साथ छपी ऊँची सटीकता वही झूठ है।`
+        : `छपी हुई शीट पर नापी गई सटीकता ${percent(evidence.accuracy)} प्रति प्रश्न, और यह हमेशा अस्वीकृति दर और चेतावनी दर के साथ ही छपती है। इकाई प्रश्न है, गोला नहीं और शीट भी नहीं, और पचास प्रश्नों की शीट पर इन तीनों में 250 गुना तक का फ़र्क़ पड़ता है।`,
     rateWords: ['अस्वीकृति दर', 'चेतावनी दर'],
     unitWord: 'प्रति प्रश्न',
-    privacyTitle: 'तस्वीरें उपकरण से बाहर नहीं जातीं',
+    privacyTitle: 'फ़ोटो फ़ोन से बाहर नहीं जातीं',
     privacy:
-      'सब कुछ उपकरण पर ही संसाधित होता है। कोई तस्वीर न अपलोड होती है और न डिस्क पर लिखी जाती है। पत्रक अपने रिकॉर्ड से अपना अंक फिर से बना लेता है, इसलिए रखने को कुछ है ही नहीं।',
+      'सारा काम फ़ोन के अंदर ही होता है। कोई फ़ोटो न कहीं अपलोड होती है, न डिस्क पर लिखी जाती है। शीट अपने रिकॉर्ड से अपना नंबर दोबारा बना लेती है, इसलिए रखने को कुछ बचता ही नहीं।',
     scopeTitle: 'कहाँ काम आता है',
     scope:
-      'कक्षा के रचनात्मक मूल्यांकन, गृहकार्य और छोटी परीक्षाओं के लिए। मोबाइल ऐप से जाँच पर सऊदी प्रतिबंध सीमित दायरे का है और इस उपयोग को नहीं ढकता, और हम यह बात लॉन्च के बाद नहीं, पहले कह रहे हैं।',
-    pricingTitle: 'योजनाएँ',
+      'कक्षा के रचनात्मक मूल्यांकन, होमवर्क और छोटे टेस्ट के लिए। मोबाइल ऐप से जाँच पर सऊदी अरब की जो रोक है वह सीमित दायरे की है और इस इस्तेमाल पर लागू नहीं होती, और यह बात हम लॉन्च के बाद नहीं, पहले कह रहे हैं।',
+    pricingTitle: 'प्लान',
     pricing: [
-      { title: 'निःशुल्क', body: 'महीने में सौ पत्रक, और हर सुविधा बिना किसी अपवाद के।' },
-      {
-        title: 'Pro',
-        body: 'पत्रकों की कोई सीमा नहीं, और वही सुविधाएँ। अंतर केवल एक गिनती का है।',
-      },
+      { title: 'मुफ़्त', body: 'महीने में 100 शीट, और हर फ़ीचर पूरा का पूरा।' },
+      { title: 'Pro', body: 'शीट की कोई सीमा नहीं, बाक़ी सब वही का वही।' },
     ],
     pricingNote:
-      'कुछ भी रोका नहीं गया है: बिना इंटरनेट काम, समन्वयन, प्रश्न विश्लेषण, निर्यात और अपने बनाए पत्रक, सब निःशुल्क योजना में हैं। बिल अपने आप नवीनीकृत नहीं होता।',
+      'कुछ भी रोका नहीं गया है। बिना इंटरनेट काम, सिंक, प्रश्नवार विश्लेषण, Excel में एक्सपोर्ट और अपनी बनाई शीट, सब मुफ़्त प्लान में हैं। बिल अपने आप रिन्यू नहीं होता।',
     languagesTitle: 'भाषाएँ',
-    pageWord: 'पृष्ठ',
+    pageWord: 'पेज',
     listSeparator: ', ',
   },
 
   tr: {
     name: 'TransferChecker',
-    title: 'TransferChecker: cevap kağıtlarını telefonla okuyun, önce Arapça',
+    title: 'TransferChecker: optik formları telefonla okutun, önce Arapça',
     description:
-      'Cevap kağıdını tasarlayın, PDF olarak yazdırın, telefonla fotoğraflayın, notu anında alın. İnternetsiz çalışır ve fotoğraflar cihazdan çıkmaz.',
+      'Optik formunuzu tasarlayın, PDF olarak yazdırın, telefonla fotoğraflayın. Not saniyeler içinde hazır, internet gerekmez, fotoğraflar cihazdan çıkmaz.',
     summary:
-      'Basılı cevap kağıtlarını kamerayla okuyan bir telefon uygulaması. Önce Arapça, tümüyle çevrimdışı, ve bütün işlem cihazın kendisinde.',
-    tagline: 'Bir kağıt, bir telefon, anında not',
-    lede: 'Cevap kağıdını tasarlayıp yazdırırsınız, öğretmen telefonuyla fotoğraflar, ve not saniyeler içinde çıkar. Uygulama tümüyle çevrimdışı çalışır ve her piksel cihazda işlenir.',
+      'Basılı optik formları kamerayla okuyan, önce Arapça için tasarlanan, tümüyle çevrimdışı çalışan ve her işlemi cihazda yapan bir telefon uygulaması.',
+    tagline: 'Bir optik form, bir telefon, anında not',
+    lede: 'Optik formunuzu tasarlayıp yazdırırsınız, sınıfın formlarını telefonunuzla fotoğraflarsınız, not saniyeler içinde çıkar. Uygulama tümüyle çevrimdışı çalışır, her piksel cihazda işlenir.',
     stepsTitle: 'Üç adım',
     steps: [
-      '20, 50 veya 100 soruluk hazır bir şablonla başlayın, ya da kağıdınızı soru soru kendiniz kurun.',
-      'PDF dosyasını gerçek boyutta, sayfaya sığdırmadan yazdırın, sonra cevap anahtarını dokunarak veya çözülmüş bir kağıdı tarayarak oluşturun.',
-      'Sınıfın kağıtlarını tek tek fotoğraflayın ve sonuçları Excel dosyasına aktarın.',
+      '20, 50 ya da 100 soruluk hazır bir şablonla başlayın ya da formunuzu soru soru kendiniz tasarlayın.',
+      'PDF dosyasını gerçek boyutta yazdırın, sayfaya sığdırmayın. Cevap anahtarını ekrana dokunarak ya da çözülmüş bir formu okutarak oluşturun.',
+      'Sınıfın formlarını tek tek fotoğraflayın, sonuçları Excel’e aktarın.',
     ],
-    featuresTitle: 'Farkı ne',
+    featuresTitle: 'Farkı nerede?',
     features: [
       {
-        title: 'Arapça kağıdın kendisinde',
-        body: 'Baloncuk simgeleri Arap veya Latin harfleriyle, etiketler herhangi bir dilde, ve baskı dosyasında doğru harf bitişmesi, çünkü dizgi Arapçayı gerçekten bitiştirir, yaklaştırmaz.',
+        title: 'Arapça formun kendisinde',
+        body: 'Kutucuk simgeleri Arap ya da Latin harfleriyle, etiketler istediğiniz dilde. Baskı dosyasındaki dizgi Arapçayı gerçekten bitiştirir, ona benzeyen bir şeyle yetinmez.',
       },
       {
-        title: 'Kağıt kendini anlatır',
-        body: 'Kağıda basılan kod onun bütün geometrisini taşır, böylece şablonu hiç görmemiş bir cihaz onu ağsız ve hesapsız okur.',
+        title: 'Form kendini anlatır',
+        body: 'Forma basılan kod, formun bütün geometrisini taşır. Şablonu hiç görmemiş bir cihaz da onu okur, ne internet ister ne de hesap.',
       },
       {
         title: 'Asla tahmin etmez',
-        body: 'İki eşik arasında kalan baloncuk sessizce karara bağlanmaz, öğretmene gösterilir, ve parlamanın bozduğu kare eksik okunmak yerine adı konmuş bir gerekçeyle geri çevrilir.',
+        body: 'İki eşik arasında kalan kutucuk sessizce karara bağlanmaz, öğretmene gösterilir. Parlamanın bozduğu kare, eksik okunmaktansa adı konmuş bir gerekçeyle geri çevrilir.',
       },
       {
-        title: 'Madde analizi ve kazanım etiketleri',
-        body: 'Hangi soru zordu, hangi çeldirici güçlü öğrencileri çekti, ve sınıfınız kesirlerde nasıldı. Yanlış görünen bir anahtar, bütün sınıfı yanlış değerlendirmeden önce işaretlenir.',
+        title: 'Madde ve kazanım analizi',
+        body: 'Hangi soru zordu, hangi çeldirici güçlü öğrencileri çekti, etiketlediğiniz kazanımda sınıf nerede duruyor. Yanlış görünen bir cevap anahtarı, bütün sınıf yanlış değerlendirilmeden önce işaretlenir.',
       },
     ],
     accuracyTitle: 'Sayılarımız, yöntemiyle birlikte',
     accuracy: (evidence) =>
       evidence.accuracy === null
-        ? `Doğruluğumuzu gerçek kağıt üzerinde henüz ölçmedik, ve ölçmeden önce bir sayı yayımlamayacağız. Motor bugün, testin kendi çizdiği ${String(evidence.cases)} durum ve ${String(evidence.questions)} soru üzerinde sınanıyor: bu, adı konmuş her savunmanın çalıştığını kanıtlar, kağıt üzerinde bir doğruluk oranını kanıtlamaz. Sayı, en az ${String(evidence.papersNeeded)} basılı kağıt fotoğraflandığında yayımlanır, ve ret oranı ile uyarı oranıyla birlikte yayımlanır, çünkü yüksek ret oranının yanındaki yüksek doğruluk aynı yalandır.`
-        : `Altın küme üzerinde soru başına ${percent(evidence.accuracy)}, ve her zaman ret oranı ile uyarı oranıyla birlikte yayımlanır. Birim sorudur, baloncuk değil, kağıt da değil, ve elli soruluk bir kağıtta bu üç okuma arasında 250 kat fark vardır.`,
+        ? `Doğruluğumuzu gerçek kâğıt üzerinde henüz ölçmedik, ölçmeden de bir sayı yayımlamayacağız. Okuma motoru bugün, testin kendi ürettiği ${String(evidence.cases)} durum ve ${String(evidence.questions)} soru üzerinde sınanıyor. Bu, adı konmuş her önlemin çalıştığını kanıtlar, kâğıt üzerindeki doğruluğu kanıtlamaz. Sayıyı en az ${String(evidence.papersNeeded)} basılı form fotoğraflandıktan sonra, ret oranı ve uyarı oranı ile birlikte yayımlayacağız; çünkü yüksek bir ret oranının yanındaki yüksek doğruluk da aynı yalandır.`
+        : `Altın kümede soru başına ${percent(evidence.accuracy)} doğruluk; bu sayı her zaman ret oranı ve uyarı oranı ile birlikte yayımlanır. Birim sorudur, kutucuk değil, form değil. Elli soruluk bir formda bu üç okuma arasında 250 kat fark vardır.`,
     rateWords: ['ret oranı', 'uyarı oranı'],
     unitWord: 'soru başına',
     privacyTitle: 'Fotoğraflar cihazdan çıkmaz',
     privacy:
-      'Her şey cihazda işlenir. Hiçbir görüntü yüklenmez ve diske yazılmaz. Bir kağıt kendi notunu kendi kaydından yeniden üretir, dolayısıyla saklanacak bir şey yoktur.',
+      'Her şey cihazda işlenir. Hiçbir görüntü yüklenmez, diske de yazılmaz. Form kendi notunu kendi kaydından yeniden üretir, dolayısıyla saklanacak bir şey yoktur.',
     scopeTitle: 'Nerede kullanılır',
     scope:
-      'Sınıf içi biçimlendirici değerlendirme, ödev ve kısa sınavlar için. Suudi Arabistan’da telefon uygulamasıyla okumaya getirilen kısıt dar kapsamlıdır ve bu kullanımı içermez, ve bunu lansmandan sonra değil önce söylüyoruz.',
+      'Sınıf içi biçimlendirici değerlendirme (süreç değerlendirmesi), ödev ve kısa sınavlar için. Suudi Arabistan’da telefon uygulamasıyla optik form okutmaya getirilen kısıt dar kapsamlıdır ve bu kullanımı içermez. Bunu lansmandan sonra değil, önce söylüyoruz.',
     pricingTitle: 'Paketler',
     pricing: [
-      { title: 'Ücretsiz', body: 'Ayda yüz kağıt, ve istisnasız bütün özellikler.' },
-      { title: 'Pro', body: 'Kağıt sınırı yok, ve aynı özellikler. Tek fark bir sayaç.' },
+      { title: 'Ücretsiz', body: 'Ayda yüz optik form, istisnasız bütün özellikler.' },
+      { title: 'Pro', body: 'Form sınırı yok, özellikler aynı. Aradaki tek fark bir sayaç.' },
     ],
     pricingNote:
-      'Hiçbir şey kilitli değil: çevrimdışı kullanım, eşitleme, madde analizi, dışa aktarma ve özel kağıtlar ücretsiz pakette. Fatura kendiliğinden yenilenmez.',
+      'Hiçbir özellik kilitli değil: çevrimdışı kullanım, eşitleme, madde analizi, kazanım raporları, dışa aktarma ve kendi tasarladığınız formlar ücretsiz pakette de var. Fatura kendiliğinden yenilenmez.',
     languagesTitle: 'Diller',
     pageWord: 'Sayfa',
     listSeparator: ', ',
