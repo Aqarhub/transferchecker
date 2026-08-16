@@ -65,16 +65,23 @@ describe('the migrations and the schema describe the same database', () => {
     }
   });
 
-  // The two the product actually depends on. A pupil with no name is a normal
-  // roster entry, and a paper whose identity grid was unreadable is a normal
-  // scan: forcing either one to be present means dropping data or inventing it.
-  it('leaves exactly the two columns nullable that the product needs nullable', () => {
+  // Every nullable column, listed, because each one is a state the product has
+  // decided is normal rather than a field somebody forgot to constrain. A pupil
+  // with no name is a normal roster entry, a paper whose identity grid was
+  // unreadable is a normal scan, and a live session is one whose `revoked_at` is
+  // still empty. Forcing any of them to be present means dropping data or
+  // inventing it.
+  it('leaves exactly the columns nullable that the product needs nullable', () => {
     const nullable = catalogue
       .filter((column) => column.is_nullable === 'YES')
       .map((column) => `${column.table_name}.${column.column_name}`);
     expect([...nullable].sort()).toEqual([
+      'refresh_tokens.used_at',
       'scans.student_ext_id',
       'students.name',
+      'token_families.device_label',
+      'token_families.revoked_at',
+      'token_families.revoked_reason',
       'usage.synced_at',
     ]);
   });

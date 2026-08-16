@@ -23,18 +23,28 @@ const migrations = await migrationFiles();
 const sql = migrations.map((file) => file.sql).join('\n');
 
 describe('the tables the plan asks for', () => {
-  it('is exactly the nine, with no table the plan did not name', () => {
+  it('is exactly the eleven, and the two extras are named for a reason', () => {
     expect([...Object.keys(named)].sort()).toEqual([
       'answer_keys',
       'consents',
       'exams',
       'orgs',
+      'refresh_tokens',
       'scans',
       'students',
       'templates',
+      'token_families',
       'usage',
       'users',
     ]);
+  });
+
+  // The plan drew nine because it assumed Supabase would hold the sessions. It
+  // does not hold them here, so the refresh token state machine that
+  // `packages/account` proves in memory has rows to act on.
+  it('has somewhere to keep a session, since no auth provider is doing it', () => {
+    expect(columnsOf(schema.tokenFamilies)).toContain('revoked_reason');
+    expect(columnsOf(schema.refreshTokens)).toContain('used_at');
   });
 
   // The load bearing decision in PLAN.md section 5: a million teachers at a

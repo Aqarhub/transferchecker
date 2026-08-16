@@ -14,7 +14,16 @@ import { ORG_A, ORG_B, USER_A, USER_B, freshDatabase, rows } from './harness';
 
 let client: PGlite;
 
-/** Every table, and the column its policy scopes by. */
+/** How many tables exist in total, including the two the session tests own. */
+const ALL_TABLES = 11;
+
+/**
+ * The tables scoped by plain organisation isolation, and the column each uses.
+ *
+ * `token_families` and `refresh_tokens` are deliberately absent: the first is
+ * scoped tighter than an organisation (it is scoped to a person) and the second
+ * is reachable by nobody at all. Both are covered in session.test.ts.
+ */
 const TABLES: readonly (readonly [string, string])[] = [
   ['orgs', 'id'],
   ['users', 'org_id'],
@@ -76,20 +85,26 @@ describe('the database refuses to be the only line of defence it is not', () => 
       `select relname, relrowsecurity from pg_class
        where relnamespace = 'public'::regnamespace and relkind = 'r' order by relname`,
     );
-    expect(found).toHaveLength(TABLES.length);
+    expect(found).toHaveLength(ALL_TABLES);
     for (const table of found)
       expect([table.relname, table.relrowsecurity]).toEqual([table.relname, true]);
   });
 
-  it('gives every table a policy, so none is left denying everything by accident', async () => {
+  // Every table but one. `refresh_tokens` has security enabled and NO policy,
+  // which in PostgreSQL denies every row to every client, and that is the whole
+  // design rather than an omission: nothing a signed in client does needs to
+  // read a refresh token. The test names it so the absence cannot be mistaken
+  // for a table somebody forgot.
+  it('gives every table a policy except the one that must reach nobody', async () => {
     await actAsOwner(client);
     const found = await rows<{ tablename: string; roles: string; cmd: string }>(
       client,
       `select tablename, roles::text as roles, cmd from pg_policies where schemaname = 'public'`,
     );
     const seen = found.map((policy) => policy.tablename);
-    const expected = TABLES.map(([name]) => name);
+    const expected = [...TABLES.map(([name]) => name), 'token_families'];
     expect([...seen].sort()).toEqual([...expected].sort());
+    expect(seen).not.toContain('refresh_tokens');
     // `to authenticated` on every one. Without it the policy is evaluated for
     // anon as well, on a role that must never see a row.
     for (const policy of found)

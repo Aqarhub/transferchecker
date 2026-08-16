@@ -20,6 +20,11 @@ export { examDataOf, examsOf, rosterOf } from './queries';
 export type { ExamData, ExamSummary, ScanRecord } from './queries';
 
 export { createAccount, planAccount } from './signup';
+
+export { hashToken, refreshSession, revokeFamily, startSession } from './session';
+export type { RefreshInput, StartSession } from './session';
+
+export { REVOCATIONS } from './schema/sessions';
 export type { AccountPlan, AccountRows, LiveVersions, SignupIds } from './signup';
 
 export { DEMO_KEY, seedDemo } from './seed';

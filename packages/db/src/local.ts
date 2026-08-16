@@ -13,12 +13,11 @@
 // organisation's rows as an ordinary authenticated client. That is the claim in
 // PLAN.md section 7, checked by the engine that will enforce it.
 //
-// WHAT THIS FILE STANDS IN FOR. Supabase provides three roles and an `auth`
-// schema before any of our migrations run, so a database that had neither could
-// not even create the policies. `SUPABASE_BOOTSTRAP` below is that prelude, and
-// the two functions are copied from Supabase's own definitions rather than
-// approximated, because a shim that differs from the real one would be proving
-// the shim.
+// AND THERE IS NO LONGER A SHIM HERE. This file used to carry a copy of what
+// Supabase creates before any migration runs, which meant the tests proved a
+// stand-in rather than the thing itself. The database this product deploys to
+// provides none of it, so `0000_bootstrap.sql` creates it and these tests apply
+// that file like every other. Nothing about the prelude can drift from what ships.
 //
 // AND ONE VERSION DIFFERENCE IS DELIBERATELY VISIBLE. PGlite is PostgreSQL 18,
 // Supabase runs 17. Nothing in this schema may use an 18 only feature, and the
@@ -34,38 +33,6 @@ export interface LocalClient {
   exec(query: string): Promise<unknown>;
   query(query: string, params?: unknown[]): Promise<unknown>;
 }
-
-/**
- * What Supabase has already created when our first migration runs.
- *
- * `auth.jwt()` and `auth.uid()` are Supabase's definitions verbatim: they read
- * the claims GoTrue put into a session setting, which is how a policy sees a
- * verified token without the request body being able to influence it.
- */
-export const SUPABASE_BOOTSTRAP = `
-  create schema if not exists auth;
-
-  create or replace function auth.jwt() returns jsonb
-    language sql stable as $$
-      select coalesce(
-        nullif(current_setting('request.jwt.claim', true), ''),
-        nullif(current_setting('request.jwt.claims', true), '')
-      )::jsonb
-    $$;
-
-  create or replace function auth.uid() returns uuid
-    language sql stable as $$
-      select coalesce(
-        nullif(current_setting('request.jwt.claim.sub', true), ''),
-        (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')
-      )::uuid
-    $$;
-
-  create role anon nologin noinherit;
-  create role authenticated nologin noinherit;
-  create role service_role nologin noinherit bypassrls;
-  grant usage on schema public to anon, authenticated, service_role;
-`;
 
 /**
  * The journal Drizzle Kit maintains, validated rather than trusted.
@@ -94,15 +61,13 @@ export async function migrationFiles(): Promise<{ tag: string; sql: string }[]> 
 }
 
 /**
- * A database with the prelude and every migration applied, as the owner.
+ * A database with every migration applied, in journal order, as the owner.
  *
- * Migrations run as the superuser because that is who runs them in production
- * too. Everything a test does after this runs as `authenticated`, which is the
- * role PostgREST connects as and therefore the only one whose view of the data
- * says anything about isolation.
+ * Everything a test does after this runs as `authenticated`, which is the role a
+ * client connects as and therefore the only one whose view of the data says
+ * anything at all about isolation.
  */
 export async function prepare(client: LocalClient): Promise<string[]> {
-  await client.exec(SUPABASE_BOOTSTRAP);
   const applied: string[] = [];
   for (const file of await migrationFiles()) {
     // Statements are separated by Drizzle's own breakpoint marker. Splitting on
