@@ -17,6 +17,28 @@ export const urlOf = (locale: Locale): string => `${SITE}${pathOf(locale)}`;
 const list = (items: readonly string[]): string =>
   `<ol>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ol>`;
 
+/**
+ * The frequently asked questions, as real headings with real answers under them.
+ *
+ * A question in an `h3` with its answer in the `p` directly beneath is the shape
+ * DISCOVERABILITY section 4 item 5 asks for, and it is also the shape a
+ * retriever can excerpt: it cuts a heading and the text under it out of the page
+ * and answers with that, so an answer that referred to another one would arrive
+ * broken.
+ *
+ * NO `FAQPage` JSON-LD, deliberately. Google restricted that rich result to
+ * well known health and government sites in 2023, so the markup earns nothing
+ * here, and section 5 records that most of the schema this project could emit
+ * was dropped. The text itself is what the answer engines read, and it is in the
+ * first response either way because there is no script on this page.
+ *
+ * And no accordion. Section 1 item 4 forbids hiding content behind a click that
+ * fetches it, and an accordion with no JavaScript is either always open or
+ * always shut. Always open is the honest one.
+ */
+const questions = (items: readonly { q: string; a: string }[]): string =>
+  items.map((item) => `<h3>${escapeHtml(item.q)}</h3><p>${escapeHtml(item.a)}</p>`).join('');
+
 const cards = (items: readonly { title: string; body: string }[]): string =>
   items
     .map(
@@ -60,6 +82,7 @@ ${switcher(copy, locale)}
 <section id="privacy"><h2>${escapeHtml(copy.privacyTitle)}</h2><p>${escapeHtml(copy.privacy)}</p></section>
 <section id="scope"><h2>${escapeHtml(copy.scopeTitle)}</h2><p>${escapeHtml(copy.scope)}</p></section>
 <section id="pricing"><h2>${escapeHtml(copy.pricingTitle)}</h2>${cards(copy.pricing)}<p>${escapeHtml(copy.pricingNote)}</p></section>
+<section id="faq"><h2>${escapeHtml(copy.faqTitle)}</h2>${questions(copy.faq)}</section>
 </main>
 <footer><p>${escapeHtml(copy.name)}</p></footer>`;
 }

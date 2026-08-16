@@ -43,7 +43,7 @@ import { pathOf, urlOf } from './pages';
  * there. A dead anchor in a file whose whole purpose is to be a map is worse
  * than no map.
  */
-type SectionId = 'steps' | 'features' | 'accuracy' | 'privacy' | 'scope' | 'pricing';
+type SectionId = 'steps' | 'features' | 'accuracy' | 'privacy' | 'scope' | 'pricing' | 'faq';
 
 interface Section {
   readonly id: SectionId;
@@ -98,6 +98,17 @@ function sectionsOf(copy: Copy, evidence: Evidence): Section[] {
       title: copy.pricingTitle,
       gist: copy.pricing.map((plan) => plan.title).join(join),
       body: `${bullets(copy.pricing)}\n\n${copy.pricingNote}`,
+    },
+    {
+      id: 'faq',
+      title: copy.faqTitle,
+      // The questions alone as the gist, because that is what an assistant
+      // matches a user's question against before it decides to fetch anything.
+      gist: copy.faq.map((entry) => entry.q).join(join),
+      // As Markdown headings rather than a bullet list: the whole point of this
+      // section is that a question and its answer travel together when a
+      // retriever cuts one out.
+      body: copy.faq.map((entry) => `### ${entry.q}\n\n${entry.a}`).join('\n\n'),
     },
   ];
 }

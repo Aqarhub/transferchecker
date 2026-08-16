@@ -25,6 +25,16 @@ import { describe, expect, it } from 'vitest';
 import { COPY, LOCALES, LOCALE_INFO } from '../src/content';
 import type { Copy } from '../src/content';
 import { emWidth, pixelWidth } from '../src/width';
+import { pageOf } from '../src/pages';
+import type { Evidence } from '../src/evidence';
+
+const UNMEASURED: Evidence = {
+  armed: false,
+  papersNeeded: 30,
+  cases: 55,
+  questions: 2300,
+  accuracy: null,
+};
 
 /**
  * The two slots, measured in CSS pixels rather than counted in characters.
@@ -352,6 +362,44 @@ describe('the claims survive translation intact', () => {
     for (const locale of LOCALES) {
       const copy = COPY[locale];
       expect(copy.privacy, `${locale} privacy`).toContain(copy.syncWord);
+    }
+  });
+
+  it('asks real questions, and answers each one where it is asked', () => {
+    // DISCOVERABILITY section 4 item 5 wants question shaped headings with the
+    // answer directly beneath, and item 6 wants every section to survive being
+    // cut out alone, because that is what a retriever does with it. A heading
+    // that is not a question, or an answer too short to be one, fails both.
+    const MARKS = ['?', '؟', '？'];
+    for (const locale of LOCALES) {
+      const faq = COPY[locale].faq;
+      expect(faq.length, `${locale} faq`).toBe(5);
+      for (const [at, entry] of faq.entries()) {
+        const where = `${locale}.faq[${String(at)}]`;
+        expect(
+          MARKS.some((mark) => entry.q.endsWith(mark)),
+          `${where} is not a question`,
+        ).toBe(true);
+        // Long enough to be an answer rather than a label, short enough to be
+        // read. Measured in em rather than counted in characters, and for the
+        // same reason the title budgets are: a 52 character Chinese answer
+        // carries what 110 Latin characters carry, and a character floor set
+        // from English would have demanded padding it.
+        expect(emWidth(entry.a), `${where} answer`).toBeGreaterThan(45000);
+        expect(emWidth(entry.a), `${where} answer`).toBeLessThan(160000);
+        expect(emWidth(entry.q), `${where} question`).toBeLessThan(30000);
+      }
+    }
+  });
+
+  it('never hides an answer behind a click', () => {
+    // Section 1 item 4: content fetched on expand does not exist to a crawler
+    // that runs no JavaScript, which is all of them but two. This page has no
+    // script at all, so the guard is that the answers are in the markup.
+    for (const locale of LOCALES) {
+      for (const entry of COPY[locale].faq) {
+        expect(pageOf(locale, UNMEASURED).body, `${locale} faq`).toContain(entry.a.slice(0, 40));
+      }
     }
   });
 

@@ -40,6 +40,19 @@ export interface Feature {
   readonly body: string;
 }
 
+/**
+ * One question and its answer.
+ *
+ * DISCOVERABILITY section 4 item 5: headings shaped as questions with the
+ * direct answer in the first sentence or two beneath them, then the detail. And
+ * item 6: every section has to survive being excerpted alone, because a
+ * retriever cuts it out of its context, so no answer here refers to another one.
+ */
+export interface Question {
+  readonly q: string;
+  readonly a: string;
+}
+
 export interface Copy {
   readonly name: string;
   readonly title: string;
@@ -88,6 +101,8 @@ export interface Copy {
   readonly pricingTitle: string;
   readonly pricing: readonly Feature[];
   readonly pricingNote: string;
+  readonly faqTitle: string;
+  readonly faq: readonly Question[];
   readonly languagesTitle: string;
   /** This language for "page", which heads the link list in llms.txt. */
   readonly pageWord: string;
@@ -162,6 +177,29 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     ],
     pricingNote:
       'صفر ميزات محجوبة: العمل بلا إنترنت والمزامنة وتحليل الفقرات والتصدير والنماذج المخصصة متاحة في المجانية. والفوترة غير متجددة، فلا خصم تلقائي.',
+    faqTitle: 'أسئلة شائعة',
+    faq: [
+      {
+        q: 'هل تغادر صور طلابي الجوال؟',
+        a: 'لا. المعالجة كلها على جهازك، ولا تُرفع صورة ولا تُكتب على القرص. والدرجات وحدها تتزامن بين أجهزتك حين تشغّل المزامنة أنت، ولا تسافر معها صورة.',
+      },
+      {
+        q: 'هل يعمل التطبيق بلا إنترنت؟',
+        a: 'نعم، كاملاً. التصميم والطباعة والتصوير والتصحيح والتصدير تعمل كلها والجهاز في وضع الطيران. المزامنة وحدها تحتاج اتصالاً، وتنتظر حتى يتوفر.',
+      },
+      {
+        q: 'ما دقة القراءة؟',
+        a: 'لم نقسها على ورق حقيقي بعد، ولن نعلن رقماً قبل ذلك. وحين نعلنه سيكون لكل سؤال، ومعه نسبة الرفض ونسبة التحذير في السطر نفسه، لأن دقة عالية بجانب رفض مرتفع لا تعني شيئاً.',
+      },
+      {
+        q: 'هل أستطيع استخدامه في اختبار رسمي؟',
+        a: 'التطبيق مبني للاختبارات التكوينية الصفّية والواجبات والاختبارات القصيرة. والحظر النظامي في السعودية على التصحيح بتطبيقات الجوال محدود النطاق ولا يشمل هذه الاستخدامات، لكن راجع سياسة إدارتك قبل الاعتماد عليه في اختبار له درجة رسمية.',
+      },
+      {
+        q: 'ما الفرق بين المجانية وPro؟',
+        a: 'عدّاد الأوراق وحده. كل الميزات في المجانية بلا استثناء: العمل بلا إنترنت والمزامنة وتحليل الفقرات والتصدير والنماذج المخصصة. والفوترة غير متجددة، فلا خصم تلقائي.',
+      },
+    ],
     languagesTitle: 'اللغات',
     pageWord: 'الصفحة',
     listSeparator: '، ',
@@ -225,6 +263,29 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     ],
     pricingNote:
       'Nothing is gated: offline use, sync, item analysis, export and custom sheets are all in the free plan. Billing does not auto renew.',
+    faqTitle: 'Common questions',
+    faq: [
+      {
+        q: 'Do my students photographs leave the phone?',
+        a: 'No. Everything is processed on your device, no image is uploaded and none is written to disk. The marks are the one thing that syncs between your own devices, when you switch sync on, and no image travels with them.',
+      },
+      {
+        q: 'Does the app work without internet?',
+        a: 'Yes, completely. Designing, printing, photographing, marking and exporting all work in flight mode. Only sync needs a connection, and it waits until there is one.',
+      },
+      {
+        q: 'How accurate is the reading?',
+        a: 'We have not measured it on real paper yet, and we will publish no figure before we have. When we do it will be per question, with the refusal rate and the warning rate on the same line, because a high accuracy beside a high refusal rate means nothing.',
+      },
+      {
+        q: 'Can I use it for a formal exam?',
+        a: 'The app is built for classroom formative assessment, homework and short quizzes. The Saudi restriction on marking with mobile applications is limited in scope and does not cover those uses, but check your own administration policy before relying on it for an exam that carries an official grade.',
+      },
+      {
+        q: 'What is the difference between Free and Pro?',
+        a: 'A sheet counter, and nothing else. Every feature is in the free plan without exception: offline use, sync, item analysis, export and custom sheets. Billing does not auto renew.',
+      },
+    ],
     languagesTitle: 'Languages',
     pageWord: 'Page',
     listSeparator: ', ',
@@ -285,6 +346,29 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     ],
     pricingNote:
       'Keine Funktion ist gesperrt: Offline-Betrieb, Synchronisierung, Aufgabenanalyse, Export nach Excel und eigene Bögen gehören zum kostenlosen Tarif. Die Abrechnung verlängert sich nicht automatisch.',
+    faqTitle: 'Häufige Fragen',
+    faq: [
+      {
+        q: 'Verlassen die Fotos meiner Klasse das Handy?',
+        a: 'Nein. Alles wird auf Ihrem Gerät verarbeitet, kein Bild wird hochgeladen und keines gespeichert. Synchronisiert werden allein die Ergebnisse, zwischen Ihren eigenen Geräten und nur wenn Sie die Synchronisierung einschalten; ein Bild geht dabei nie mit.',
+      },
+      {
+        q: 'Funktioniert die App ohne Internet?',
+        a: 'Ja, vollständig. Entwerfen, Drucken, Fotografieren, Korrigieren und Exportieren laufen im Flugmodus. Nur die Synchronisierung braucht eine Verbindung und wartet, bis es eine gibt.',
+      },
+      {
+        q: 'Wie genau liest die App?',
+        a: 'Das haben wir auf echtem Papier noch nicht gemessen, und vorher veröffentlichen wir keine Zahl. Wenn sie kommt, gilt sie pro Frage und steht in derselben Zeile wie die Ablehnungsquote und die Warnquote, denn eine hohe Genauigkeit neben einer hohen Ablehnungsquote sagt nichts.',
+      },
+      {
+        q: 'Darf ich damit eine benotete Arbeit auswerten?',
+        a: 'Gedacht ist die App für Lernstandserhebungen, Hausaufgaben und kurze Tests. Ob eine benotete Klassenarbeit digital ausgewertet werden darf, regeln die Länder unterschiedlich, deshalb klären Sie das bitte mit Ihrer Schulleitung, bevor Sie sich darauf verlassen.',
+      },
+      {
+        q: 'Was unterscheidet Kostenlos von Pro?',
+        a: 'Nur die Zahl der Bögen. Jede Funktion steckt im kostenlosen Tarif: Offline-Betrieb, Synchronisierung, Aufgabenanalyse, Export nach Excel und eigene Bögen. Die Abrechnung verlängert sich nicht automatisch.',
+      },
+    ],
     languagesTitle: 'Sprachen',
     pageWord: 'Seite',
     listSeparator: ', ',
@@ -345,6 +429,29 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     ],
     pricingNote:
       'No hay nada bloqueado: el uso sin conexión, la sincronización, el análisis de ítems, la exportación a Excel y las hojas personalizadas entran en el plan gratuito. La facturación no se renueva automáticamente.',
+    faqTitle: 'Preguntas frecuentes',
+    faq: [
+      {
+        q: '¿Las fotos de mis alumnos salen del teléfono?',
+        a: 'No. Todo el procesamiento se hace en su dispositivo, ninguna imagen se sube ni se escribe en el disco. Lo único que se sincroniza entre sus propios dispositivos son las notas, y solo si usted activa la sincronización; ninguna imagen viaja con ellas.',
+      },
+      {
+        q: '¿Funciona la aplicación sin conexión?',
+        a: 'Sí, por completo. Diseñar, imprimir, fotografiar, corregir y exportar funcionan en modo avión. Solo la sincronización necesita conexión, y espera hasta que la haya.',
+      },
+      {
+        q: '¿Qué exactitud tiene la lectura?',
+        a: 'Todavía no la hemos medido sobre papel real y no publicaremos ninguna cifra antes de hacerlo. Cuando lo hagamos será por pregunta, con la tasa de rechazo y la tasa de aviso en la misma línea, porque una exactitud alta junto a un rechazo alto no significa nada.',
+      },
+      {
+        q: '¿Puedo usarla en un examen oficial?',
+        a: 'La aplicación está pensada para la evaluación formativa del aula, los deberes y las pruebas cortas. La restricción saudí sobre la corrección con aplicaciones móviles tiene un alcance limitado y no cubre esos usos, pero consulte la norma de su centro antes de confiar en ella para un examen con nota oficial.',
+      },
+      {
+        q: '¿En qué se diferencian Gratis y Pro?',
+        a: 'En un contador de hojas, y en nada más. Todas las funciones están en el plan gratuito sin excepción: el uso sin conexión, la sincronización, el análisis de ítems, la exportación a Excel y las hojas personalizadas. La facturación no se renueva automáticamente.',
+      },
+    ],
     languagesTitle: 'Idiomas',
     pageWord: 'Página',
     listSeparator: ', ',
@@ -408,6 +515,29 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     ],
     pricingNote:
       'Rien n’est verrouillé : le hors ligne, la synchronisation, l’analyse par question, l’export vers Excel et les grilles sur mesure sont inclus dans la formule gratuite. Et la facturation ne se reconduit pas toute seule.',
+    faqTitle: 'Questions fréquentes',
+    faq: [
+      {
+        q: 'Les photos de mes élèves quittent-elles le téléphone ?',
+        a: 'Non. Tout est traité sur votre appareil, aucune image n’est envoyée ni écrite sur le disque. Seules les notes se synchronisent entre vos propres appareils, et uniquement si vous activez la synchronisation ; aucune image ne les accompagne.',
+      },
+      {
+        q: 'L’application fonctionne-t-elle sans connexion ?',
+        a: 'Oui, entièrement. Concevoir, imprimer, photographier, corriger et exporter fonctionnent en mode avion. Seule la synchronisation demande une connexion, et elle attend qu’il y en ait une.',
+      },
+      {
+        q: 'Quelle est la précision de la lecture ?',
+        a: 'Nous ne l’avons pas encore mesurée sur du vrai papier et nous ne publierons aucun chiffre avant de l’avoir fait. Quand il paraîtra, il sera par question, avec le taux de refus et le taux d’avertissement sur la même ligne, car une précision élevée à côté d’un taux de refus élevé ne veut rien dire.',
+      },
+      {
+        q: 'Puis-je l’utiliser pour un examen officiel ?',
+        a: 'L’application est conçue pour l’évaluation formative en classe, les devoirs et les tests courts. La restriction saoudienne sur la correction par application mobile est de portée limitée et ne couvre pas ces usages, mais vérifiez la règle de votre établissement avant de vous en remettre à elle pour une épreuve notée officiellement.',
+      },
+      {
+        q: 'Qu’est-ce qui distingue la formule gratuite de Pro ?',
+        a: 'Un compteur de copies, et rien d’autre. Toutes les fonctions sont dans la formule gratuite sans exception : le hors ligne, la synchronisation, l’analyse par question, l’export vers Excel et les grilles sur mesure. La facturation ne se reconduit pas toute seule.',
+      },
+    ],
     languagesTitle: 'Langues',
     pageWord: 'Page',
     listSeparator: ', ',
@@ -468,6 +598,29 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     ],
     pricingNote:
       'कुछ भी रोका नहीं गया है। बिना इंटरनेट काम, सिंक, प्रश्नवार विश्लेषण, Excel में एक्सपोर्ट और अपनी बनाई शीट, सब मुफ़्त प्लान में हैं। बिल अपने आप रिन्यू नहीं होता।',
+    faqTitle: 'अक्सर पूछे जाने वाले सवाल',
+    faq: [
+      {
+        q: 'क्या मेरे बच्चों की शीट की फ़ोटो फ़ोन से बाहर जाती हैं?',
+        a: 'नहीं। सारा काम आपके फ़ोन के अंदर ही होता है, कोई फ़ोटो न अपलोड होती है, न डिस्क पर लिखी जाती है। आपके अपने डिवाइसों के बीच सिंक सिर्फ़ नंबरों का होता है, वह भी तभी जब आप सिंक चालू करें, और उसके साथ कोई फ़ोटो नहीं जाती।',
+      },
+      {
+        q: 'क्या ऐप बिना इंटरनेट चलता है?',
+        a: 'हाँ, पूरी तरह। शीट बनाना, छापना, फ़ोटो लेना, जाँचना और एक्सपोर्ट करना, सब हवाई जहाज़ मोड में चलते हैं। सिर्फ़ सिंक को कनेक्शन चाहिए, और वह कनेक्शन मिलने तक रुका रहता है।',
+      },
+      {
+        q: 'जाँच कितनी सटीक है?',
+        a: 'हमने इसे अभी असली काग़ज़ पर नापा नहीं है, और नापने से पहले कोई आँकड़ा नहीं छापेंगे। जब छापेंगे तो वह प्रति प्रश्न होगा, और उसी पंक्ति में अस्वीकृति दर तथा चेतावनी दर के साथ होगा, क्योंकि ऊँची अस्वीकृति दर के बग़ल में ऊँची सटीकता का कोई मतलब नहीं।',
+      },
+      {
+        q: 'क्या मैं इसे बोर्ड या स्कूल की औपचारिक परीक्षा में इस्तेमाल कर सकता हूँ?',
+        a: 'ऐप कक्षा के रचनात्मक मूल्यांकन, गृहकार्य और छोटी परीक्षाओं के लिए बना है। मोबाइल ऐप से जाँच पर सऊदी प्रतिबंध सीमित दायरे का है और इन उपयोगों को नहीं ढकता, फिर भी जिस परीक्षा के अंक रिकॉर्ड में जाते हों उसके लिए भरोसा करने से पहले अपने स्कूल या बोर्ड का नियम देख लें।',
+      },
+      {
+        q: 'निःशुल्क और Pro में फ़र्क़ क्या है?',
+        a: 'सिर्फ़ शीटों की गिनती, और कुछ नहीं। हर सुविधा निःशुल्क प्लान में है, बिना किसी अपवाद के: बिना इंटरनेट काम, सिंक, प्रश्नवार विश्लेषण, Excel में एक्सपोर्ट और अपनी बनाई शीट। बिल अपने आप रिन्यू नहीं होता।',
+      },
+    ],
     languagesTitle: 'भाषाएँ',
     pageWord: 'पेज',
     listSeparator: ', ',
@@ -528,6 +681,29 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     ],
     pricingNote:
       'Hiçbir özellik kilitli değil: çevrimdışı kullanım, eşitleme, madde analizi, Excel’e aktarma ve kendi tasarladığınız formlar ücretsiz pakette de var. Fatura kendiliğinden yenilenmez.',
+    faqTitle: 'Sık sorulan sorular',
+    faq: [
+      {
+        q: 'Öğrencilerimin form fotoğrafları telefondan çıkıyor mu?',
+        a: 'Hayır. Her şey kendi cihazınızda işlenir, hiçbir görüntü yüklenmez ve diske yazılmaz. Kendi cihazlarınız arasında yalnızca notlar eşitlenir, o da eşitlemeyi siz açarsanız; yanında hiçbir görüntü gitmez.',
+      },
+      {
+        q: 'Uygulama internetsiz çalışır mı?',
+        a: 'Evet, tümüyle. Form tasarlamak, yazdırmak, fotoğraflamak, okumak ve dışa aktarmak uçak modunda çalışır. Yalnızca eşitleme bağlantı ister, o da bağlantı gelene kadar bekler.',
+      },
+      {
+        q: 'Okuma ne kadar doğru?',
+        a: 'Bunu gerçek kağıt üzerinde henüz ölçmedik ve ölçmeden önce bir sayı yayımlamayacağız. Yayımladığımızda soru başına olacak ve aynı satırda ret oranı ile uyarı oranı bulunacak, çünkü yüksek ret oranının yanındaki yüksek doğruluk hiçbir şey ifade etmez.',
+      },
+      {
+        q: 'Resmî bir sınavda kullanabilir miyim?',
+        a: 'Uygulama sınıf içi biçimlendirici değerlendirme, ödev ve kısa sınavlar için tasarlandı. Suudi Arabistan’da telefon uygulamasıyla okumaya getirilen kısıt dar kapsamlıdır ve bu kullanımları içermez, yine de not defterine geçen bir sınavda ona güvenmeden önce okulunuzun kuralına bakın.',
+      },
+      {
+        q: 'Ücretsiz ile Pro arasındaki fark ne?',
+        a: 'Bir form sayacı, başka bir şey değil. Bütün özellikler istisnasız ücretsiz pakette: çevrimdışı kullanım, eşitleme, madde analizi, Excel’e aktarma ve kendi tasarladığınız formlar. Fatura kendiliğinden yenilenmez.',
+      },
+    ],
     languagesTitle: 'Diller',
     pageWord: 'Sayfa',
     listSeparator: ', ',
@@ -587,6 +763,29 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     ],
     pricingNote:
       '功能不分套餐：离线使用、同步、题目分析、导出 Excel、自定义答题卡，免费版里全都有。账单不会自动续费。',
+    faqTitle: '常见问题',
+    faq: [
+      {
+        q: '学生的答题卡照片会离开手机吗？',
+        a: '不会。所有处理都在您的手机上完成，图像不会上传，也不会写入手机存储。您自己的设备之间只同步成绩，而且要您先打开这项功能；图像从不参与。',
+      },
+      {
+        q: '没有网络能用吗？',
+        a: '完全可以。设计、打印、拍照、阅卷、导出都能在飞行模式下完成。只有同步需要联网，而且它会一直等到有网为止。',
+      },
+      {
+        q: '识别有多准？',
+        a: '我们还没有在真实纸张上测过，测出来之前不会公布任何数字。公布时会按题给出，并且同一行里带上拒绝率和警告率，因为高拒绝率旁边的高准确率说明不了什么。',
+      },
+      {
+        q: '可以用在正式考试上吗？',
+        a: '这款应用是为课堂过程性评价、作业和随堂小测做的。沙特对手机应用阅卷的限制只针对特定范围，并不涵盖这些用途，但要用在计入成绩的正式考试上，请先看一下学校的规定。',
+      },
+      {
+        q: '免费版和 Pro 差在哪里？',
+        a: '只差一个答题卡计数器，别的都一样。所有功能免费版里全都有：离线使用、同步、题目分析、导出 Excel、自定义答题卡。账单不会自动续费。',
+      },
+    ],
     languagesTitle: '语言',
     pageWord: '页面',
     listSeparator: '、',
