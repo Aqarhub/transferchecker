@@ -324,6 +324,37 @@ describe('the claims survive translation intact', () => {
     }
   });
 
+  it('never promises sync in the plans without disclosing it beside the privacy claim', () => {
+    // The defect this exists for was measured rather than argued. Six
+    // independent native readers reviewed this page and ALL SIX concluded that
+    // listing sync as a free feature contradicted the privacy section, and two
+    // rated it their highest severity. They were wrong about the product and
+    // right about the page: photographs never leave the device and marks do
+    // sync, and no sentence anywhere said which was which.
+    //
+    // Six out of six is not six mistakes. Five readers are the usual threshold
+    // for finding most comprehension defects, so a unanimous six is a measured
+    // failure of the copy, and the fix belongs where the absolute claim is made
+    // rather than in a pricing list the reader reaches later.
+    for (const locale of LOCALES) {
+      const copy = COPY[locale];
+      if (!copy.pricingNote.includes(copy.syncWord)) continue;
+      expect(
+        copy.privacy,
+        `${locale} sells sync in the plans and never mentions it where it says nothing leaves the device`,
+      ).toContain(copy.syncWord);
+    }
+  });
+
+  it('says what does leave the device, not only what does not', () => {
+    // A disclosure made only in the negative is the shape that misled all six.
+    // Every privacy paragraph names the thing that travels, in its own words.
+    for (const locale of LOCALES) {
+      const copy = COPY[locale];
+      expect(copy.privacy, `${locale} privacy`).toContain(copy.syncWord);
+    }
+  });
+
   it('states the unit as the question in every language', () => {
     for (const locale of LOCALES) {
       const copy = COPY[locale];

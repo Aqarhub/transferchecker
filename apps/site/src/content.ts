@@ -66,6 +66,21 @@ export interface Copy {
   readonly rateWords: readonly [string, string];
   /** This language for "per question", the unit the accuracy is quoted in. */
   readonly unitWord: string;
+  /**
+   * This language's stem for "sync", and the reason it is declared.
+   *
+   * The privacy section says nothing leaves the device and the plans list sync
+   * as a free feature. Both are true and they are about different things:
+   * photographs never leave, marks do. Six independent native readers read the
+   * page and all six concluded it contradicted itself, which is a comprehension
+   * failure in the copy rather than six mistakes.
+   *
+   * So the rule is now structural: a page may not promise sync in its pricing
+   * without disclosing it beside the claim it qualifies. The stem is declared
+   * here so `test/publishable.test.ts` can hold eight languages to that without
+   * speaking any of them, the same trick `rateWords` uses for criterion 14.
+   */
+  readonly syncWord: string;
   readonly privacyTitle: string;
   readonly privacy: string;
   readonly scopeTitle: string;
@@ -133,9 +148,10 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         : `الدقة ${percent(evidence.accuracy)} لكل سؤال على المجموعة الذهبية، وتُنشر معها نسبة الرفض ونسبة التحذير دائماً. الوحدة السؤال لا الفقاعة ولا الورقة، والفرق بين القراءات الثلاث مئتان وخمسون ضعفاً على ورقة من خمسين سؤالاً.`,
     rateWords: ['الرفض', 'التحذير'],
     unitWord: 'لكل سؤال',
+    syncWord: 'المزامنة',
     privacyTitle: 'صور طلابك لا تغادر جهازك',
     privacy:
-      'المعالجة كلها على الجهاز، ولا تُرفع صورة ولا تُكتب على القرص. والورقة تعيد إنتاج درجتها من سجلها، فلا حاجة إلى الاحتفاظ بصورة أصلاً.',
+      'المعالجة كلها على الجهاز، ولا تُرفع صورة ولا تُكتب على القرص. والدرجات وحدها هي ما يتزامن بين أجهزتك، وحين تشغّل المزامنة أنت، ولا تسافر معها صورة. والورقة تعيد إنتاج درجتها من سجلها، فلا حاجة إلى الاحتفاظ بصورة أصلاً.',
     scopeTitle: 'أين يُستخدم',
     scope:
       'للاختبارات التكوينية الصفّية والواجبات والاختبارات القصيرة. الحظر النظامي في السعودية على التصحيح بتطبيقات الجوال محدود النطاق ولا يشمل هذا الاستخدام، ونقول ذلك قبل الإطلاق لا بعده.',
@@ -192,9 +208,10 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         : `${percent(evidence.accuracy)} per question on the golden set, always published together with the refusal and warning rates. The unit is the question, not the bubble and not the paper, and those three readings are 250 to 1 apart on a fifty question sheet.`,
     rateWords: ['refusal', 'warning'],
     unitWord: 'per question',
+    syncWord: 'sync',
     privacyTitle: 'Photographs stay on the device',
     privacy:
-      'Everything is processed on the device. No image is uploaded and none is written to disk. A sheet reproduces its own mark from its record, so there is nothing to keep.',
+      'Everything is processed on the device. No image is uploaded and none is written to disk. The marks are the one thing that syncs between your own devices, when you switch sync on, and no image travels with them. A sheet reproduces its own mark from its record, so there is nothing to keep.',
     scopeTitle: 'Where it is used',
     scope:
       'For classroom formative assessment, homework and quizzes. The Saudi restriction on marking with mobile applications is limited in scope and does not cover this use, and we say so before launch rather than after.',
@@ -254,9 +271,10 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         : `${percent(evidence.accuracy)} pro Frage auf dem geprüften Datensatz, immer zusammen mit der Ablehnungsquote und der Warnquote veröffentlicht. Gemessen wird pro Frage, nicht pro Antwortfeld und nicht pro Bogen. Auf einem Bogen mit fünfzig Fragen liegen diese drei Lesarten um das 250-Fache auseinander.`,
     rateWords: ['Ablehnungsquote', 'Warnquote'],
     unitWord: 'pro Frage',
+    syncWord: 'Synchronisier',
     privacyTitle: 'Kein Bild verlässt das Gerät',
     privacy:
-      'Alles wird auf dem Gerät verarbeitet. Kein Bild wird hochgeladen, keines wird gespeichert. Ein Bogen erzeugt sein Ergebnis jederzeit neu aus seinem Datensatz, aufbewahren muss die App also nichts.',
+      'Alles wird auf dem Gerät verarbeitet. Kein Bild wird hochgeladen, keines wird gespeichert. Synchronisiert werden allein die Ergebnisse, zwischen Ihren eigenen Geräten und nur wenn Sie die Synchronisierung einschalten; ein Bild geht dabei nie mit. Ein Bogen erzeugt sein Ergebnis jederzeit neu aus seinem Datensatz, aufbewahren muss die App also nichts.',
     scopeTitle: 'Wofür es gedacht ist',
     scope:
       'Für Lernstandserhebungen im Unterricht, für Hausaufgaben und kurze Tests. Die saudische Beschränkung für das Korrigieren mit Handy-Apps ist eng gefasst und gilt für diesen Einsatz nicht. Wir sagen das vor dem Start und nicht danach.',
@@ -313,9 +331,10 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         : `Exactitud de ${percent(evidence.accuracy)} por pregunta en el conjunto de referencia, publicada siempre junto a la tasa de rechazo y la tasa de aviso. La unidad es la pregunta, no la burbuja ni la hoja: entre esas tres lecturas hay una diferencia de 250 a 1 en una hoja de cincuenta preguntas.`,
     rateWords: ['rechazo', 'aviso'],
     unitWord: 'por pregunta',
+    syncWord: 'sincroniz',
     privacyTitle: 'Las fotos de los alumnos no salen del dispositivo',
     privacy:
-      'Todo el procesamiento se hace en el dispositivo. Ninguna imagen se sube a ningún servidor ni se escribe en el disco. Cada hoja vuelve a generar su propia nota a partir de su registro, así que no queda nada que conservar.',
+      'Todo el procesamiento se hace en el dispositivo. Ninguna imagen se sube a ningún servidor ni se escribe en el disco. Lo único que se sincroniza entre sus propios dispositivos son las notas, y solo si usted activa la sincronización; ninguna imagen viaja con ellas. Cada hoja vuelve a generar su propia nota a partir de su registro, así que no queda nada que conservar.',
     scopeTitle: '¿Dónde se usa?',
     scope:
       'Para evaluación formativa en el aula, tareas y pruebas cortas. La restricción saudí sobre la corrección con aplicaciones móviles tiene un alcance limitado y no cubre este uso, y lo decimos antes del lanzamiento, no después.',
@@ -372,9 +391,10 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         : `${percent(evidence.accuracy)} par question sur le jeu de référence. Ce chiffre ne paraît jamais seul : il est publié avec le taux de refus et le taux d’avertissement. L’unité est la question, pas la case et pas la copie, et sur une grille de cinquante questions ces trois lectures sont séparées par un facteur 250.`,
     rateWords: ['taux de refus', 'taux d’avertissement'],
     unitWord: 'par question',
+    syncWord: 'synchronis',
     privacyTitle: 'Les photos ne quittent pas le téléphone',
     privacy:
-      'Tout est traité sur le téléphone. Aucune image n’est envoyée, aucune n’est écrite sur le disque. Une copie reproduit sa note à partir de son enregistrement : il n’y a donc rien à conserver.',
+      'Tout est traité sur le téléphone. Aucune image n’est envoyée, aucune n’est écrite sur le disque. Seules les notes se synchronisent entre vos propres appareils, et uniquement si vous activez la synchronisation ; aucune image ne les accompagne. Une copie reproduit sa note à partir de son enregistrement : il n’y a donc rien à conserver.',
     scopeTitle: 'Dans quel cadre l’utiliser',
     scope:
       'Pour l’évaluation formative en classe, les devoirs et les interrogations courtes. La restriction saoudienne sur la correction par application mobile est de portée limitée et ne couvre pas cet usage ; nous le disons avant le lancement, pas après.',
@@ -434,9 +454,10 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         : `मानक सैंपल सेट पर ${percent(evidence.accuracy)} प्रति प्रश्न सटीकता, और यह हमेशा अस्वीकृति दर और चेतावनी दर के साथ ही छपती है। इकाई प्रश्न है, गोला नहीं और शीट भी नहीं, और पचास प्रश्नों की शीट पर इन तीनों में 250 गुना फ़र्क़ पड़ता है।`,
     rateWords: ['अस्वीकृति दर', 'चेतावनी दर'],
     unitWord: 'प्रति प्रश्न',
+    syncWord: 'सिंक',
     privacyTitle: 'फ़ोटो फ़ोन से बाहर नहीं जातीं',
     privacy:
-      'सारा काम फ़ोन के अंदर ही होता है। कोई फ़ोटो न कहीं अपलोड होती है, न डिस्क पर लिखी जाती है। शीट अपने रिकॉर्ड से अपना नंबर दोबारा बना लेती है, इसलिए रखने को कुछ बचता ही नहीं।',
+      'सारा काम फ़ोन के अंदर ही होता है। कोई फ़ोटो न कहीं अपलोड होती है, न डिस्क पर लिखी जाती है। आपके अपने डिवाइसों के बीच सिंक सिर्फ़ नंबरों का होता है, वह भी तभी जब आप सिंक चालू करें, और उसके साथ कोई फ़ोटो नहीं जाती। शीट अपने रिकॉर्ड से अपना नंबर दोबारा बना लेती है, इसलिए रखने को कुछ बचता ही नहीं।',
     scopeTitle: 'कहाँ काम आता है',
     scope:
       'कक्षा के रचनात्मक मूल्यांकन, होमवर्क और छोटे टेस्ट के लिए। मोबाइल ऐप से जाँच पर सऊदी अरब की जो रोक है वह सीमित दायरे की है और इस इस्तेमाल पर लागू नहीं होती, और यह बात हम लॉन्च के बाद नहीं, पहले कह रहे हैं।',
@@ -493,9 +514,10 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         : `Altın kümede soru başına ${percent(evidence.accuracy)} doğruluk; bu sayı her zaman ret oranı ve uyarı oranı ile birlikte yayımlanır. Birim sorudur, kutucuk değil, form değil. Elli soruluk bir formda bu üç okuma arasında 250 kat fark vardır.`,
     rateWords: ['ret oranı', 'uyarı oranı'],
     unitWord: 'soru başına',
+    syncWord: 'eşitle',
     privacyTitle: 'Fotoğraflar cihazdan çıkmaz',
     privacy:
-      'Her şey cihazda işlenir. Hiçbir görüntü yüklenmez, diske de yazılmaz. Form kendi notunu kendi kaydından yeniden üretir, dolayısıyla saklanacak bir şey yoktur.',
+      'Her şey cihazda işlenir. Hiçbir görüntü yüklenmez, diske de yazılmaz. Kendi cihazlarınız arasında yalnızca notlar eşitlenir, o da eşitlemeyi siz açarsanız; yanında hiçbir görüntü gitmez. Form kendi notunu kendi kaydından yeniden üretir, dolayısıyla saklanacak bir şey yoktur.',
     scopeTitle: 'Nerede kullanılır',
     scope:
       'Sınıf içi biçimlendirici değerlendirme (süreç değerlendirmesi), ödev ve kısa sınavlar için. Suudi Arabistan’da telefon uygulamasıyla optik form okutmaya getirilen kısıt dar kapsamlıdır ve bu kullanımı içermez. Bunu lansmandan sonra değil, önce söylüyoruz.',
@@ -551,9 +573,10 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
         : `在标准样本集上，每题准确率 ${percent(evidence.accuracy)}，并且一定和拒绝率、警告率一起公布。准确率按题计算，不按涂点，也不按整张答题卡：在一张 50 道题的答题卡上，这三种口径差 250 倍。`,
     rateWords: ['拒绝率', '警告率'],
     unitWord: '每题',
+    syncWord: '同步',
     privacyTitle: '照片不出手机',
     privacy:
-      '所有处理都在手机上完成，图像不会上传，也不会写入手机存储。答题卡凭自己的记录就能重新算出分数，所以根本没有需要留存的东西。',
+      '所有处理都在手机上完成，图像不会上传，也不会写入手机存储。您自己的设备之间只同步成绩，而且要您先打开这项功能；图像从不参与。答题卡凭自己的记录就能重新算出分数，所以根本没有需要留存的东西。',
     scopeTitle: '适用范围',
     scope:
       '用于课堂上的过程性评价、作业批改和随堂小测。沙特对手机应用阅卷的限制只针对特定范围，并不涵盖这类用途；这一点我们在发布之前就讲清楚，而不是等发布之后再说。',
