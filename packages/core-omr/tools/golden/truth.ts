@@ -92,7 +92,7 @@ export function expectedOf(marks: readonly PencilMark[]): Expected {
 }
 
 /** Whether an outcome names this symbol at all, however it names it. */
-function names(outcome: GroupOutcome, symbol: string): boolean {
+export function names(outcome: GroupOutcome, symbol: string): boolean {
   if (outcome.kind === 'answer') return outcome.symbol === symbol;
   if (outcome.kind === 'multiple') return outcome.symbols.includes(symbol);
   return false;

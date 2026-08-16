@@ -1,0 +1,39 @@
+{
+  "format": 1,
+  "sheetVersion": 4,
+  "note": "Tier 3 of the golden set. The shots are not in this repository, their SHA-256 hashes are: a PGM is uncompressed and three hundred of them are about a gigabyte. Point TRANSFERCHECKER_GOLDEN_ROOT at the directory that holds them. The one paper below is an example of the shape and is marked as a fixture, so it never counts toward arming the accuracy gate.",
+  "papers": [
+    {
+      "id": "example-a4-standard50",
+      "kind": "fixture",
+      "printer": "none, this paper has never been printed",
+      "printScale": 1,
+      "pen": "none",
+      "spec": {
+        "sha256": "8f726c48f2c01df1f2b8b8b8fd2087af47185a1e2ac3e44a32967d0c09eb9074",
+        "bytes": 10098
+      },
+      "truth": {
+        "sha256": "40b71bbc87275a9bac8f356da26e53cb7f0ed459be02451be26d14966ab14d9c",
+        "bytes": 3029
+      },
+      "shots": [
+        {
+          "file": "01-daylight-flat.pgm",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "bytes": 1,
+          "width": 1440,
+          "height": 2560,
+          "source": "fixture",
+          "device": "none",
+          "capturedAt": "2026-08-15",
+          "lighting": "daylight",
+          "angle": "flat",
+          "expect": "graded",
+          "why": "the shape one real shot takes, with bytes that are deliberately not here"
+        }
+      ],
+      "why": "the documented shape of a paper directory, so an operator copies it rather than guessing"
+    }
+  ]
+}

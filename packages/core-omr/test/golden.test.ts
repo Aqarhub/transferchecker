@@ -1,10 +1,11 @@
 // The golden sweep, as a build gate.
 //
 // This file runs the subset that fits a test command: flat pages, the two
-// smaller templates, and every case that needs no camera. [measured] 19 cases,
-// 660 questions, 11.5 seconds. The full sweep is 51 cases and 33 seconds and is
-// a command a person runs, `pnpm --filter @transferchecker/core-omr golden`,
-// because a suite that takes half a minute stops being run.
+// smaller templates, and every case that needs no camera. [measured] 23 cases,
+// 770 questions, 7.2 seconds. The full sweep is 55 cases, 2300 questions and
+// 21.4 seconds, and is a command a person runs, `pnpm --filter
+// @transferchecker/core-omr golden`, because a suite that takes half a minute
+// stops being run.
 //
 // What it can prove is written into the report itself and repeated here so that
 // nobody has to go looking: these are pages drawn from the same layout object
@@ -77,8 +78,24 @@ describe('the golden sweep', () => {
     // The two gates that carry the published number are disarmed until real
     // papers exist, and a green build may never be read as that claim.
     const armed = report.gates.filter((gate) => gate.armed).map((gate) => gate.gate);
-    expect(armed).not.toContain('accuracy at or above 99.7 percent');
-    expect(armed).not.toContain('per stratum floor of 98 percent');
+    expect(armed).not.toContain('accuracy at or above 99.7 percent of questions');
+    expect(armed).not.toContain('per stratum floor of 98 percent of questions');
+    // And the two budgets that ride beside the number ARE armed, because they
+    // are properties of a corpus we own. Publishing accuracy without them is
+    // the failure acceptance criterion 14 names: a product that refuses every
+    // sheet scores a perfect accuracy on a denominator of nothing.
+    expect(armed).toContain('warnings at or below 2 percent of questions');
+    expect(armed).toContain('refusals at or below 2 percent of papers');
+  });
+
+  it('names the unit of its own accuracy number', { timeout: BUDGET_MS }, () => {
+    // The whole of defect this closes: the number 99.7 was published in four
+    // documents and no line anywhere said per what. Per bubble, per question
+    // and per paper are 250 to 1 apart on a fifty question sheet.
+    const report = summarise(sweep());
+    const accuracyGate = report.gates.find((gate) => gate.gate.startsWith('accuracy'));
+    expect(accuracyGate?.gate).toContain('of questions');
+    expect(report.caveat).toContain('The unit of every rate here is the question');
   });
 });
 
@@ -181,9 +198,11 @@ describe('the truth of a case comes from the paper, not from the engine', () => 
 
 describe('the sweep is asked whether it could fail at all', () => {
   /**
-   * The four cases that exercise a decision rather than a pipeline stage, which
-   * is what a mutation needs to show up in. [measured] 19.2 seconds for the
-   * whole catalogue against them.
+   * The cases that exercise a decision rather than a pipeline stage, which is
+   * what a mutation needs to show up in. The last three were written for this
+   * list and nothing else: each one closes a named survivor, and they are drawn
+   * on A5 because the catalogue runs thirteen sweeps over this set. [measured]
+   * 16.3 seconds for the whole catalogue against these eight.
    */
   const PROBES = new Set([
     'clean/quick20/answered-100',
@@ -191,6 +210,9 @@ describe('the sweep is asked whether it could fail at all', () => {
     'printing/toner-40',
     'printing/speck-on-weak-toner',
     'lighting/glare-on-a-shaded-bubble',
+    'marks/strength-ladder',
+    'marks/a-mark-that-must-be-doubted',
+    'marks/strong-and-medium-pair',
   ]);
 
   /**
@@ -200,29 +222,27 @@ describe('the sweep is asked whether it could fail at all', () => {
    * updated. Progress is this list getting shorter in a reviewable diff.
    *
    * [measured] It was NINE of twelve before the marks alphabet became a gate
-   * and the margin stopped being taken over blanks, and twelve of fourteen when
-   * the sweep was first written: an engine with `minInk` at 0.99 that read
-   * nothing at all passed every gate with the BEST margin score in the corpus.
+   * and the margin stopped being taken over blanks, twelve of fourteen when the
+   * sweep was first written, and FOUR of twelve before the three calibration
+   * cases were added. Each of those three was written from the sentence next to
+   * the survivor it closed, which is the only reason this file is worth having.
    *
    * A mutant counts as caught only when it fails a gate the unmutated engine
    * passes, which is not pedantry: without that clause this list read "none"
-   * because the probe set's own baseline sits under the answered accuracy
-   * ratchet, and a suite with no power reported that it caught everything.
+   * because the probe set's own baseline sat under the regression ratchet, and
+   * a suite with no power reported that it caught everything.
    */
   const SURVIVORS = [
-    // The corpus has no mark between 0.25 and 0.45 ink, so nothing distinguishes
-    // the two floors. Closing it needs a mark strength ladder.
-    'raised-floor',
-    // No case demands an UNCERTAIN answer, only doubtful ones that resolve to
-    // ambiguous or blank.
-    'flag-nothing',
-    // The double mark on q11 is two nearly equal shadings, so 0.95 of the top
-    // is still under the runner up and the outcome does not change. A strong
-    // plus medium pair would catch it.
-    'runner-up-blind',
-    // Neutralised rather than missed: since the trace flag gained the same
-    // absolute companion the answer floor has, lowering `traceInk` alone no
-    // longer changes what is flagged on a healthy sheet.
+    // Neutralised rather than missed, and the only one of the four that no case
+    // can close. Since the trace flag gained the same absolute companion the
+    // answer floor has, `traceInk` at 0.01 and at its default both resolve to
+    // `minAbsDark` over the sheet's contrast: [measured] 18 over 196 is 0.092
+    // against a default of 0.10, so the two engines differ only for a bubble
+    // whose ink lands inside a band 0.008 wide, and an empty bubble on these
+    // sheets sits at 0.062 with a printed letter in it. A case aimed at that
+    // band would be tuned to the arithmetic of one contrast rather than drawn
+    // from anything a pencil does, and the honest answer is that this threshold
+    // is currently dead code on a healthy sheet.
     'trace-paranoid',
   ];
 
@@ -233,6 +253,6 @@ describe('the sweep is asked whether it could fail at all', () => {
     const survivors = survivorsOf(probes);
     expect(survivors.join('\n')).toBe(SURVIVORS.join('\n'));
     // And the catalogue is worth something only if most of it is caught.
-    expect(MUTANTS.length - survivors.length).toBeGreaterThanOrEqual(8);
+    expect(MUTANTS.length - survivors.length).toBeGreaterThanOrEqual(11);
   });
 });

@@ -280,6 +280,120 @@ function markCases(): GoldenCase[] {
   ];
 }
 
+/**
+ * Three cases that exist because a mutant survived, and each one names the
+ * mutant it was written to kill.
+ *
+ * The mutation catalogue in `mutants.ts` is the only thing in this repository
+ * that can say whether the sweep has any power at all, and its surviving list
+ * is a to do list written in the corpus's own terms: a threshold nothing
+ * distinguishes is a threshold nobody is testing. All three sheets are drawn on
+ * the smaller paper, because the catalogue runs thirteen sweeps over the probe
+ * set and A5 halves the work.
+ *
+ * The ink values are [measured] rather than chosen: a mark is drawn as a
+ * coverage and a grey value, and what the engine sees is a mean over the inner
+ * disc, so every rung below was found by rendering it and reading the decision
+ * margin back. An empty bubble on these sheets reads 0.062, which is the
+ * printed letter inside it and not noise.
+ */
+function calibrationCases(): GoldenCase[] {
+  const template = 'quick20' as const;
+  const { layout } = sheetOf(template);
+  const rows = layout.questionColumns.flatMap((column) => column.rows);
+  const symbolOf = (question: number, index: number): string =>
+    rows.find((row) => row.question === question)?.bubbles[index]?.symbol ?? 'A';
+
+  // The ladder, climbing the gap between the ink floor at 0.25 and the 0.45 a
+  // mutated floor sits at. [measured] each pair renders to the ink beside it and
+  // to the decision margin after it, on a sheet whose printed contrast is 196.
+  //
+  //   coverage 0.65 value 150 -> ink 0.257, margin 0.007, flagged uncertain
+  //   coverage 0.70 value 150 -> ink 0.299, margin 0.049, flagged uncertain
+  //   coverage 0.62 value 120 -> ink 0.341, margin 0.091, answered outright
+  //   coverage 0.70 value 130 -> ink 0.390, margin 0.113, answered outright
+  //   coverage 0.60 value 090 -> ink 0.420, margin 0.127, answered outright
+  //
+  // So the page prints the doubt boundary as well as the floor: it sits between
+  // 0.299 and 0.341 of ink, which is a number no document had and no case could
+  // have produced, because nothing in the corpus was drawn in this band at all.
+  const RUNGS: readonly { readonly coverage: number; readonly value: number }[] = [
+    { coverage: 0.65, value: 150 },
+    { coverage: 0.7, value: 150 },
+    { coverage: 0.62, value: 120 },
+    { coverage: 0.7, value: 130 },
+    { coverage: 0.6, value: 90 },
+  ];
+
+  const ladder: PencilMark[] = RUNGS.map((rung, index) => ({
+    groupId: `q:${String(index + 1)}`,
+    symbol: symbolOf(index + 1, 1),
+    coverage: rung.coverage,
+    value: rung.value,
+  }));
+
+  // A sheet answered normally, with ONE mark put inside the uncertainty band so
+  // that a single doubt has to survive among confident neighbours. [measured]
+  // ink 0.299 against a floor of 0.25, so the mark is unambiguously there and
+  // the only question is whether the engine says how close it came.
+  const doubted: PencilMark[] = [
+    ...answerFraction(layout, 1, 23).filter((mark) => mark.groupId !== 'q:4'),
+    { groupId: 'q:4', symbol: symbolOf(4, 2), coverage: 0.7, value: 150 },
+  ];
+
+  // [measured] ink 0.820 against 0.492 is a ratio of 0.60: above the 0.45 the
+  // rule refuses at, and well under the 0.95 a blinded runner up rule accepts.
+  // The existing double on the marks sheet is 0.9 against 0.88, which no runner
+  // up ratio under 0.98 can tell apart, so it could never have caught this.
+  const pair: PencilMark[] = [
+    ...answerFraction(layout, 0.5, 29).filter((mark) => mark.groupId !== 'q:2'),
+    { groupId: 'q:2', symbol: symbolOf(2, 1), coverage: 0.8, value: 55 },
+    { groupId: 'q:2', symbol: symbolOf(2, 3), coverage: 0.65, value: 90 },
+  ];
+
+  return [
+    {
+      id: 'marks/strength-ladder',
+      stratum: 'marks',
+      template,
+      marks: ladder,
+      expect: 'graded',
+      // These five are the whole sheet, so that a floor moved to 0.45 leaves
+      // NOTHING on it: every rung is above 0.25 and every rung is below 0.45,
+      // which is what makes this page a measurement of where the floor is
+      // rather than of whether one exists. [measured] under that floor all five
+      // come back as an eraser trace, so the page carries no `c` and no `u` at
+      // all, and this line is what says so.
+      chars: { only: ['c', 'u', 'b'], atLeast: ['c', 'u'] },
+      why: 'five shadings climbing the gap between the ink floor and twice it, which is where no case sat',
+    },
+    {
+      id: 'marks/a-mark-that-must-be-doubted',
+      stratum: 'marks',
+      template,
+      marks: doubted,
+      expect: 'graded',
+      // The claim is the flag itself. A count based metric cannot make it,
+      // because the engine reads this mark correctly either way: what changes
+      // when the uncertainty band closes is only whether the teacher is told.
+      chars: { only: ['c', 'u'], atLeast: ['u'] },
+      why: 'one mark barely over the floor on a sheet that is otherwise certain, where the honest answer is a flag',
+    },
+    {
+      id: 'marks/strong-and-medium-pair',
+      stratum: 'marks',
+      template,
+      marks: pair,
+      expect: 'graded',
+      // Two shadings a student really leaves when they change their mind and do
+      // not rub out: one full, one half hearted. There is no answer in it, and
+      // the only wrong outcome is a confident letter.
+      chars: { only: ['c', 'b', 'd'], atLeast: ['d'] },
+      why: 'a full shading beside a half hearted one, which is a question for the teacher and never a letter',
+    },
+  ];
+}
+
 /** What happens to the paper between the printer and the phone. */
 function geometryCases(): GoldenCase[] {
   const template = 'standard50' as const;
@@ -342,14 +456,16 @@ export function allCases(): GoldenCase[] {
     ...lightingCases(),
     ...printingCases(),
     ...markCases(),
+    ...calibrationCases(),
     ...geometryCases(),
   ];
 }
 
 /**
  * The subset the default test command runs: flat pages only, and the two
- * smaller templates, which is [measured] about a fifth of the sweep's time.
- * The rest is a command a person runs, and a job CI runs on its own schedule.
+ * smaller templates, which is [measured] 23 of 55 cases and 6.6 seconds of the
+ * sweep's 21.4. The rest is a command a person runs, and a job CI runs on its
+ * own schedule.
  */
 export function quickCases(): GoldenCase[] {
   return allCases().filter(
