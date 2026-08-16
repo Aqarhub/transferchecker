@@ -6,9 +6,10 @@
 // is what makes "the layout does not break when you switch language" a thing a
 // test can check rather than a thing somebody remembers to look at.
 //
-// Wiring these screens to live data is a later step and a small one: the
-// screens already take their numbers from `packages/grading` rather than from
-// constants, so what changes is where the answer strings come from.
+// The screens take a `Dashboard` rather than reaching for one, so the rendering
+// has one input and the tests render through exactly this path. Where that
+// dashboard is read from is `src/source.ts`, and today it is a PostgreSQL that
+// boots inside the build.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -24,6 +25,8 @@ import {
 } from '@transferchecker/ui';
 import { BUILT_LOCALES, COPY } from './copy';
 import type { Copy } from './copy';
+import { demoDashboard } from './source';
+import type { Dashboard } from './data';
 import { SCREENS, pathOf, screen } from './screens';
 import type { Screen } from './screens';
 
@@ -50,7 +53,7 @@ export interface BuiltFile {
  * and Turkish suffixes. It is never used by a build: the parameter exists so the
  * test renders through exactly this path rather than through a copy of it.
  */
-export function pageOf(locale: string, name: Screen, override?: Copy): string {
+export function pageOf(locale: string, name: Screen, data: Dashboard, override?: Copy): string {
   const copy = override ?? COPY[locale];
   const info = localeOf(locale);
   if (copy === undefined) return '';
@@ -100,6 +103,7 @@ export function pageOf(locale: string, name: Screen, override?: Copy): string {
       copy,
       locale,
       LOCALES.filter((entry) => BUILT_LOCALES.includes(entry.code)),
+      data,
     ),
   });
 
@@ -122,13 +126,13 @@ ${body}
 `;
 }
 
-export function buildFiles(): BuiltFile[] {
+export function buildFiles(data: Dashboard): BuiltFile[] {
   const files: BuiltFile[] = [];
   for (const locale of BUILT_LOCALES) {
     for (const name of SCREENS) {
       files.push({
         path: `${pathOf(locale, name).replace(/^\//, '')}index.html`,
-        text: pageOf(locale, name),
+        text: pageOf(locale, name, data),
       });
     }
   }
@@ -136,15 +140,16 @@ export function buildFiles(): BuiltFile[] {
   return files;
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const out = resolve(process.argv[2] ?? 'out');
-  for (const file of buildFiles()) {
+  const files = buildFiles(await demoDashboard());
+  for (const file of files) {
     const target = join(out, file.path);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, file.text);
     process.stdout.write(`${file.path}\n`);
   }
-  process.stdout.write(`\n${String(buildFiles().length)} files in ${out}\n`);
+  process.stdout.write(`\n${String(files.length)} files in ${out}\n`);
 }
 
-if (process.argv[1]?.endsWith('build.ts') === true) main();
+if (process.argv[1]?.endsWith('build.ts') === true) await main();

@@ -32,6 +32,14 @@ import { buildFiles, pageOf } from '../src/build';
 import { BUILT_LOCALES, COPY } from '../src/copy';
 import type { Copy } from '../src/copy';
 import { SCREENS, pathOf } from '../src/screens';
+import { demoDashboard } from '../src/source';
+
+// One database for the whole file. The pages under test are rendered from the
+// rows it holds, which is what makes this a test of the real build rather than
+// of a fixture that resembles it.
+const DATA = await demoDashboard();
+const page = (locale: string, screen: (typeof SCREENS)[number], override?: Copy): string =>
+  pageOf(locale, screen, DATA, override);
 
 /**
  * A page reduced to its shape: every element, in order, with its classes.
@@ -48,7 +56,7 @@ const skeleton = (html: string): string[] =>
 
 /** The same screen in every language, which is what gets compared. */
 const shapesOf = (screen: (typeof SCREENS)[number]): Map<string, string[]> =>
-  new Map(BUILT_LOCALES.map((locale) => [locale, skeleton(pageOf(locale, screen))]));
+  new Map(BUILT_LOCALES.map((locale) => [locale, skeleton(page(locale, screen))]));
 
 describe('one DOM for every language', () => {
   it('renders the same elements in the same order in every locale', () => {
@@ -65,7 +73,7 @@ describe('one DOM for every language', () => {
   it('sets the language and the direction from the registry, on the document', () => {
     for (const locale of BUILT_LOCALES) {
       const info = localeOf(locale);
-      expect(pageOf(locale, 'exam')).toContain(`<html lang="${locale}" dir="${info.dir}">`);
+      expect(page(locale, 'exam')).toContain(`<html lang="${locale}" dir="${info.dir}">`);
     }
   });
 
@@ -74,7 +82,7 @@ describe('one DOM for every language', () => {
     // expected to recognise, and which is also why the same eight strings are
     // correct on all eight pages.
     for (const locale of BUILT_LOCALES) {
-      const html = pageOf(locale, 'settings');
+      const html = page(locale, 'settings');
       for (const code of BUILT_LOCALES) {
         expect(html, `${locale} is missing ${code}`).toContain(localeOf(code).name);
       }
@@ -86,7 +94,7 @@ describe('the same path in every language', () => {
   it('keeps you on the screen you were on', () => {
     for (const screen of SCREENS) {
       for (const locale of BUILT_LOCALES) {
-        const html = pageOf(locale, screen);
+        const html = page(locale, screen);
         for (const other of BUILT_LOCALES) {
           // The link to another language points at THIS screen in it, never at
           // a home page.
@@ -99,7 +107,7 @@ describe('the same path in every language', () => {
   });
 
   it('builds every screen in every language, and nothing else', () => {
-    const built = new Set(buildFiles().map((file) => file.path));
+    const built = new Set(buildFiles(DATA).map((file) => file.path));
     for (const locale of BUILT_LOCALES) {
       for (const screen of SCREENS) {
         expect(built.has(`${pathOf(locale, screen).replace(/^\//, '')}index.html`)).toBe(true);
@@ -112,7 +120,7 @@ describe('the same path in every language', () => {
     // Rule 5 of the design system: the current location is visually marked, and
     // navigation sits in the same place on every page.
     for (const screen of SCREENS) {
-      const current = [...pageOf('ar', screen).matchAll(/aria-current="page"/g)];
+      const current = [...page('ar', screen).matchAll(/aria-current="page"/g)];
       // One in the sidebar, and on the exam screen one more in the tab row,
       // which is a second level of the same location rather than a second
       // location.
@@ -216,7 +224,7 @@ describe('a language 35 percent longer changes nothing structural', () => {
     expect(long).toBeDefined();
     if (long === undefined) return;
     for (const screen of SCREENS) {
-      expect(skeleton(pageOf('en', screen, long)), screen).toEqual(skeleton(pageOf('en', screen)));
+      expect(skeleton(page('en', screen, long)), screen).toEqual(skeleton(page('en', screen)));
     }
   });
 });
