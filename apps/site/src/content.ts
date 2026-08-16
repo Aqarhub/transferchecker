@@ -217,59 +217,56 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     name: 'TransferChecker',
     title: 'TransferChecker: Antwortbögen mit dem Handy korrigieren',
     description:
-      'Antwortbogen als PDF drucken, mit dem Handy abfotografieren, Ergebnis in Sekunden. Läuft offline, die Fotos bleiben auf dem Gerät.',
+      'Antwortbogen als PDF drucken, mit dem Handy abfotografieren, Ergebnis in Sekunden. Läuft offline, kein Bild verlässt das Gerät.',
     summary:
-      'Eine Handy-App, die gedruckte Antwortbögen mit der Kamera korrigiert, Arabisch zuerst, vollständig offline und mit der gesamten Verarbeitung auf dem Gerät.',
+      'Eine Handy-App, die gedruckte Antwortbögen mit der Kamera korrigiert. Zuerst für Arabisch entwickelt, vollständig offline, die gesamte Verarbeitung findet auf dem Gerät statt.',
     tagline: 'Ein Bogen, ein Handy, das Ergebnis',
-    lede: 'Sie entwerfen den Antwortbogen, drucken ihn aus und fotografieren jeden Bogen mit dem Handy. Das Ergebnis steht in Sekunden. Die App arbeitet vollständig offline, und die gesamte Verarbeitung findet auf dem Gerät statt.',
+    lede: 'Sie entwerfen den Antwortbogen, drucken ihn als PDF aus und fotografieren jeden ausgefüllten Bogen mit dem Handy. Das Ergebnis steht in Sekunden. Die App arbeitet vollständig offline, die gesamte Verarbeitung findet auf dem Gerät statt.',
     stepsTitle: 'Drei Schritte',
     steps: [
-      'Beginnen Sie mit einer Vorlage für 20, 50 oder 100 Fragen, oder setzen Sie den Bogen Frage für Frage selbst zusammen.',
-      'Drucken Sie das PDF in Originalgröße, nicht an die Seite angepasst. Den Lösungsbogen legen Sie durch Antippen an oder scannen einen gelösten Bogen ein.',
-      'Fotografieren Sie die Klasse Bogen für Bogen und exportieren Sie die Ergebnisse nach Excel.',
+      'Beginnen Sie mit einer Vorlage für 20, 50 oder 100 Fragen oder stellen Sie den Bogen Frage für Frage selbst zusammen.',
+      'Drucken Sie das PDF in Originalgröße aus, nicht an die Seite angepasst. Den Lösungsbogen tippen Sie selbst ein, oder Sie fotografieren einen fertig ausgefüllten Bogen.',
+      'Fotografieren Sie die Bögen der Klasse einen nach dem anderen und exportieren Sie die Ergebnisse nach Excel.',
     ],
     featuresTitle: 'Was anders ist',
     features: [
       {
         title: 'Arabisch auf dem Bogen selbst',
-        body: 'Die Zeichen in den Antwortfeldern sind arabisch oder lateinisch, die Beschriftungen stehen in jeder beliebigen Sprache. In der Druckdatei verbinden sich die arabischen Buchstaben richtig, weil der Satz die Schrift wirklich formt und nicht nachahmt.',
+        body: 'Die Zeichen in den Antwortfeldern sind arabisch oder lateinisch, die Beschriftungen stehen in jeder beliebigen Sprache. In der Druckdatei verbinden sich die arabischen Buchstaben richtig, weil die Schrift wirklich gesetzt und nicht nachgeahmt wird.',
       },
       {
         title: 'Der Bogen beschreibt sich selbst',
-        body: 'Der aufgedruckte Code trägt die gesamte Geometrie des Bogens. Ein Gerät, das die Vorlage nie gesehen hat, korrigiert ihn ohne Netz und ohne Konto.',
+        body: 'Der aufgedruckte Code enthält die gesamte Geometrie des Bogens. Ein Gerät, das die Vorlage nie gesehen hat, korrigiert ihn ohne Internetverbindung und ohne Benutzerkonto.',
       },
       {
         title: 'Nichts wird geraten',
-        body: 'Liegt die Schwärzung eines Feldes zwischen den beiden Schwellen, legt die App es Ihnen vor, statt still zu entscheiden. Ein Bild, das eine Spiegelung unbrauchbar macht, wird mit benanntem Grund abgelehnt und nicht unvollständig ausgewertet.',
+        body: 'Liegt die Schwärzung eines Antwortfeldes zwischen den beiden Schwellenwerten, legt die App es Ihnen vor, statt stillschweigend zu entscheiden. Ein Bild, das durch Spiegelungen unbrauchbar ist, wird unter Angabe des Grundes abgelehnt und nicht unvollständig korrigiert.',
       },
       {
-        title: 'Aufgabenanalyse und Kompetenzen',
-        body: 'Welche Aufgabe schwer war, welche falsche Antwortoption die starken Schülerinnen und Schüler angezogen hat und wie die Klasse beim Thema „Brüche“ abgeschnitten hat. Einen Lösungsbogen, der falsch aussieht, meldet die App, bevor er eine ganze Klasse falsch bewertet.',
+        title: 'Aufgabenanalyse nach Themen',
+        body: 'Sie sehen, welche Aufgabe schwer war, welche falsche Antwortmöglichkeit ausgerechnet die starken Schülerinnen und Schüler angelockt hat und wie die Klasse beim Thema „Brüche“ abgeschnitten hat. Einen Lösungsbogen, der falsch aussieht, meldet die App, bevor damit eine ganze Klasse falsch korrigiert wird.',
       },
     ],
-    accuracyTitle: 'Unsere Zahlen, mit ihrer Methode',
+    accuracyTitle: 'Unsere Zahlen und wie wir sie messen',
     accuracy: (evidence) =>
       evidence.accuracy === null
-        ? `Wir haben unsere Genauigkeit noch nicht auf echtem Papier gemessen und veröffentlichen bis dahin keine Zahl. Geprüft ist die Engine heute an ${String(evidence.cases)} Fällen und ${String(evidence.questions)} Fragen, die der Test selbst zeichnet: das belegt, dass jede benannte Absicherung greift, und belegt nichts über Papier. Die Zahl erscheint, sobald mindestens ${String(evidence.papersNeeded)} gedruckte Bögen fotografiert wurden, und sie erscheint zusammen mit der Ablehnungsquote und der Warnquote, denn eine hohe Genauigkeit neben einer hohen Ablehnungsquote ist dieselbe Lüge.`
-        : `${percent(evidence.accuracy)} pro Frage auf dem Goldstandard-Datensatz, immer zusammen mit der Ablehnungsquote und der Warnquote veröffentlicht. Gemessen wird pro Frage, nicht pro Feld und nicht pro Bogen: auf einem Bogen mit fünfzig Fragen liegen diese drei Lesarten um das 250-Fache auseinander.`,
+        ? `Wir haben unsere Genauigkeit noch nicht auf echtem Papier gemessen und veröffentlichen bis dahin keine Zahl. Geprüft ist die Auswertung heute an ${String(evidence.cases)} Fällen und ${String(evidence.questions)} Fragen, die der Test selbst erzeugt. Das belegt, dass jede benannte Absicherung greift, und belegt nichts über Papier. Die Zahl erscheint, sobald mindestens ${String(evidence.papersNeeded)} gedruckte Bögen fotografiert wurden, und sie erscheint zusammen mit der Ablehnungsquote und der Warnquote, denn eine hohe Genauigkeit neben einer hohen Ablehnungsquote ist dieselbe Lüge.`
+        : `${percent(evidence.accuracy)} pro Frage auf dem geprüften Datensatz, immer zusammen mit der Ablehnungsquote und der Warnquote veröffentlicht. Gemessen wird pro Frage, nicht pro Antwortfeld und nicht pro Bogen. Auf einem Bogen mit fünfzig Fragen liegen diese drei Lesarten um das 250-Fache auseinander.`,
     rateWords: ['Ablehnungsquote', 'Warnquote'],
     unitWord: 'pro Frage',
-    privacyTitle: 'Die Fotos bleiben auf dem Gerät',
+    privacyTitle: 'Kein Bild verlässt das Gerät',
     privacy:
-      'Alles wird auf dem Gerät verarbeitet. Kein Bild wird hochgeladen, und keines wird gespeichert. Ein Bogen erzeugt sein Ergebnis aus seinem Datensatz neu, es gibt also nichts aufzubewahren.',
+      'Alles wird auf dem Gerät verarbeitet. Kein Bild wird hochgeladen, keines wird gespeichert. Ein Bogen erzeugt sein Ergebnis jederzeit neu aus seinem Datensatz, aufbewahren muss die App also nichts.',
     scopeTitle: 'Wofür es gedacht ist',
     scope:
-      'Für Lernstandserhebungen im Unterricht, für Hausaufgaben und kurze Tests. Die saudische Beschränkung für das Korrigieren mit Handy-Apps ist im Umfang begrenzt und deckt diesen Einsatz nicht ab. Wir sagen das vor dem Start und nicht danach.',
+      'Für Lernstandserhebungen im Unterricht, für Hausaufgaben und kurze Tests. Die saudische Beschränkung für das Korrigieren mit Handy-Apps ist eng gefasst und gilt für diesen Einsatz nicht. Wir sagen das vor dem Start und nicht danach.',
     pricingTitle: 'Tarife',
     pricing: [
-      { title: 'Kostenlos', body: 'Hundert Bögen im Monat, mit allen Funktionen ohne Ausnahme.' },
-      {
-        title: 'Pro',
-        body: 'Keine Begrenzung der Bögen, und dieselben Funktionen. Der einzige Unterschied ist ein Zähler.',
-      },
+      { title: 'Kostenlos', body: '100 Bögen pro Monat, mit allen Funktionen ohne Ausnahme.' },
+      { title: 'Pro', body: 'Ohne Begrenzung der Bögen. Sonst ändert sich nichts.' },
     ],
     pricingNote:
-      'Keine Funktion ist gesperrt: Offline-Betrieb, Synchronisierung, Aufgabenanalyse, Export und eigene Bögen gehören zum kostenlosen Tarif. Die Abrechnung verlängert sich nicht automatisch.',
+      'Keine Funktion ist gesperrt: Offline-Betrieb, Synchronisierung, Aufgabenanalyse, Export nach Excel und eigene Bögen gehören zum kostenlosen Tarif. Die Abrechnung verlängert sich nicht automatisch.',
     languagesTitle: 'Sprachen',
     pageWord: 'Seite',
     listSeparator: ', ',
@@ -279,59 +276,56 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
     name: 'TransferChecker',
     title: 'TransferChecker: corregir exámenes con el teléfono',
     description:
-      'La hoja de respuestas se imprime en PDF y se fotografía con el teléfono. La nota sale en segundos, sin conexión y sin subir ninguna foto.',
+      'La hoja de respuestas se imprime en papel y se fotografía con el teléfono. La nota sale en segundos, sin conexión y sin subir ninguna foto.',
     summary:
-      'Una aplicación móvil que corrige con la cámara hojas de respuestas impresas de opción múltiple, pensada primero para el árabe, sin conexión y con todo el procesamiento en el dispositivo.',
+      'Una aplicación móvil que corrige hojas de respuestas de opción múltiple impresas con la cámara del teléfono. Pensada primero para el árabe, funciona sin conexión y procesa todo en el propio dispositivo.',
     tagline: 'Una hoja, un teléfono y la nota',
-    lede: 'La hoja de respuestas de lectura óptica se diseña y se imprime desde la aplicación. Se fotografía con el teléfono y la nota aparece en segundos, sin conexión y sin que ninguna imagen salga del dispositivo.',
+    lede: 'La hoja de respuestas se diseña y se imprime desde la aplicación. Después se fotografía con el teléfono y la nota aparece en segundos, sin conexión y sin que ninguna imagen salga del dispositivo.',
     stepsTitle: 'Tres pasos',
     steps: [
-      'Se parte de una plantilla de 20, 50 o 100 preguntas, o se diseña la hoja pregunta a pregunta.',
-      'Se imprime el PDF a tamaño real, sin ajustar a la página, y la clave de respuestas se crea tocando las opciones o escaneando una hoja ya contestada.',
-      'Se fotografían los exámenes de la clase uno a uno y los resultados se exportan a Excel.',
+      'Se elige una plantilla de 20, 50 o 100 preguntas o se diseña la hoja pregunta a pregunta.',
+      'Se imprime el PDF a tamaño real, sin ajustar a la página, y la clave de respuestas se crea tocando las opciones correctas o escaneando una hoja ya contestada.',
+      'Se fotografían las hojas de la clase una a una y los resultados se exportan a Excel.',
     ],
     featuresTitle: '¿Qué lo hace distinto?',
     features: [
       {
         title: 'Árabe en la propia hoja',
-        body: 'Las burbujas se rotulan con letras árabes o latinas y las etiquetas van en cualquier idioma. En el PDF el árabe sale con sus letras enlazadas de verdad, porque la composición las forma en lugar de aproximarlas.',
+        body: 'Las burbujas se rotulan con letras árabes o latinas y las etiquetas pueden ir en cualquier idioma. En el PDF el árabe sale con sus letras bien enlazadas, porque el archivo de impresión da forma real a cada palabra en lugar de aproximarla.',
       },
       {
         title: 'La hoja se describe a sí misma',
-        body: 'El código impreso en la hoja lleva toda su geometría, así que un teléfono que no ha visto nunca la plantilla la corrige igual, sin conexión y sin cuenta.',
+        body: 'El código impreso en la hoja lleva toda su geometría, así que un teléfono que nunca ha visto la plantilla puede corregir la hoja igualmente, sin conexión y sin necesidad de cuenta.',
       },
       {
         title: 'Nunca adivina',
-        body: 'Una burbuja cuya marca queda entre los dos umbrales se le muestra al docente en lugar de resolverse en silencio, y una foto que el reflejo ha estropeado se rechaza indicando el motivo, en vez de leerse a medias.',
+        body: 'Cuando la oscuridad de una burbuja queda entre los dos umbrales, la aplicación se la muestra al profesor en lugar de decidir en silencio. Y si un reflejo estropea la foto, la rechaza indicando el motivo en vez de leer la hoja a medias.',
       },
       {
-        title: 'Análisis de ítems y etiquetas por criterio',
-        body: 'Qué pregunta resultó difícil, qué distractor se llevó a los mejores alumnos y cómo fue la clase en «fracciones». Si la clave parece equivocada, aparece el aviso antes de que corrija mal a toda la clase.',
+        title: 'Análisis de ítems y temas etiquetados',
+        body: 'Muestra qué pregunta resultó difícil, qué distractor atrajo a los mejores alumnos y cómo fue la clase en el tema «fracciones». Y si la clave parece equivocada, avisa antes de corregir mal a toda la clase.',
       },
     ],
-    accuracyTitle: 'Nuestros números, con su método',
+    accuracyTitle: 'Nuestras cifras y cómo las medimos',
     accuracy: (evidence) =>
       evidence.accuracy === null
-        ? `Todavía no hemos medido la exactitud en papel real y no publicaremos ninguna cifra hasta hacerlo. Hoy el motor está probado con ${String(evidence.cases)} casos y ${String(evidence.questions)} preguntas que genera la propia prueba: eso demuestra que cada una de las defensas que nombramos funciona, y no demuestra nada sobre papel. La cifra se publicará cuando se hayan fotografiado al menos ${String(evidence.papersNeeded)} hojas impresas, y saldrá siempre junto a la tasa de rechazo y la tasa de aviso, porque una exactitud alta al lado de una tasa de rechazo alta es la misma mentira.`
+        ? `Todavía no hemos medido la exactitud en papel real y no publicaremos ninguna cifra hasta hacerlo. Hoy el motor está probado con ${String(evidence.cases)} casos sintéticos y ${String(evidence.questions)} preguntas que genera la propia prueba: eso demuestra que cada una de las defensas que nombramos funciona, pero no demuestra nada sobre el papel. Publicaremos la cifra cuando se hayan fotografiado al menos ${String(evidence.papersNeeded)} hojas impresas, y siempre irá acompañada de la tasa de rechazo y la tasa de aviso, porque una exactitud alta junto a una tasa de rechazo alta miente exactamente igual.`
         : `Exactitud de ${percent(evidence.accuracy)} por pregunta en el conjunto de referencia, publicada siempre junto a la tasa de rechazo y la tasa de aviso. La unidad es la pregunta, no la burbuja ni la hoja: entre esas tres lecturas hay una diferencia de 250 a 1 en una hoja de cincuenta preguntas.`,
     rateWords: ['rechazo', 'aviso'],
     unitWord: 'por pregunta',
     privacyTitle: 'Las fotos de los alumnos no salen del dispositivo',
     privacy:
-      'Todo el procesamiento ocurre en el dispositivo. Ninguna imagen se sube y ninguna se escribe en disco. Cada hoja reproduce su propia nota a partir de su registro, así que no queda nada que guardar.',
+      'Todo el procesamiento se hace en el dispositivo. Ninguna imagen se sube a ningún servidor ni se escribe en el disco. Cada hoja vuelve a generar su propia nota a partir de su registro, así que no queda nada que conservar.',
     scopeTitle: '¿Dónde se usa?',
     scope:
       'Para evaluación formativa en el aula, tareas y pruebas cortas. La restricción saudí sobre la corrección con aplicaciones móviles tiene un alcance limitado y no cubre este uso, y lo decimos antes del lanzamiento, no después.',
     pricingTitle: 'Planes',
     pricing: [
-      { title: 'Gratis', body: 'Cien hojas al mes, con todas las funciones sin excepción.' },
-      {
-        title: 'Pro',
-        body: 'Sin límite de hojas y las mismas funciones. La única diferencia es un contador.',
-      },
+      { title: 'Gratis', body: 'Cien hojas al mes, con todas las funciones incluidas.' },
+      { title: 'Pro', body: 'Quita el límite de hojas y no cambia nada más.' },
     ],
     pricingNote:
-      'No hay nada bloqueado: el uso sin conexión, la sincronización, el análisis de ítems, la exportación y las hojas personalizadas entran en el plan gratuito. La facturación no se renueva sola.',
+      'No hay nada bloqueado: el uso sin conexión, la sincronización, el análisis de ítems, la exportación a Excel y las hojas personalizadas entran en el plan gratuito. La facturación no se renueva automáticamente.',
     languagesTitle: 'Idiomas',
     pageWord: 'Página',
     listSeparator: ', ',
@@ -339,49 +333,49 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
 
   fr: {
     name: 'TransferChecker',
-    title: 'TransferChecker : corriger les QCM papier au téléphone',
+    title: 'TransferChecker : corriger les QCM papier avec son téléphone',
     description:
-      'Imprimez la grille, photographiez les copies, la note tombe en quelques secondes. Hors ligne, rien ne quitte le téléphone.',
+      'Imprimez la grille, photographiez les copies, la note s’affiche en quelques secondes. Hors ligne, rien ne quitte le téléphone.',
     summary:
-      'Une application mobile qui corrige les grilles de réponses imprimées avec l’appareil photo, l’arabe d’abord, entièrement hors ligne, tout le traitement se faisant sur le téléphone.',
+      'Une application mobile qui corrige les grilles de réponses imprimées avec l’appareil photo, pensée d’abord pour l’arabe, entièrement hors ligne : tout le traitement se fait sur le téléphone.',
     tagline: 'Une copie, un téléphone, une note',
     lede: 'Vous concevez la grille de réponses et vous l’imprimez. L’élève la remplit, vous la photographiez, et la note apparaît en quelques secondes. Tout fonctionne hors ligne, et le traitement se fait entièrement sur le téléphone.',
     stepsTitle: 'Trois étapes',
     steps: [
       'Partez d’un modèle de 20, 50 ou 100 questions, ou composez votre grille question par question.',
-      'Imprimez le PDF à taille réelle, sans ajuster à la page, puis saisissez le corrigé en touchant les cases ou en scannant une grille remplie avec les bonnes réponses.',
-      'Photographiez la classe copie par copie, puis exportez les résultats vers Excel.',
+      'Imprimez le PDF à taille réelle, sans ajuster à la page, puis saisissez le corrigé en touchant les cases ou en scannant une grille déjà remplie avec les bonnes réponses.',
+      'Photographiez les copies une par une, puis exportez les résultats vers Excel.',
     ],
-    featuresTitle: 'Ce qui change',
+    featuresTitle: 'Ce qui fait la différence',
     features: [
       {
         title: 'L’arabe sur la grille elle-même',
-        body: 'Les repères des cases en arabe ou en latin, les libellés dans la langue de votre choix, et des lettres arabes correctement liées à l’impression : le fichier compose réellement l’arabe au lieu d’en donner une approximation.',
+        body: 'Les symboles des cases en lettres arabes ou latines, les libellés dans la langue de votre choix, et des lettres arabes correctement liées à l’impression : le fichier compose réellement l’arabe au lieu d’en donner une approximation.',
       },
       {
         title: 'La grille se décrit elle-même',
-        body: 'Le code imprimé porte toute la géométrie de la grille. Un téléphone qui n’a jamais vu le modèle la corrige quand même, sans réseau et sans compte.',
+        body: 'Le code imprimé contient toute la géométrie de la grille. Un téléphone qui n’a jamais vu le modèle corrige quand même la grille, sans réseau et sans compte.',
       },
       {
-        title: 'Il ne devine jamais',
-        body: 'Une case dont le noircissement tombe entre les deux seuils vous est montrée au lieu d’être tranchée en silence. Et une photo gâchée par un reflet est refusée avec une cause nommée, jamais lue à moitié.',
+        title: 'L’application ne devine jamais',
+        body: 'Une case dont le noircissement tombe entre les deux seuils vous est montrée au lieu d’être tranchée en silence. De même, une photo gâchée par un reflet est refusée avec une cause nommée, jamais lue à moitié.',
       },
       {
-        title: 'Analyse par question et par compétence',
-        body: 'Quelle question a fait chuter la classe, quel distracteur a attiré les bons élèves, ce que donne la classe sur les fractions. Et un corrigé qui semble faux est signalé avant d’avoir mal noté toute une classe.',
+        title: 'Analyse par question et par thème',
+        body: 'Quelle question a fait chuter la classe, quel distracteur a attiré les bons élèves, ce que donne la classe sur un thème donné comme les fractions. Un corrigé qui semble faux est signalé avant d’avoir mal noté toute une classe.',
       },
     ],
     accuracyTitle: 'Nos chiffres, avec leur méthode',
     accuracy: (evidence) =>
       evidence.accuracy === null
-        ? `Nous n’avons pas encore mesuré notre précision sur du vrai papier, et nous ne publierons aucun chiffre avant de l’avoir fait. Le moteur est aujourd’hui éprouvé sur ${String(evidence.cases)} cas et ${String(evidence.questions)} questions que le test tire lui-même : cela démontre que chaque défense nommée tient, et cela ne démontre rien sur du papier. Le chiffre paraîtra quand au moins ${String(evidence.papersNeeded)} grilles imprimées auront été photographiées, et il paraîtra avec le taux de refus et le taux d’avertissement, parce qu’une précision élevée posée à côté d’un refus élevé, c’est le même mensonge.`
+        ? `Nous n’avons pas encore mesuré notre précision sur du vrai papier, et nous ne publierons aucun chiffre avant de l’avoir fait. Le moteur est aujourd’hui éprouvé sur ${String(evidence.cases)} cas et ${String(evidence.questions)} questions que le test tire lui-même : cela démontre que chaque défense nommée tient, et cela ne démontre rien sur du papier. Le chiffre paraîtra quand au moins ${String(evidence.papersNeeded)} grilles imprimées auront été photographiées, et il paraîtra accompagné du taux de refus et du taux d’avertissement, parce qu’une précision élevée posée à côté d’un taux de refus élevé, c’est le même mensonge.`
         : `${percent(evidence.accuracy)} par question sur le jeu de référence. Ce chiffre ne paraît jamais seul : il est publié avec le taux de refus et le taux d’avertissement. L’unité est la question, pas la case et pas la copie, et sur une grille de cinquante questions ces trois lectures sont séparées par un facteur 250.`,
     rateWords: ['taux de refus', 'taux d’avertissement'],
     unitWord: 'par question',
     privacyTitle: 'Les photos ne quittent pas le téléphone',
     privacy:
       'Tout est traité sur le téléphone. Aucune image n’est envoyée, aucune n’est écrite sur le disque. Une copie reproduit sa note à partir de son enregistrement : il n’y a donc rien à conserver.',
-    scopeTitle: 'Où il s’utilise',
+    scopeTitle: 'Dans quel cadre l’utiliser',
     scope:
       'Pour l’évaluation formative en classe, les devoirs et les interrogations courtes. La restriction saoudienne sur la correction par application mobile est de portée limitée et ne couvre pas cet usage ; nous le disons avant le lancement, pas après.',
     pricingTitle: 'Formules',
@@ -389,11 +383,11 @@ export const COPY: Readonly<Record<Locale, Copy>> = {
       { title: 'Gratuite', body: 'Cent copies par mois, et toutes les fonctions, sans exception.' },
       {
         title: 'Pro',
-        body: 'Plus aucune limite de copies, et exactement les mêmes fonctions. La seule différence est un compteur.',
+        body: 'Plus aucune limite de copies, et exactement les mêmes fonctions. La levée de cette limite est la seule différence.',
       },
     ],
     pricingNote:
-      'Rien n’est verrouillé : le hors ligne, la synchronisation, l’analyse par question, l’export et les grilles sur mesure sont dans la formule gratuite. Et la facturation ne se reconduit pas toute seule.',
+      'Rien n’est verrouillé : le hors ligne, la synchronisation, l’analyse par question, l’export vers Excel et les grilles sur mesure sont inclus dans la formule gratuite. Et la facturation ne se reconduit pas toute seule.',
     languagesTitle: 'Langues',
     pageWord: 'Page',
     listSeparator: ', ',
