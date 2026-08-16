@@ -22,6 +22,9 @@ export type { ExamData, ExamSummary, ScanRecord } from './queries';
 export { createAccount, planAccount } from './signup';
 
 export { hashToken, refreshSession, revokeFamily, startSession } from './session';
+
+export { REQUEST_ROLE, asAnonymous, asTenant } from './tenant';
+export type { Claims } from './tenant';
 export type { RefreshInput, StartSession } from './session';
 
 export { REVOCATIONS } from './schema/sessions';
