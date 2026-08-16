@@ -7,11 +7,17 @@
 // Usage:  PGHOST=... PGDATABASE=... PGUSER=... PGPASSWORD=... pnpm migrate
 
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { connect, settingsFromEnv } from './connect';
 import { migrationFiles } from './local';
 
-const MIGRATIONS = new URL('../migrations', import.meta.url).pathname;
+// `fileURLToPath` and NOT `url.pathname`. [measured on Windows] The latter
+// yields `/C:/Users/...`, with a leading slash and forward separators, which is
+// a valid URL path and not a valid filesystem path on that platform. The
+// failure is invisible on Linux and on macOS, which is why it survived a green
+// suite and appeared on the first machine that was neither.
+const MIGRATIONS = fileURLToPath(new URL('../migrations', import.meta.url));
 
 async function main(): Promise<void> {
   const found = settingsFromEnv(process.env);
