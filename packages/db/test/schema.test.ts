@@ -23,11 +23,12 @@ const migrations = await migrationFiles();
 const sql = migrations.map((file) => file.sql).join('\n');
 
 describe('the tables the plan asks for', () => {
-  it('is exactly the thirteen, and the four extras are named for a reason', () => {
+  it('is exactly the fourteen, and the five extras are named for a reason', () => {
     expect([...Object.keys(named)].sort()).toEqual([
       'answer_keys',
       'consents',
       'credentials',
+      'email_verifications',
       'exams',
       'login_attempts',
       'orgs',
@@ -166,6 +167,7 @@ describe('the migrations', () => {
       '0001_tables',
       '0002_grants',
       '0003_credentials',
+      '0004_email_verification',
     ]);
   });
 

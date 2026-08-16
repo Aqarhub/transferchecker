@@ -29,6 +29,13 @@
       "when": 1786908889699,
       "tag": "0003_credentials",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786922244217,
+      "tag": "0004_email_verification",
+      "breakpoints": true
     }
   ]
 }

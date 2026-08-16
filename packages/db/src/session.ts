@@ -17,11 +17,11 @@
 // logs a real user out for nothing or leaves the old token valid, which is
 // rotation quietly not happening.
 
-import { createHash } from 'node:crypto';
 import { and, eq, isNull } from 'drizzle-orm';
 import { refresh } from '@transferchecker/account';
 import type { Family, RefreshOutcome, TokenRecord } from '@transferchecker/account';
 import { refreshTokens, tokenFamilies } from './schema/sessions';
+import { hashSecret } from './secret';
 import type { Database } from './database';
 
 /**
@@ -29,15 +29,10 @@ import type { Database } from './database';
  *
  * The account layer says of its own field that it may hold "the token itself, or
  * a hash of it", and leaves the choice to whoever owns storage. This is the
- * choice. A stolen backup of raw refresh tokens is every live session taken at
- * once; a backup of hashes is worth nothing, because the lookup goes one way.
- *
- * SHA-256 unsalted is right HERE and would be wrong for a password. A refresh
- * token is 256 bits of randomness we generated, so there is no dictionary to
- * run against it and no slow hash to buy anything with.
+ * choice, and the reasoning behind the hash is in `secret.ts`, next to the
+ * generator, because the confirmation link makes exactly the same one.
  */
-export const hashToken = (token: string): string =>
-  createHash('sha256').update(token, 'utf8').digest('hex');
+export const hashToken = hashSecret;
 
 export interface StartSession {
   readonly familyId: string;

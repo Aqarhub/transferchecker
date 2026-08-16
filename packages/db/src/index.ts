@@ -35,6 +35,20 @@ export {
 } from './credentials';
 export type { LoginAttempt, LoginResult } from './credentials';
 
+export { REFRESH_LIFETIME_MS, renew, signIn } from './authenticate';
+export type { Grant, Lifetimes, RenewResult, SignInInput, SignInResult } from './authenticate';
+
+export {
+  expiryOf,
+  forgetStaleConfirmations,
+  issueConfirmation,
+  mayResendTo,
+  redeemConfirmation,
+} from './mailbox';
+export type { IssueConfirmation, RedeemInput } from './mailbox';
+
+export { SECRET_BYTES, hashSecret, newSecret } from './secret';
+
 export { auditIsolation, probeIsolation } from './audit';
 export { diagnose, explain } from './diagnose';
 export { assertUnprivileged } from './connect';

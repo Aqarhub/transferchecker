@@ -77,6 +77,7 @@ describe('the migrations and the schema describe the same database', () => {
       .map((column) => `${column.table_name}.${column.column_name}`);
     expect([...nullable].sort()).toEqual([
       'credentials.confirmed_at',
+      'email_verifications.used_at',
       'login_attempts.last_failure_at',
       'refresh_tokens.used_at',
       'scans.student_ext_id',

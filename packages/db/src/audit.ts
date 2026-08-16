@@ -58,12 +58,18 @@ function text(row: Record<string, unknown>, column: string): string {
 /**
  * The tables that must have no policy and no privilege at all.
  *
- * A refresh token, a password hash and a failure counter are things the server
- * handles. No signed in teacher has a use for any of them, so they are reachable
- * by nobody rather than by the right organisation.
+ * A refresh token, a password hash, a failure counter and an unclicked
+ * confirmation link are things the server handles. No signed in teacher has a
+ * use for any of them, so they are reachable by nobody rather than by the right
+ * organisation.
  */
-const UNREACHABLE = ['refresh_tokens', 'credentials', 'login_attempts'] as const;
-const EXPECTED_TABLES = 13;
+const UNREACHABLE = [
+  'refresh_tokens',
+  'credentials',
+  'login_attempts',
+  'email_verifications',
+] as const;
+const EXPECTED_TABLES = 14;
 
 export async function auditIsolation(db: Queryable): Promise<Check[]> {
   const checks: Check[] = [];
@@ -139,14 +145,14 @@ export async function auditIsolation(db: Queryable): Promise<Check[]> {
     await db.execute(sql`select table_name, count(*)::int as n
       from information_schema.role_table_grants
       where grantee in ('anon','authenticated')
-        and table_name in ('refresh_tokens','credentials','login_attempts')
+        and table_name in ('refresh_tokens','credentials','login_attempts','email_verifications')
       group by table_name`),
   );
   add(
-    'no client holds a privilege on a token, a password or a counter',
+    'no client holds a privilege on a token, a password, a counter or a link',
     onSecrets.length === 0,
     onSecrets.length === 0
-      ? 'none of the three is reachable'
+      ? 'none of the four is reachable'
       : onSecrets.map((row) => `${text(row, 'table_name')}: ${text(row, 'n')}`).join(', '),
   );
 

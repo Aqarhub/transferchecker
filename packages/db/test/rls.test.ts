@@ -14,15 +14,16 @@ import { ORG_A, ORG_B, USER_A, USER_B, freshDatabase, rows } from './harness';
 
 let client: PGlite;
 
-/** How many tables exist in total, including the two the session tests own. */
-const ALL_TABLES = 13;
+/** How many tables exist in total, including the ones the auth tests own. */
+const ALL_TABLES = 14;
 
 /**
  * The tables scoped by plain organisation isolation, and the column each uses.
  *
  * `token_families` is scoped tighter than an organisation, to a person, and
- * `refresh_tokens`, `credentials` and `login_attempts` are reachable by nobody
- * at all. They are covered in session.test.ts and credentials.test.ts.
+ * `refresh_tokens`, `credentials`, `login_attempts` and
+ * `email_verifications` are reachable by nobody at all. They are covered in
+ * session.test.ts, credentials.test.ts and mailbox.test.ts.
  */
 const TABLES: readonly (readonly [string, string])[] = [
   ['orgs', 'id'],
