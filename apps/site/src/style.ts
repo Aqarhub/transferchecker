@@ -37,6 +37,13 @@ body {
   line-height: 1.7;
   font-size: 17px;
 }
+/* German compounds and Turkish agglutinations are single unbreakable tokens, and
+   Antwortbogen or kağıtlarınızı is wider than a phone column. Hyphenation is
+   driven by the lang attribute the document already carries, so this is correct
+   in eight languages from one rule, and the break-word is the floor under it for
+   a word no dictionary can hyphenate. Without this a German page overflows and
+   an Arabic one does not, which is the bug nobody testing in Arabic ever sees. */
+p, li, h1, h2, h3, article { -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; }
 header, main, footer { max-width: 44rem; margin-inline: auto; padding-inline: 1.25rem; }
 header { padding-block: 3rem 1rem; }
 .brand { font-weight: 700; letter-spacing: 0.04em; color: var(--accent); margin: 0; }

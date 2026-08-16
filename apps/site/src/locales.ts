@@ -16,11 +16,12 @@
 // is in here only when `content.ts` carries written copy for it, which the type
 // system enforces, because `COPY` is a record over exactly these codes.
 //
-// `reviewed` is the honest half. Arabic and English were written by the owner.
-// The other six were drafted here and are marked false until a native speaker of
-// each has read them, and the flag is in the code rather than in a document so
-// that the answer to "has anyone who speaks Turkish read the Turkish page" is
-// something a build can be asked rather than something somebody remembers.
+// `source` is the honest half, and it says who the copy came from rather than
+// whether it is good enough. Both values ship. A boolean called `reviewed` was
+// the wrong shape: it invited a yes that meant several different things, and the
+// only useful question a build can answer here is where a sentence came from.
+
+export type CopySource = 'owner' | 'editorial';
 
 export interface LocaleInfo {
   readonly code: string;
@@ -33,8 +34,23 @@ export interface LocaleInfo {
    * translating, which is also why it is the same string in all eight pages.
    */
   readonly name: string;
-  /** False until a native speaker has read the copy. Recorded, never hidden. */
-  readonly reviewed: boolean;
+  /**
+   * Where this language's copy came from.
+   *
+   * `owner`: written by the product owner in that language. Arabic and English.
+   * Never regenerated, never machine translated, and DISCOVERABILITY section 6
+   * forbids doing so to the Arabic in particular, because a page whose Arabic
+   * reads like a translation contradicts the product's central claim before a
+   * single feature is read.
+   *
+   * `editorial`: written for this repository against a researched rule set for
+   * that language, then read again by a second pass whose brief was to find what
+   * was still wrong, then checked across all eight for parallelism and
+   * terminology. Publishable. A paid native review before a paid campaign in
+   * that market is still worth buying, and that is a marketing decision rather
+   * than a release gate.
+   */
+  readonly source: CopySource;
 }
 
 /**
@@ -53,14 +69,14 @@ export interface LocaleInfo {
  * second entry pointing at the same URL, which is a moving part with no reader.
  */
 export const LOCALE_INFO = [
-  { code: 'ar', dir: 'rtl', name: 'العربية', reviewed: true },
-  { code: 'en', dir: 'ltr', name: 'English', reviewed: true },
-  { code: 'de', dir: 'ltr', name: 'Deutsch', reviewed: false },
-  { code: 'es', dir: 'ltr', name: 'Español', reviewed: false },
-  { code: 'fr', dir: 'ltr', name: 'Français', reviewed: false },
-  { code: 'hi', dir: 'ltr', name: 'हिन्दी', reviewed: false },
-  { code: 'tr', dir: 'ltr', name: 'Türkçe', reviewed: false },
-  { code: 'zh', dir: 'ltr', name: '中文', reviewed: false },
+  { code: 'ar', dir: 'rtl', name: 'العربية', source: 'owner' },
+  { code: 'en', dir: 'ltr', name: 'English', source: 'owner' },
+  { code: 'de', dir: 'ltr', name: 'Deutsch', source: 'editorial' },
+  { code: 'es', dir: 'ltr', name: 'Español', source: 'editorial' },
+  { code: 'fr', dir: 'ltr', name: 'Français', source: 'editorial' },
+  { code: 'hi', dir: 'ltr', name: 'हिन्दी', source: 'editorial' },
+  { code: 'tr', dir: 'ltr', name: 'Türkçe', source: 'editorial' },
+  { code: 'zh', dir: 'ltr', name: '中文', source: 'editorial' },
 ] as const satisfies readonly LocaleInfo[];
 
 export type Locale = (typeof LOCALE_INFO)[number]['code'];
@@ -75,7 +91,13 @@ export function localeOf(code: Locale): LocaleInfo {
   return LOCALE_INFO.find((entry) => entry.code === code) ?? LOCALE_INFO[0];
 }
 
-/** The languages nobody who speaks them has read yet. A pre launch blocker. */
-export const UNREVIEWED: readonly Locale[] = LOCALE_INFO.filter((entry) => !entry.reviewed).map(
-  (entry) => entry.code,
-);
+/**
+ * The two the owner wrote, which no tool in this repository may rewrite.
+ *
+ * Named as a list rather than left implicit because it is a rule with teeth: a
+ * future "regenerate all the copy" is a script somebody writes once, and this is
+ * what it has to read before it runs.
+ */
+export const OWNER_WRITTEN: readonly Locale[] = LOCALE_INFO.filter(
+  (entry) => entry.source === 'owner',
+).map((entry) => entry.code);

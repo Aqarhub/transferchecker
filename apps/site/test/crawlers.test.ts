@@ -17,9 +17,10 @@
 // cluster, not the missing member, so a language advertised before it is built
 // costs the seven that were built.
 
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { buildFiles } from '../src/build';
-import { COPY, LOCALES, LOCALE_INFO, SITE, UNREVIEWED } from '../src/content';
+import { COPY, LOCALES, LOCALE_INFO, OWNER_WRITTEN, SITE } from '../src/content';
 import { indexNowFile } from '../src/indexnow';
 import type { Evidence } from '../src/evidence';
 
@@ -189,15 +190,47 @@ describe('IndexNow, whose key never lives in the repository', () => {
   });
 });
 
-describe('the languages nobody has proofread are named, not hidden', () => {
-  it('records which copy is still awaiting a native reader', () => {
-    // Not a failure. A record: the flag is in the registry so that "has anyone
-    // who speaks Turkish read the Turkish page" is a question the build answers.
-    expect(LOCALE_INFO.filter((entry) => entry.reviewed).map((entry) => entry.code)).toEqual([
-      'ar',
-      'en',
-    ]);
-    expect(UNREVIEWED).toContain('tr');
-    expect(UNREVIEWED).not.toContain('ar');
+describe('the two language registries cannot drift apart', () => {
+  it('agrees with the design system about every code, name and direction', () => {
+    // There are two registries in this repository and that is deliberate: the
+    // marketing site has no workspace dependency, which is the decision that
+    // kept a framework and its transitive tree out of it, and coupling it to the
+    // design system package for eight strings would undo that for no reader.
+    //
+    // The cost of two lists is drift, so it is paid here instead. This reads the
+    // design system's registry as TEXT and checks the two agree, which catches a
+    // ninth language added to one and forgotten in the other, an endonym typed
+    // differently, or a direction set wrong. It is the cheapest thing that makes
+    // the duplication safe rather than merely tolerated.
+    const other = readFileSync(
+      new URL('../../../packages/ui/src/locale.ts', import.meta.url),
+      'utf8',
+    );
+    for (const entry of LOCALE_INFO) {
+      expect(other, `${entry.code} is missing from the design system registry`).toContain(
+        `code: '${entry.code}'`,
+      );
+      expect(other, `${entry.code} has a different name there`).toContain(`name: '${entry.name}'`);
+      expect(other, `${entry.code} has a different direction there`).toContain(
+        `code: '${entry.code}', dir: '${entry.dir}'`,
+      );
+    }
+    // And nothing there that is not here, which is the direction that would
+    // otherwise advertise a language the site cannot serve.
+    const theirs = [...other.matchAll(/\{ code: '([a-z-]+)'/g)].map((match) => match[1]);
+    expect(new Set(theirs)).toEqual(new Set<string>(LOCALES));
+  });
+});
+
+describe('where each language came from is recorded, not implied', () => {
+  it('names the two the owner wrote, which nothing here may regenerate', () => {
+    // The rule with teeth. A future "regenerate all the copy" is a script
+    // somebody writes once, and DISCOVERABILITY section 6 forbids it touching
+    // the Arabic: a page whose Arabic reads like a translation contradicts this
+    // product's central claim before a single feature is read.
+    expect(OWNER_WRITTEN).toEqual(['ar', 'en']);
+    for (const entry of LOCALE_INFO) {
+      expect(['owner', 'editorial'], entry.code).toContain(entry.source);
+    }
   });
 });

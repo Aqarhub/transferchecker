@@ -220,6 +220,34 @@ describe('rules 12 and 13: one icon family, and a 44 pixel touch area', () => {
   });
 });
 
+describe('the stylesheet is safe in eight languages, not just in one', () => {
+  it('never uppercases text, because uppercasing breaks Turkish', () => {
+    // `text-transform: uppercase` turns a Turkish dotted i into I rather than
+    // into Ä°, which is a different letter and a real word becomes a wrong one.
+    // Rule 6 already bans it on Arabic for a different reason. Style a heading
+    // with weight and size, never with a case transform.
+    for (const line of declarations()) {
+      expect(line, line).not.toMatch(/text-transform:\s*(uppercase|capitalize)/);
+    }
+  });
+
+  it('never letter spaces, because letter spacing takes Arabic apart', () => {
+    // Rule 6. Arabic letters join, and tracking pulls a word into pieces.
+    for (const line of declarations()) {
+      expect(line, line).not.toMatch(/letter-spacing:\s*(?!normal|0)/);
+    }
+  });
+
+  it('hyphenates the long compounds, and never a number', () => {
+    // German runs about thirty percent longer than English and builds single
+    // unbreakable tokens, so a column that fits Arabic can still overflow.
+    const text = blocks().filter((block) => block.body.includes('hyphens: auto'));
+    expect(text.length).toBeGreaterThan(0);
+    const numeric = blocks().find((block) => /\.num,\s*\.marks/.test(block.selector));
+    expect(numeric?.body).toContain('hyphens: none');
+  });
+});
+
 describe('rule 14: focus is visible, always', () => {
   it('draws a focus ring and removes it nowhere', () => {
     const ring = blocks().find((block) => block.selector === ':focus-visible');

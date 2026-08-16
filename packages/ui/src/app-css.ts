@@ -31,6 +31,17 @@ body {
 :lang(hi) { --font-ui: var(--font-hi); }
 :lang(zh) { --font-ui: var(--font-zh); }
 
+/* A German compound is one unbreakable token, and Aufgabenanalyse is wider than
+   a sidebar row. Hyphenation follows the document's own lang attribute, so one
+   rule is right in eight languages, and break-word is the floor beneath it. The
+   failure this prevents is invisible to anyone testing in Arabic. */
+.stat-label, .stat-note, .nav-item span, .tab, .btn span, td, th, p {
+  -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word;
+}
+/* Except a number, an identifier and an answer string, which are never broken
+   and never hyphenated whatever the language around them does. */
+.num, .marks, .mark, td.num-col, th.num-col { -webkit-hyphens: none; hyphens: none; }
+
 /* Every number, identifier and answer string. Tabular so columns line up under
    a fast scan, and never reordered by the paragraph direction. Never wrapped
    either: a phone column narrow enough to break "9.0 / 12.5" across three lines
