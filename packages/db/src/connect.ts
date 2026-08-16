@@ -87,6 +87,13 @@ export function connect(settings: Settings): Connection {
     username: settings.user,
     password: settings.password,
     ...(settings.ssl ? { ssl: 'require' as const } : {}),
+    // Pinned rather than inherited. [measured] A `citext` column failed to
+    // resolve on a real instance because the extension had been installed from
+    // a console session whose schema was not `public`, and the migration then
+    // found the extension present and its type missing in the same breath. The
+    // search path is a property of the connection, so it is set once here
+    // instead of being restated by every migration that might depend on it.
+    connection: { search_path: 'public' },
     // See the note on `pooled`. This is the setting that turns a working
     // application into an intermittent one under a transaction mode pooler.
     ...(settings.pooled ? { prepare: false } : {}),

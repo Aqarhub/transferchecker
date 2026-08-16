@@ -8,14 +8,16 @@
 -- now our bootstrap. That is strictly better for a reason worth stating: the
 -- isolation tests now apply THIS FILE rather than a copy of it that could drift.
 --
--- WHAT IS DELIBERATELY ABSENT: a `service_role` carrying BYPASSRLS. [measured]
--- An account with CREATEROLE that is not a superuser cannot create or grant that
--- attribute, and PostgreSQL documents the rule: only a superuser, or a role that
--- already holds BYPASSRLS, may confer it. Managed PostgreSQL does not hand out
--- superuser. So the escape hatch the plan assumed does not exist here, and
--- nothing in this schema may be written as though it does.
+-- WHAT IS DELIBERATELY ABSENT: a `service_role` carrying BYPASSRLS. Not because
+-- it cannot be created, which was the first reading and was wrong. [measured on
+-- the live instance] the owning account holds `rolbypassrls`, so it could confer
+-- the attribute onward. It is absent because that attribute skips every policy
+-- in every database, always, and `FORCE ROW LEVEL SECURITY` does not touch it
+-- [measured]. Adding a second role that can see everything would widen the blast
+-- radius to buy nothing. The owning account already writes what signup needs,
+-- and the application connects as a role that holds no such attribute at all.
 
-CREATE EXTENSION IF NOT EXISTS citext;
+CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 --> statement-breakpoint
 
 -- The three client roles. On Supabase these already exist; here they do not, and
