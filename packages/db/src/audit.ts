@@ -81,7 +81,17 @@ const EXPECTED_TABLES = 15;
  * template, exam, answer key, pupil, scan or usage counter. If that ever stops
  * being true, the role has quietly become the thing it was built to avoid.
  */
-const TEACHER_DATA = ['templates', 'exams', 'answer_keys', 'students', 'scans', 'usage'] as const;
+const TEACHER_DATA = [
+  'templates',
+  'exams',
+  'answer_keys',
+  'students',
+  'scans',
+  'usage',
+  // The tombstones too. Which exams a teacher deleted and when is their work,
+  // and the authentication service has no more business with it than the rest.
+  'deletions',
+] as const;
 
 export async function auditIsolation(db: Queryable): Promise<Check[]> {
   const checks: Check[] = [];

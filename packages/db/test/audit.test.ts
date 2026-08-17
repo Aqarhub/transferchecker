@@ -65,6 +65,18 @@ describe('a database somebody has broken', () => {
     },
   );
 
+  // The line that separates the authentication service from the attribute this
+  // schema refused. It may hold every address and every password hash, and not
+  // one row of what a teacher's work produces.
+  it('notices the auth service being handed a table of teacher data', async () => {
+    const { client, db } = await freshDatabase();
+    await client.exec('grant select on deletions to tc_auth');
+    const checks = await auditIsolation(db);
+    const check = checks.find((entry) => entry.name.includes('privilege on any table of teacher'));
+    expect(check?.ok).toBe(false);
+    expect(check?.detail).toContain('deletions');
+  });
+
   it('notices anything granted to an anonymous caller', async () => {
     const { client, db } = await freshDatabase();
     await client.exec('grant select on scans to anon');
