@@ -5,7 +5,8 @@
 // itself optional. The serial number a teacher already writes on the sheet is
 // enough to hand a paper back, so `name` is nullable and means it.
 
-import { pgTable, text, unique, uuid } from 'drizzle-orm/pg-core';
+import { index, pgTable, text, unique, uuid } from 'drizzle-orm/pg-core';
+import { syncColumns } from '../columns';
 import { isolate } from '../policy';
 import { orgs } from './orgs';
 
@@ -29,8 +30,12 @@ export const students = pgTable(
 
     /** Optional, and the plan says so. A serial number identifies a paper. */
     name: text('name'),
+
+    ...syncColumns,
   },
   (table) => [
+    // The delta cursor: one organisation, in the order the server wrote.
+    index('idx_students_cursor').on(table.orgId, table.updatedAt, table.id),
     // What makes `scans.student_ext_id` mean anything. Two students sharing a
     // number in one organisation would silently split one pupil's papers in two.
     unique('students_ext_id').on(table.orgId, table.extId),

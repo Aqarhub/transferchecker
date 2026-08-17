@@ -10,7 +10,8 @@
 // grade a paper offline. This row is for showing a teacher a list of the sheets
 // they have made and for printing another copy.
 
-import { pgTable, jsonb, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, pgTable, jsonb, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { syncColumns } from '../columns';
 import { isolate } from '../policy';
 import { orgs } from './orgs';
 
@@ -27,6 +28,12 @@ export const templates = pgTable(
     spec: jsonb('spec').notNull(),
 
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+
+    ...syncColumns,
   },
-  () => [isolate('templates')],
+  (table) => [
+    // The delta cursor: one organisation, in the order the server wrote.
+    index('idx_templates_cursor').on(table.orgId, table.updatedAt, table.id),
+    isolate('templates'),
+  ],
 );

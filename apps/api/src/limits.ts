@@ -101,4 +101,12 @@ export const RULES = {
   resend: { limit: 10, windowMs: HOUR },
   confirm: { limit: 20, windowMs: MINUTE },
   refresh: { limit: 60, windowMs: MINUTE },
+  /**
+   * Counted per organisation rather than per address, which is the only one
+   * here that is. A school syncing forty phones through one connection is one
+   * address and forty legitimate callers, and an address limit would stop the
+   * fortieth teacher for no reason. A token names the organisation, so by the
+   * time a sync route counts anything the caller is already known.
+   */
+  sync: { limit: 120, windowMs: MINUTE },
 } as const satisfies Readonly<Record<string, Rule>>;

@@ -49,6 +49,15 @@ export type { IssueConfirmation, RedeemInput } from './mailbox';
 
 export { SECRET_BYTES, hashSecret, newSecret } from './secret';
 
+export { NIL_ID, OVERLAP_MS, clampClientTime, decodeCursor, encodeCursor, rewind } from './cursor';
+export type { Cursor } from './cursor';
+
+export { BatchSchema, MAX_BATCH, pushBatch } from './sync';
+export type { Applied, Batch } from './sync';
+
+export { PAGE, changesSince, countSince } from './changes';
+export type { Changes } from './changes';
+
 export { auditIsolation, probeIsolation } from './audit';
 export { diagnose, explain } from './diagnose';
 export { SERVING_ROLES, assertRoles, assertUnprivileged } from './connect';

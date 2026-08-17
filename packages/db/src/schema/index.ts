@@ -1,6 +1,6 @@
 // Every table in the database, and the list is the point.
 //
-// Fourteen tables, and what is NOT here is as deliberate as what is: no
+// Fifteen tables, and what is NOT here is as deliberate as what is: no
 // `responses` table, because the answers are one string per paper, and no table
 // anywhere holding a maximum, a count or a flag that can be derived from what is
 // already stored.
@@ -32,3 +32,4 @@ export { scans } from './scans';
 export { refreshTokens, tokenFamilies } from './sessions';
 export { credentials, loginAttempts } from './credentials';
 export { emailVerifications } from './verifications';
+export { deletions } from './deletions';

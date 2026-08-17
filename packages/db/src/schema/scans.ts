@@ -75,8 +75,20 @@ export const scans = pgTable(
 
     /** The server's clock when it arrived. This is the one that orders a list. */
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+
+    /**
+     * The server's clock when it last changed, which is the delta cursor's axis.
+     *
+     * Separate from `created_at` because a scan can be corrected: a paper
+     * rescanned after the key was fixed keeps its id and its creation time and
+     * has to reach the other device again. `client_ts` above is untouched and
+     * still decides which version wins.
+     */
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
+    // The delta cursor: one organisation, in the order the server wrote.
+    index('idx_scans_cursor').on(table.orgId, table.updatedAt, table.id),
     // Both indexes are from the plan, and both lead with `org_id` because every
     // policy filters on it first: an index the policy cannot use turns isolation
     // into a sequential scan of the whole table.

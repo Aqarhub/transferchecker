@@ -15,7 +15,7 @@ import { ORG_A, ORG_B, USER_A, USER_B, freshDatabase, rows } from './harness';
 let client: PGlite;
 
 /** How many tables exist in total, including the ones the auth tests own. */
-const ALL_TABLES = 14;
+const ALL_TABLES = 15;
 
 /**
  * The tables scoped by plain organisation isolation, and the column each uses.
@@ -104,7 +104,7 @@ describe('the database refuses to be the only line of defence it is not', () => 
        where schemaname = 'public' and roles::text = '{authenticated}'`,
     );
     const seen = found.map((policy) => policy.tablename);
-    const expected = [...TABLES.map(([name]) => name), 'token_families'];
+    const expected = [...TABLES.map(([name]) => name), 'token_families', 'deletions'];
     expect([...seen].sort()).toEqual([...expected].sort());
     for (const unreachable of [
       'refresh_tokens',
@@ -114,10 +114,13 @@ describe('the database refuses to be the only line of defence it is not', () => 
     ]) {
       expect(seen).not.toContain(unreachable);
     }
-    // `to authenticated` on every one. Without it the policy is evaluated for
-    // anon as well, on a role that must never see a row.
-    for (const policy of found)
-      expect([policy.tablename, policy.cmd]).toEqual([policy.tablename, 'ALL']);
+    // Every one covers every command, with the single exception that is the
+    // point of its own table: a client reads what was deleted and may not say
+    // that anything was.
+    for (const policy of found) {
+      const expectedCmd = policy.tablename === 'deletions' ? 'SELECT' : 'ALL';
+      expect([policy.tablename, policy.cmd]).toEqual([policy.tablename, expectedCmd]);
+    }
   });
 
   // The service policies are the other half, and they answer to a different
@@ -142,7 +145,7 @@ describe('the database refuses to be the only line of defence it is not', () => 
   // assign themselves any organisation.
   it('reads the organisation from app_metadata and never from user_metadata', async () => {
     await actAsOwner(client);
-    const found = await rows<{ qual: string; with_check: string }>(
+    const found = await rows<{ qual: string; with_check: string | null }>(
       client,
       `select qual, with_check from pg_policies
        where schemaname = 'public' and roles::text = '{authenticated}'`,
@@ -155,7 +158,9 @@ describe('the database refuses to be the only line of defence it is not', () => 
       // `with check` is absent, so this is not what refuses a cross
       // organisation insert today. It is what keeps refusing it on the day the
       // read rule is widened. See the note in src/policy.ts.
-      expect(policy.with_check).toContain('app_metadata');
+      // A read only policy has no write rule to write down, which is what
+      // `deletions` is and why it is the one exception here.
+      if (policy.with_check !== null) expect(policy.with_check).toContain('app_metadata');
     }
   });
 });

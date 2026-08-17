@@ -23,11 +23,12 @@ const migrations = await migrationFiles();
 const sql = migrations.map((file) => file.sql).join('\n');
 
 describe('the tables the plan asks for', () => {
-  it('is exactly the fourteen, and the five extras are named for a reason', () => {
+  it('is exactly the fifteen, and the six extras are named for a reason', () => {
     expect([...Object.keys(named)].sort()).toEqual([
       'answer_keys',
       'consents',
       'credentials',
+      'deletions',
       'email_verifications',
       'exams',
       'login_attempts',
@@ -101,6 +102,10 @@ describe('the tables the plan asks for', () => {
 describe('the columns section 5 names', () => {
   it('keys a question by points rather than by a letter', () => {
     expect([...columnsOf(schema.answerKeys)].sort()).toEqual([
+      // The two the sync interface added, in sorted position. One orders
+      // delivery and the other orders truth, and columns.ts says why they
+      // cannot be the same column.
+      'client_ts',
       'exam_id',
       'extras',
       'form_code',
@@ -109,6 +114,7 @@ describe('the columns section 5 names', () => {
       'org_id',
       'points',
       'tags',
+      'updated_at',
     ]);
     expect(sql).toMatch(/"points" real\[\] NOT NULL/);
   });
@@ -169,6 +175,7 @@ describe('the migrations', () => {
       '0003_credentials',
       '0004_email_verification',
       '0005_auth_role',
+      '0006_sync_columns',
     ]);
   });
 

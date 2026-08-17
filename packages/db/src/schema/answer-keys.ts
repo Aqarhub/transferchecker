@@ -17,6 +17,7 @@
 // because storing what can be computed opens a door to two answers disagreeing.
 
 import { pgTable, char, index, jsonb, real, text, unique, uuid } from 'drizzle-orm/pg-core';
+import { syncColumns } from '../columns';
 import type { StoredKey } from '@transferchecker/grading';
 import { isolate } from '../policy';
 import { exams } from './exams';
@@ -56,8 +57,12 @@ export const answerKeys = pgTable(
 
     /** Sparse. `{"6":["كسور","معيار-3.2"]}`, with a GIN index for the tag report. */
     tags: jsonb('tags').$type<StoredKey['tags']>().notNull(),
+
+    ...syncColumns,
   },
   (table) => [
+    // The delta cursor: one organisation, in the order the server wrote.
+    index('idx_answer_keys_cursor').on(table.orgId, table.updatedAt, table.id),
     // One key per form per exam. Without it a second key for form A can be
     // written, and grading would then pick whichever row came back first.
     unique('answer_keys_form').on(table.examId, table.formCode),

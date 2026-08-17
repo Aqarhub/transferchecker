@@ -22,6 +22,7 @@ import type { ApiContext, Reply, Route, RouteInput } from './context';
 import { signup } from './routes/signup';
 import { refresh, signin, signout } from './routes/session';
 import { confirm, resend } from './routes/mailbox';
+import { changes, pending, push } from './routes/sync';
 import { askPage, resultPage } from './routes/page';
 
 const ROUTES: Readonly<Record<string, Route>> = {
@@ -34,6 +35,9 @@ const ROUTES: Readonly<Record<string, Route>> = {
   'POST /v1/auth/signout': signout,
   'POST /v1/auth/confirm': confirm,
   'POST /v1/auth/confirm/resend': resend,
+  'POST /v1/sync/push': push,
+  'GET /v1/sync/changes': changes,
+  'GET /v1/sync/pending': pending,
 };
 
 /**
@@ -94,6 +98,21 @@ async function answer(context: ApiContext, request: IncomingMessage, response: S
     return;
   }
 
+  const authorization = request.headers.authorization;
+  const common = {
+    address,
+    now,
+    query: url.searchParams,
+    ...(authorization === undefined ? {} : { authorization }),
+  };
+
+  // A GET carries no body and must not wait for one. Reading a request that is
+  // never going to send anything is how a route hangs until a client gives up.
+  if (method === 'GET') {
+    send(response, await route(context, { body: undefined, ...common }));
+    return;
+  }
+
   const read = await readBody(request);
   if (!read.ok) {
     if (read.why === 'too-large') sendAndClose(request, response, 413, { error: 'too-large' });
@@ -101,7 +120,7 @@ async function answer(context: ApiContext, request: IncomingMessage, response: S
     return;
   }
 
-  const input: RouteInput = { body: parseJson(read.text), address, now };
+  const input: RouteInput = { body: parseJson(read.text), ...common };
   const reply = await route(context, input);
   send(response, reply);
 }

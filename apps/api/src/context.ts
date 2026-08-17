@@ -82,6 +82,10 @@ export interface RouteInput {
   /** The address the rate limiter counts. Already resolved through any proxy. */
   readonly address: string;
   readonly now: number;
+  /** The `Authorization` header, verbatim. Verified in `bearer.ts` and nowhere else. */
+  readonly authorization?: string;
+  /** The query string, for the routes that take a cursor. */
+  readonly query?: URLSearchParams;
 }
 
 export type Route = (context: ApiContext, input: RouteInput) => Promise<Reply>;

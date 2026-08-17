@@ -70,7 +70,7 @@ const UNREACHABLE = [
   'login_attempts',
   'email_verifications',
 ] as const;
-const EXPECTED_TABLES = 14;
+const EXPECTED_TABLES = 15;
 
 /**
  * The tables the authentication service may not reach, and the reason it exists.
@@ -194,7 +194,8 @@ export async function auditIsolation(db: Queryable): Promise<Check[]> {
     await db.execute(sql`select table_name, count(*)::int as n
       from information_schema.role_table_grants
       where grantee = ${AUTH_ROLE}
-        and table_name in ('templates','exams','answer_keys','students','scans','usage')
+        and table_name in
+          ('templates','exams','answer_keys','students','scans','usage','deletions')
       group by table_name`),
   );
   add(

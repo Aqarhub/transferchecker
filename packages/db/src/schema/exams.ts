@@ -5,7 +5,8 @@
 // scans and the second is the length of the key, and both are derived for the
 // same reason `Max. Points` is. A stored count is a count that can be wrong.
 
-import { pgTable, integer, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, pgTable, integer, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { syncColumns } from '../columns';
 import { isolate } from '../policy';
 import { orgs } from './orgs';
 import { templates } from './templates';
@@ -34,6 +35,12 @@ export const exams = pgTable(
     formCount: integer('form_count').notNull(),
 
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+
+    ...syncColumns,
   },
-  () => [isolate('exams')],
+  (table) => [
+    // The delta cursor: one organisation, in the order the server wrote.
+    index('idx_exams_cursor').on(table.orgId, table.updatedAt, table.id),
+    isolate('exams'),
+  ],
 );
