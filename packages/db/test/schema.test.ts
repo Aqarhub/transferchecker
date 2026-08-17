@@ -168,6 +168,7 @@ describe('the migrations', () => {
       '0002_grants',
       '0003_credentials',
       '0004_email_verification',
+      '0005_auth_role',
     ]);
   });
 

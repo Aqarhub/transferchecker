@@ -96,24 +96,45 @@ describe('the database refuses to be the only line of defence it is not', () => 
   // design rather than an omission: nothing a signed in client does needs to
   // read a refresh token. The test names it so the absence cannot be mistaken
   // for a table somebody forgot.
-  it('gives every table a policy except the one that must reach nobody', async () => {
+  it('gives every table a client policy except the ones that must reach nobody', async () => {
     await actAsOwner(client);
     const found = await rows<{ tablename: string; roles: string; cmd: string }>(
       client,
-      `select tablename, roles::text as roles, cmd from pg_policies where schemaname = 'public'`,
+      `select tablename, roles::text as roles, cmd from pg_policies
+       where schemaname = 'public' and roles::text = '{authenticated}'`,
     );
     const seen = found.map((policy) => policy.tablename);
     const expected = [...TABLES.map(([name]) => name), 'token_families'];
     expect([...seen].sort()).toEqual([...expected].sort());
-    for (const unreachable of ['refresh_tokens', 'credentials', 'login_attempts']) {
+    for (const unreachable of [
+      'refresh_tokens',
+      'credentials',
+      'login_attempts',
+      'email_verifications',
+    ]) {
       expect(seen).not.toContain(unreachable);
     }
     // `to authenticated` on every one. Without it the policy is evaluated for
     // anon as well, on a role that must never see a row.
     for (const policy of found)
-      expect([policy.tablename, policy.roles]).toEqual([policy.tablename, '{authenticated}']);
-    for (const policy of found)
       expect([policy.tablename, policy.cmd]).toEqual([policy.tablename, 'ALL']);
+  });
+
+  // The service policies are the other half, and they answer to a different
+  // rule: they carry no claim, because authentication happens before a token
+  // exists. What keeps them narrow is the tables they are absent from.
+  it('gives the auth service no policy on any table of teacher data', async () => {
+    await actAsOwner(client);
+    const found = await rows<{ tablename: string }>(
+      client,
+      `select tablename from pg_policies
+       where schemaname = 'public' and roles::text = '{tc_auth}'`,
+    );
+    const seen = found.map((policy) => policy.tablename);
+    for (const table of ['templates', 'exams', 'answer_keys', 'students', 'scans', 'usage']) {
+      expect(seen).not.toContain(table);
+    }
+    expect(seen).toContain('credentials');
   });
 
   // The single most dangerous line in the schema. `user_metadata` is writable by
@@ -123,7 +144,8 @@ describe('the database refuses to be the only line of defence it is not', () => 
     await actAsOwner(client);
     const found = await rows<{ qual: string; with_check: string }>(
       client,
-      `select qual, with_check from pg_policies where schemaname = 'public'`,
+      `select qual, with_check from pg_policies
+       where schemaname = 'public' and roles::text = '{authenticated}'`,
     );
     for (const policy of found) {
       expect(policy.qual).toContain('app_metadata');

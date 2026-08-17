@@ -14,6 +14,7 @@
 // taken on trust.
 
 import { sql } from 'drizzle-orm';
+import { AUTH_ROLE } from './tenant';
 import type { Queryable } from './database';
 
 export interface Check {
@@ -71,6 +72,17 @@ const UNREACHABLE = [
 ] as const;
 const EXPECTED_TABLES = 14;
 
+/**
+ * The tables the authentication service may not reach, and the reason it exists.
+ *
+ * `tc_auth` can read every address and every password hash, because a login
+ * endpoint that cannot find an account by address is not one. What separates it
+ * from the BYPASSRLS role this schema refused is exactly this list: not one
+ * template, exam, answer key, pupil, scan or usage counter. If that ever stops
+ * being true, the role has quietly become the thing it was built to avoid.
+ */
+const TEACHER_DATA = ['templates', 'exams', 'answer_keys', 'students', 'scans', 'usage'] as const;
+
 export async function auditIsolation(db: Queryable): Promise<Check[]> {
   const checks: Check[] = [];
   const add = (name: string, ok: boolean, detail: string): void => {
@@ -98,37 +110,59 @@ export async function auditIsolation(db: Queryable): Promise<Check[]> {
     await db.execute(sql`select tablename, roles::text as roles, cmd, qual, with_check
       from pg_policies where schemaname = 'public' order by tablename`),
   );
-  const covered = new Set(policies.map((row) => text(row, 'tablename')));
+  // Split by who the policy is for. A client policy carries the isolation; a
+  // service policy is how authentication reaches the tables no token can name.
+  // They are checked apart because the rules for them are not the same rules.
+  const clientPolicies = policies.filter((row) => text(row, 'roles') === '{authenticated}');
+  const servicePolicies = policies.filter((row) => text(row, 'roles') === `{${AUTH_ROLE}}`);
+  const strayPolicies = policies.filter(
+    (row) => !clientPolicies.includes(row) && !servicePolicies.includes(row),
+  );
+
+  const covered = new Set(clientPolicies.map((row) => text(row, 'tablename')));
   const wronglyCovered = UNREACHABLE.filter((table) => covered.has(table));
   add(
-    'every table has a policy except the ones that must reach nobody',
+    'every table has a client policy except the ones that must reach nobody',
     covered.size === EXPECTED_TABLES - UNREACHABLE.length && wronglyCovered.length === 0,
     wronglyCovered.length === 0
       ? `${String(covered.size)} covered, ${UNREACHABLE.join(' and ')} deliberately not`
-      : `should have no policy: ${wronglyCovered.join(', ')}`,
+      : `should have no client policy: ${wronglyCovered.join(', ')}`,
   );
 
-  const wrongRole = policies.filter((row) => text(row, 'roles') !== '{authenticated}');
   add(
-    'every policy applies to authenticated and to nobody else',
-    wrongRole.length === 0,
-    wrongRole.length === 0
-      ? 'all authenticated'
-      : wrongRole.map((r) => text(r, 'tablename')).join(', '),
+    'every policy names one role, and it is a client or the auth service',
+    strayPolicies.length === 0,
+    strayPolicies.length === 0
+      ? `${String(clientPolicies.length)} client, ${String(servicePolicies.length)} service`
+      : strayPolicies.map((r) => `${text(r, 'tablename')} to ${text(r, 'roles')}`).join(', '),
   );
 
   // The single most dangerous thing that could be wrong. `user_metadata` is
   // writable by the user, so a policy reading it hands out any organisation.
-  const badClaim = policies.filter(
+  // Only client policies are asked: a service policy has no token to read from,
+  // which is the whole reason the service role exists.
+  const badClaim = clientPolicies.filter(
     (row) =>
       !text(row, 'qual').includes('app_metadata') || text(row, 'qual').includes('user_metadata'),
   );
   add(
-    'every policy reads app_metadata and never user_metadata',
+    'every client policy reads app_metadata and never user_metadata',
     badClaim.length === 0,
     badClaim.length === 0
       ? 'all app_metadata'
       : badClaim.map((r) => text(r, 'tablename')).join(', '),
+  );
+
+  // THE CHECK THAT KEEPS THE SERVICE ROLE FROM BECOMING THE ATTRIBUTE WE
+  // REFUSED. It may hold a teacher's address and password hash and must hold
+  // nothing of what a teacher's work produces.
+  const serviceOnData = servicePolicies
+    .map((row) => text(row, 'tablename'))
+    .filter((table) => TEACHER_DATA.some((name) => name === table));
+  add(
+    'the auth service has no policy on any table of teacher data',
+    serviceOnData.length === 0,
+    serviceOnData.length === 0 ? TEACHER_DATA.join(', ') : `reaches: ${serviceOnData.join(', ')}`,
   );
 
   const anon = rowsOf(
@@ -154,6 +188,35 @@ export async function auditIsolation(db: Queryable): Promise<Check[]> {
     onSecrets.length === 0
       ? 'none of the four is reachable'
       : onSecrets.map((row) => `${text(row, 'table_name')}: ${text(row, 'n')}`).join(', '),
+  );
+
+  const serviceGrants = rowsOf(
+    await db.execute(sql`select table_name, count(*)::int as n
+      from information_schema.role_table_grants
+      where grantee = ${AUTH_ROLE}
+        and table_name in ('templates','exams','answer_keys','students','scans','usage')
+      group by table_name`),
+  );
+  add(
+    'the auth service holds no privilege on any table of teacher data',
+    serviceGrants.length === 0,
+    serviceGrants.length === 0
+      ? 'not one grant'
+      : serviceGrants.map((row) => `${text(row, 'table_name')}: ${text(row, 'n')}`).join(', '),
+  );
+
+  const serviceRole = rowsOf(
+    await db.execute(sql`select rolsuper, rolbypassrls from pg_roles where rolname = ${AUTH_ROLE}`),
+  );
+  const held = serviceRole[0];
+  add(
+    'the auth service is not privileged either',
+    held !== undefined &&
+      text(held, 'rolsuper') !== 'true' &&
+      text(held, 'rolbypassrls') !== 'true',
+    held === undefined
+      ? 'the role does not exist'
+      : `superuser ${text(held, 'rolsuper')}, bypassrls ${text(held, 'rolbypassrls')}`,
   );
 
   const functions = rowsOf(

@@ -51,11 +51,11 @@ export { SECRET_BYTES, hashSecret, newSecret } from './secret';
 
 export { auditIsolation, probeIsolation } from './audit';
 export { diagnose, explain } from './diagnose';
-export { assertUnprivileged } from './connect';
+export { SERVING_ROLES, assertRoles, assertUnprivileged } from './connect';
 export type { Diagnosis } from './diagnose';
 export type { Check } from './audit';
 
-export { REQUEST_ROLE, asAnonymous, asTenant } from './tenant';
+export { AUTH_ROLE, REQUEST_ROLE, asAnonymous, asAuth, asTenant } from './tenant';
 export type { Claims } from './tenant';
 export type { RefreshInput, StartSession } from './session';
 

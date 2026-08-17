@@ -29,7 +29,7 @@ describe('a database somebody has broken', () => {
     const { client, db } = await freshDatabase();
     await client.exec('drop policy scans_isolation on scans');
     const checks = await auditIsolation(db);
-    expect(checks.find((check) => check.name.includes('has a policy'))?.ok).toBe(false);
+    expect(checks.find((check) => check.name.includes('client policy'))?.ok).toBe(false);
   });
 
   it('notices row level security turned off', async () => {

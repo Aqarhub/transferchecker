@@ -40,6 +40,15 @@ export interface Claims {
 export const REQUEST_ROLE = 'authenticated';
 
 /**
+ * The role the authentication endpoints run as, before any token exists.
+ *
+ * Created by `0005_auth_role.sql`, which also states what it may and may not
+ * reach. The short version: every address and every password hash, and not one
+ * row of teacher data.
+ */
+export const AUTH_ROLE = 'tc_auth';
+
+/**
  * Runs `work` as an ordinary signed in client of one organisation.
  *
  * Everything inside sees exactly what the policies admit and nothing else, and
@@ -64,6 +73,27 @@ export function asTenant<T>(
     // promise in the other spelling.
     await tx.execute(sql`select set_config('request.jwt.claims', ${payload}, true)`);
     await tx.execute(sql.raw(`set local role ${REQUEST_ROLE}`));
+    return work(tx);
+  });
+}
+
+/**
+ * Runs `work` as the authentication service, which is a caller with no token.
+ *
+ * Every authentication endpoint goes through this and none may skip it. The
+ * consequence of forgetting is loud and safe, which is why documenting it is
+ * enough: the connection's own role holds no privilege on anything, so a query
+ * that escapes this wrapper is refused by the engine rather than answered
+ * wrongly. A test presents that failure.
+ *
+ * `set local` again, for the reason spelled out at the top of this file: a
+ * plain `set role` outlives the transaction, and a pooled connection carrying
+ * the authentication role into the next request would hand an ordinary client
+ * the right to read every password hash in the database.
+ */
+export function asAuth<T>(db: Database, work: (tx: Database) => Promise<T>): Promise<T> {
+  return db.transaction(async (tx) => {
+    await tx.execute(sql.raw(`set local role ${AUTH_ROLE}`));
     return work(tx);
   });
 }

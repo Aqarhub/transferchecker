@@ -146,3 +146,44 @@ export async function assertUnprivileged(connection: Connection): Promise<void> 
     );
   }
 }
+
+/** The two roles a request switches into, and the connection is a member of both. */
+export const SERVING_ROLES = ['authenticated', 'tc_auth'] as const;
+
+/**
+ * Refuses to start when the connection cannot become the roles it has to become.
+ *
+ * THE OTHER HALF OF `assertUnprivileged`, and it fails in the opposite
+ * direction. That one refuses a connection that can do too much; this one
+ * refuses a connection that can do too little. The application role holds no
+ * privilege of its own by design, so without membership of these two it can
+ * reach nothing at all, and every request fails at the first query with a
+ * message about permissions that says nothing about the cause.
+ *
+ * Membership is granted once, by hand, on the instance:
+ *
+ *   GRANT authenticated TO tc_app;
+ *   GRANT tc_auth       TO tc_app;
+ *
+ * A deployment that skipped either line is a deployment that starts, passes its
+ * health check and fails every sign in. This turns that into a refusal to boot.
+ */
+export async function assertRoles(connection: Connection): Promise<void> {
+  const missing: string[] = [];
+  for (const role of SERVING_ROLES) {
+    const answer = await connection.db.execute<{ member: boolean }>(
+      sql`select pg_has_role(current_user, ${role}, 'member') as member`,
+    );
+    const rows = Array.isArray(answer) ? answer : [];
+    if (rows[0]?.member !== true) missing.push(role);
+  }
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Refusing to serve requests: this connection cannot become ${missing.join(' or ')}. ` +
+        'Every request switches role before it touches a table, so without membership the ' +
+        'server starts, answers its health check and refuses every sign in. Grant it with ' +
+        missing.map((role) => `GRANT ${role} TO <the application role>;`).join(' '),
+    );
+  }
+}

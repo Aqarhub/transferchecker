@@ -36,6 +36,13 @@
       "when": 1786922244217,
       "tag": "0004_email_verification",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786922245217,
+      "tag": "0005_auth_role",
+      "breakpoints": true
     }
   ]
 }
