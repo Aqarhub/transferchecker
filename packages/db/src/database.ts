@@ -14,7 +14,14 @@
 import type { SQL } from 'drizzle-orm';
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
-export type Database = PgDatabase<PgQueryResultHKT>;
+/**
+ * The schema parameter is widened rather than left at its default, and that is
+ * not cosmetic. Drizzle gives `drizzle(client)` a different phantom schema type
+ * per driver, so the narrow default accepts the engine that boots inside a test
+ * and rejects the pooled connection a server holds, for a difference that no
+ * query in this package can observe. Widening it makes one type describe both.
+ */
+export type Database = PgDatabase<PgQueryResultHKT, Record<string, unknown>>;
 
 /**
  * The two things a deployment check needs, and nothing more.
