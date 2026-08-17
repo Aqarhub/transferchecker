@@ -77,10 +77,12 @@ function framingCases(): GoldenCase[] {
     // [measured] on this corpus at 1440p: A4 reads to 10 degrees of yaw and
     // refuses at 12; A5 reads to 18 and refuses at 22. So the boundary case is
     // placed per template rather than shared, and the smaller paper's tolerance
-    // is a real property worth keeping visible.
+    // is a real property worth keeping visible. The version 5 sheet moved the
+    // code to the foot, which [measured] reads through the old A5 boundary of
+    // 22 degrees, so the small paper's refusal case sits further out now.
     const beyond =
       template === 'quick20'
-        ? { yawDeg: 22, pitchDeg: 15, rollDeg: 10 }
+        ? { yawDeg: 26, pitchDeg: 18, rollDeg: 12 }
         : { yawDeg: 14, pitchDeg: 10, rollDeg: 7 };
     cases.push({
       id: `framing/${template}/beyond-the-angle`,
@@ -412,31 +414,38 @@ function geometryCases(): GoldenCase[] {
     },
     {
       ...base,
-      id: 'geometry/curl-1.5mm',
-      bendMm: 1.5,
+      id: 'geometry/curl-1.2mm',
+      bendMm: 1.2,
+      expect: 'graded',
+      why: 'a curl the edge marks measure and the warp corrects, version 5 grades what version 4 refused',
+    },
+    {
+      ...base,
+      id: 'geometry/curl-2.5mm',
+      bendMm: 2.5,
       expect: 'sheet_not_flat',
-      why: 'a curl that moves the middle of the page',
+      why: 'a curl past the correction model, named rather than absorbed',
     },
     {
       ...base,
       id: 'geometry/curl-5.6mm',
       bendMm: 5.6,
-      expect: 'anchors_missing',
-      why: 'a whole bubble pitch of curl, the silent wrong grade',
+      expect: 'sheet_not_flat',
+      why: 'a whole bubble pitch of curl, the silent wrong grade, named for what it is',
     },
     {
       ...base,
       id: 'geometry/one-mark-covered',
-      coverRows: [6],
-      expect: 'graded',
-      why: 'a pen line over one timing mark',
+      coverMarks: [0],
+      expect: 'marks_missing',
+      why: 'a sticker over one edge mark: each is the only evidence for its edge',
     },
     {
       ...base,
-      id: 'geometry/three-marks-covered',
-      coverRows: [6, 7, 8],
-      expect: 'rows_missing',
-      why: 'more of the strip than interpolation may bridge',
+      id: 'geometry/letterhead-ink',
+      letterheadInk: true,
+      expect: 'graded',
+      why: 'a dark school header above the top corners must not steal the corner search',
     },
     {
       ...base,

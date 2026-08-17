@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { GEOMETRY, arabicSymbols, bubbleGroups, layoutSheet } from '../src/index';
+import {
+  GEOMETRY,
+  arabicSymbols,
+  bubbleGroups,
+  layoutSheet,
+  letterheadBandMm,
+  PAPER,
+} from '../src/index';
 import { allBubbles, arabicQuestions, choiceQuestions, layoutOrThrow, makeSpec } from './helpers';
 
 describe('layoutSheet geometry', () => {
@@ -20,17 +27,38 @@ describe('layoutSheet geometry', () => {
     expect(second?.rows[0]?.question).toBe(21);
   });
 
-  it('drops trailing columns that would print empty', () => {
+  it('fills columns in whole groups and collects the remainder in the tail', () => {
+    // Fifty questions, groups of ten: the approved design reads 20 + 20 + 10,
+    // never 17 + 17 + 16, so every white break follows a complete group.
+    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(50) }));
+    expect(layout.questionColumns.map((column) => column.rows.length)).toEqual([20, 20, 10]);
+  });
+
+  it('breaks a column after every group and nowhere else', () => {
+    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(40), columns: 2 }));
+    const rows = layout.questionColumns[0]?.rows ?? [];
+    // Row 9 to row 10 is the group boundary: exactly one gap taller than the
+    // ordinary pitch, by exactly the group gap.
+    const stepAt = (at: number): number =>
+      (rows[at + 1]?.bubbles[0]?.cyMm ?? 0) - (rows[at]?.bubbles[0]?.cyMm ?? 0);
+    const ordinary = stepAt(0);
+    for (let at = 0; at < rows.length - 1; at += 1) {
+      const expected = (at + 1) % 10 === 0 ? ordinary + GEOMETRY.groupGapMm : ordinary;
+      expect(stepAt(at)).toBeCloseTo(expected, 6);
+    }
+  });
+
+  it('prints one unbroken column when the teacher turns the breaks off', () => {
     const layout = layoutOrThrow(
-      makeSpec({
-        questions: choiceQuestions(3, 4),
-        columns: 4,
-        headerFields: [
-          { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'medium' },
-        ],
-      }),
+      makeSpec({ questions: choiceQuestions(40), columns: 2, groupEvery: 'none' }),
     );
-    expect(layout.questionColumns).toHaveLength(3);
+    const rows = layout.questionColumns[0]?.rows ?? [];
+    const stepAt = (at: number): number =>
+      (rows[at + 1]?.bubbles[0]?.cyMm ?? 0) - (rows[at]?.bubbles[0]?.cyMm ?? 0);
+    const ordinary = stepAt(0);
+    for (let at = 0; at < rows.length - 1; at += 1) {
+      expect(stepAt(at)).toBeCloseTo(ordinary, 6);
+    }
   });
 
   it('gives every question one bubble per choice, each carrying its symbol', () => {
@@ -71,153 +99,195 @@ describe('layoutSheet geometry', () => {
     }
   });
 
-  it('keeps the question grid clear of the sidebar', () => {
+  it('reserves the letterhead band and moves the top corners below it', () => {
     const layout = layoutOrThrow(makeSpec());
+    expect(layout.letterhead).not.toBeNull();
+    const band = layout.letterhead;
+    expect(band?.hMm).toBe(letterheadBandMm(PAPER.A4));
+    const bandBottom = (band?.yMm ?? 0) + (band?.hMm ?? 0);
+    for (const corner of layout.fiducials.slice(0, 2)) {
+      expect(corner.yMm - bandBottom).toBeGreaterThanOrEqual(GEOMETRY.letterheadClearMm);
+    }
+  });
+
+  it('gains the page back when the letterhead is switched off', () => {
+    const withBand = layoutOrThrow(makeSpec());
+    const without = layoutOrThrow(makeSpec({ letterhead: false }));
+    expect(without.letterhead).toBeNull();
+    expect(without.fiducials[0]?.yMm).toBe(GEOMETRY.marginTopMm);
+    const topOf = (layout: typeof withBand): number =>
+      Math.min(
+        ...layout.questionColumns.flatMap((c) => c.rows.map((r) => r.bubbles[0]?.cyMm ?? 0)),
+      );
+    expect(topOf(without)).toBeLessThan(topOf(withBand));
+  });
+
+  it('prints no letterhead on the small tiled papers, even when asked', () => {
+    const layout = layoutOrThrow(
+      makeSpec({ paper: 'A6', questions: choiceQuestions(8, 4), columns: 1, headerFields: [] }),
+    );
+    expect(layout.letterhead).toBeNull();
+    expect(layout.fiducials[0]?.yMm).toBe(GEOMETRY.marginTopMm);
+  });
+
+  it('prints the four edge marks at the middle of each edge', () => {
+    const layout = layoutOrThrow(makeSpec());
+    const { widthMm } = layout.paper;
+    const m = GEOMETRY.edgeMarkMm;
+    expect(layout.edgeMarks).toHaveLength(4);
+    const [left, right, top, bottom] = layout.edgeMarks;
+    expect(left?.xMm).toBe(GEOMETRY.marginSideMm);
+    expect(right?.xMm).toBe(widthMm - GEOMETRY.marginSideMm - m);
+    // Left and right sit halfway between the corner rows.
+    const fidTop = layout.fiducials[0];
+    const fidBottom = layout.fiducials[2];
+    const midY = ((fidTop?.yMm ?? 0) + (fidTop?.hMm ?? 0) + (fidBottom?.yMm ?? 0)) / 2;
+    expect((left?.yMm ?? 0) + m / 2).toBeCloseTo(midY, 6);
+    expect((right?.yMm ?? 0) + m / 2).toBeCloseTo(midY, 6);
+    // Top and bottom sit on the corner rows, centred on the page.
+    expect((top?.xMm ?? 0) + m / 2).toBeCloseTo(widthMm / 2, 6);
+    expect((bottom?.xMm ?? 0) + m / 2).toBeCloseTo(widthMm / 2, 6);
+  });
+
+  it('keeps every edge mark the blank paper its measurement window needs', () => {
+    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(50) }));
+    // Every solid box the sheet prints, plus every bubble, as rectangles.
+    const boxes = [
+      ...layout.fiducials,
+      layout.code.box,
+      ...layout.writtenFields.map((field) => field.box),
+      ...layout.gridFields.map((field) => field.frame),
+      ...allBubbles(layout).map((bubble) => ({
+        xMm: bubble.cxMm - bubble.rMm,
+        yMm: bubble.cyMm - bubble.rMm,
+        wMm: 2 * bubble.rMm,
+        hMm: 2 * bubble.rMm,
+      })),
+    ];
+    const clear = GEOMETRY.edgeMarkClearMm;
+    for (const mark of layout.edgeMarks) {
+      for (const box of boxes) {
+        const dx = Math.max(box.xMm - (mark.xMm + mark.wMm), mark.xMm - (box.xMm + box.wMm));
+        const dy = Math.max(box.yMm - (mark.yMm + mark.hMm), mark.yMm - (box.yMm + box.hMm));
+        expect(Math.max(dx, dy)).toBeGreaterThanOrEqual(clear);
+      }
+    }
+  });
+
+  it('puts the identity stack under the tail column on the flagship sheet', () => {
+    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(50) }));
+    const tail = layout.questionColumns.at(-1);
+    const tailRows = tail?.rows ?? [];
+    const tailBottom = Math.max(...tailRows.map((row) => row.bubbles[0]?.cyMm ?? 0));
+    const tailLeft = Math.min(...tailRows.flatMap((row) => row.bubbles.map((b) => b.cxMm)));
+    for (const field of layout.gridFields) {
+      // Below the tail's last row, never beside the columns.
+      expect(field.frame.yMm).toBeGreaterThan(tailBottom);
+      // And horizontally inside the tail column's slot.
+      expect(field.frame.xMm + field.frame.wMm / 2).toBeGreaterThan(
+        tailLeft - GEOMETRY.numberGutterMm,
+      );
+    }
+  });
+
+  it('moves a wide identity grid to its own slot instead of the tail', () => {
+    // Ten characters at the default pitch are wider than a question column, so
+    // the stack takes a slot beside the columns and the sheet drops to fewer
+    // of them, which is the owner-approved trade for long student ids.
+    const layout = layoutOrThrow(
+      makeSpec({
+        questions: choiceQuestions(50),
+        bubble: { radiusMm: 2, pitchXMm: 5.6, pitchYMm: 6.5, gridPitchYMm: 6 },
+        headerFields: [
+          { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'large' },
+          {
+            id: 'studentId',
+            usage: 'studentId',
+            label: 'Student ID',
+            kind: 'bubbleGrid',
+            length: 10,
+            symbols: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+          },
+        ],
+      }),
+    );
+    expect(layout.questionColumns).toHaveLength(2);
     const gridRight = Math.max(
       ...layout.questionColumns.flatMap((column) =>
         column.rows.flatMap((row) => row.bubbles.map((bubble) => bubble.cxMm + bubble.rMm)),
       ),
     );
-    const sidebarLeft = Math.min(...layout.gridFields.map((field) => field.frame.xMm));
-    expect(gridRight).toBeLessThan(sidebarLeft);
-  });
-
-  it('puts one timing mark on the left edge for each grid row', () => {
-    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(40), columns: 2 }));
-    expect(layout.timingMarks).toHaveLength(20);
-    for (const mark of layout.timingMarks) {
-      expect(mark.xMm).toBe(GEOMETRY.marginSideMm);
-      expect(mark.hMm).toBe(GEOMETRY.timingHeightMm);
+    for (const field of layout.gridFields) {
+      expect(field.frame.xMm).toBeGreaterThan(gridRight);
     }
   });
 
-  it('leaves every timing mark the blank paper defense د3 asks for', () => {
-    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(40), columns: 2 }));
-    const stripRightMm = GEOMETRY.marginSideMm + GEOMETRY.timingWidthMm;
-
-    // Everything the sheet prints to the right of the timing strip, taken from
-    // the layout rather than assumed: bubbles, the boxes of both kinds of
-    // field, the code, and both vertical text bands. The question number is not
-    // here because it is printed inside its column's own gutter, which starts
-    // at the leftmost bubble's left edge minus the gutter width.
-    const inkLeftMm = [
-      ...allBubbles(layout).map((bubble) => bubble.cxMm - bubble.rMm - GEOMETRY.numberGutterMm),
-      ...layout.writtenFields.map((field) => field.box.xMm),
-      ...layout.gridFields.map((field) => field.frame.xMm),
-      layout.code.box.xMm,
-      layout.branding.band.xMm,
-      layout.title.band.xMm,
-      ...layout.anchorColumns.map((column) => column.xMm - GEOMETRY.anchorWidthMm / 2),
-    ];
-
-    expect(Math.min(...inkLeftMm) - stripRightMm).toBeGreaterThanOrEqual(GEOMETRY.timingClearMm);
-  });
-
-  it('gives every anchor column a mark on every row', () => {
-    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(40), columns: 2 }));
-    expect(layout.anchorColumns.length).toBeGreaterThan(0);
-    for (const column of layout.anchorColumns) {
-      expect(column.marks).toHaveLength(layout.timingMarks.length);
-      // Locked to the rows in y by construction, which is the property that
-      // makes the anchor a measurement of x and of nothing else.
-      for (const [row, mark] of column.marks.entries()) {
-        expect(mark.yMm).toBe(layout.timingMarks[row]?.yMm);
-        expect(mark.hMm).toBe(GEOMETRY.timingHeightMm);
-        expect(mark.xMm + mark.wMm / 2).toBeCloseTo(column.xMm, 9);
-      }
-    }
-  });
-
-  it('puts an anchor between two question columns, where the corners pin nothing', () => {
-    const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(40), columns: 2 }));
-    const first = layout.questionColumns[0]?.rows[0]?.bubbles.at(-1);
-    const second = layout.questionColumns[1]?.rows[0]?.bubbles[0];
-    expect(first).toBeDefined();
-    expect(second).toBeDefined();
-    const inGap = layout.anchorColumns.filter(
-      (column) => column.xMm > (first?.cxMm ?? 0) && column.xMm < (second?.cxMm ?? 0),
+  it('prints a one character key version as a single short row', () => {
+    const layout = layoutOrThrow(
+      makeSpec({
+        questions: choiceQuestions(50),
+        headerFields: [
+          { id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox', width: 'large' },
+          {
+            id: 'studentId',
+            usage: 'studentId',
+            label: 'Student ID',
+            kind: 'bubbleGrid',
+            length: 4,
+            symbols: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+          },
+          {
+            id: 'key',
+            usage: 'keyVersion',
+            label: 'Version',
+            kind: 'bubbleGrid',
+            length: 1,
+            symbols: ['A', 'B', 'C', 'D'],
+          },
+        ],
+      }),
     );
-    expect(inGap).toHaveLength(1);
+    const key = layout.gridFields.find((field) => field.id === 'key');
+    expect(key).toBeDefined();
+    // One group of four bubbles on one line, no write boxes.
+    expect(key?.columns).toHaveLength(1);
+    expect(key?.writeBoxes).toHaveLength(0);
+    const ys = new Set(key?.columns[0]?.bubbles.map((bubble) => bubble.cyMm));
+    expect(ys.size).toBe(1);
   });
 
-  it('anchors every sheet that lays out, one column or many', () => {
-    // A one column sheet has no gap to put a mark in, and it is the commonest
-    // small sheet, so leaving it with no evidence in x would leave the hole
-    // where it is widest. The band beside the grid is where its anchor goes,
-    // and the band is guaranteed: a layout is refused unless what is left after
-    // the grid is at least `sidebarGapMm` wide.
-    for (const [columns, questions, paper] of [
-      [1, 10, 'A4'],
-      [1, 6, 'A5'],
-      [2, 40, 'A4'],
-      [3, 60, 'A4'],
-      [2, 30, 'LETTER'],
-    ] as const) {
-      const layout = layoutOrThrow(
-        makeSpec({ questions: choiceQuestions(questions), columns, paper }),
-      );
-      expect(layout.anchorColumns.length).toBeGreaterThanOrEqual(1);
-    }
+  it('puts the code at the foot, right edge on the corner column', () => {
+    const layout = layoutOrThrow(makeSpec());
+    const { widthMm } = layout.paper;
+    expect(layout.code.box.xMm + layout.code.box.wMm).toBeCloseTo(
+      widthMm - GEOMETRY.marginSideMm,
+      6,
+    );
+    const fidBottom = layout.fiducials[2];
+    expect((fidBottom?.yMm ?? 0) - (layout.code.box.yMm + layout.code.box.hMm)).toBeCloseTo(
+      GEOMETRY.codeBottomClearMm,
+      6,
+    );
   });
 
-  it('keeps every anchor mark clear of the ink on either side of it', () => {
-    for (const [columns, questions] of [
-      [1, 20],
-      [2, 40],
-    ] as const) {
-      const layout = layoutOrThrow(makeSpec({ questions: choiceQuestions(questions), columns }));
-      // Every edge of printed ink the anchor could meet: bubbles on both sides,
-      // and the frame of the sidebar the trailing band ends at.
-      const edges = [
-        ...allBubbles(layout).flatMap((bubble) => [
-          { leftMm: bubble.cxMm - bubble.rMm, rightMm: bubble.cxMm + bubble.rMm },
-        ]),
-        ...layout.gridFields.map((field) => ({
-          leftMm: field.frame.xMm,
-          rightMm: field.frame.xMm + field.frame.wMm,
-        })),
-      ];
-
-      for (const column of layout.anchorColumns) {
-        const leftMm = column.xMm - GEOMETRY.anchorWidthMm / 2;
-        const rightMm = column.xMm + GEOMETRY.anchorWidthMm / 2;
-        const before = Math.max(
-          ...edges.map((edge) => edge.rightMm).filter((edge) => edge <= leftMm),
-        );
-        const after = Math.min(
-          ...edges.map((edge) => edge.leftMm).filter((edge) => edge >= rightMm),
-        );
-        expect(leftMm - before).toBeGreaterThanOrEqual(GEOMETRY.anchorClearMm);
-        expect(after - rightMm).toBeGreaterThanOrEqual(GEOMETRY.anchorClearMm);
-      }
-    }
-  });
-
-  it('leaves both blank bands wide enough for a mark and its clearance', () => {
-    // The gap between columns and the band left of the sidebar are the two
-    // places an anchor is printed. Neither is checked at run time, because the
-    // layout would have nowhere to report it, so they are checked here: below
-    // either number, sheets silently lose their only evidence in x.
-    const neededMm = GEOMETRY.anchorWidthMm + 2 * GEOMETRY.anchorClearMm;
-    expect(GEOMETRY.columnGapMm).toBeGreaterThanOrEqual(neededMm);
-    expect(GEOMETRY.sidebarGapMm).toBeGreaterThanOrEqual(neededMm);
+  it('mirrors the header for a right to left sheet', () => {
+    const ltr = layoutOrThrow(makeSpec());
+    const rtl = layoutOrThrow(makeSpec({ direction: 'rtl' }));
+    const nameLtr = ltr.writtenFields.find((field) => field.id === 'name');
+    const nameRtl = rtl.writtenFields.find((field) => field.id === 'name');
+    // The first field starts at the leading edge of its reading direction.
+    expect(nameLtr).toBeDefined();
+    expect(nameRtl).toBeDefined();
+    expect((nameRtl?.box.xMm ?? 0) + (nameRtl?.box.wMm ?? 0)).toBeGreaterThan(
+      (nameLtr?.box.xMm ?? 0) + (nameLtr?.box.wMm ?? 0),
+    );
+    // The grid itself does not mirror: numbering runs the same way in both.
+    expect(rtl.questionColumns[0]?.rows[0]?.question).toBe(1);
   });
 
   it('anchors the four fiducials clear of the printer dead zone', () => {
     const layout = layoutOrThrow(makeSpec());
     const { widthMm, heightMm } = layout.paper;
-    const {
-      marginTopMm: top,
-      marginSideMm: side,
-      marginBottomMm: bottom,
-      fiducialMm: f,
-    } = GEOMETRY;
-    expect(layout.fiducials.map((rect) => [rect.xMm, rect.yMm])).toEqual([
-      [side, top],
-      [widthMm - side - f, top],
-      [side, heightMm - bottom - f],
-      [widthMm - side - f, heightMm - bottom - f],
-    ]);
 
     // Defense د1, stated as the numbers it came from: 6.35 mm is the quoted
     // general dead zone and 16.7 mm the worst declared bottom margin of an
@@ -259,7 +329,7 @@ describe('layoutSheet capacity', () => {
             usage: 'studentName',
             label: 'Name',
             kind: 'bubbleGrid',
-            length: 12,
+            length: 10,
             symbols: [...arabicSymbols(10)],
           },
         ],

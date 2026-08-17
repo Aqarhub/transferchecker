@@ -36,13 +36,13 @@ export type Rejection =
    * stretched, which [measured] reads the 8 mm square back as 4.97 mm.
    */
   | { readonly kind: 'not_one_sheet'; readonly fiducialMm: number }
-  | { readonly kind: 'rows_missing'; readonly expected: number; readonly found: number }
   /**
-   * An anchor mark that is not where the geometry says it is, by more than the
-   * search window is wide. It is its own cause and not a row fault: the rows
-   * were all found, in the right places, in y.
+   * An edge mark that is not where the geometry says it is, by more than the
+   * search window is wide, or is hidden under something. Each of the four is
+   * the only evidence for its own edge's bend, so a subset is a sheet whose
+   * registration cannot be stated.
    */
-  | { readonly kind: 'anchors_missing'; readonly expected: number; readonly found: number }
+  | { readonly kind: 'marks_missing'; readonly expected: number; readonly found: number }
   /**
    * The axis matters to the teacher, because the two are different sheets. In y
    * the paper is stretched or fed crooked; in x it is curled about a vertical
@@ -77,10 +77,8 @@ export function messageKeyOf(reason: Rejection): string {
       return 'scan.reject.notThisGeometry';
     case 'not_one_sheet':
       return 'scan.reject.notOneSheet';
-    case 'rows_missing':
-      return 'scan.reject.rowsMissing';
-    case 'anchors_missing':
-      return 'scan.reject.anchorsMissing';
+    case 'marks_missing':
+      return 'scan.reject.marksMissing';
     case 'sheet_not_flat':
       return reason.axis === 'x' ? 'scan.reject.sheetCurled' : 'scan.reject.sheetNotFlat';
     case 'glare':
@@ -109,8 +107,7 @@ export function isFrameFault(reason: Rejection): boolean {
     case 'template_unknown':
     case 'not_this_geometry':
     case 'not_one_sheet':
-    case 'rows_missing':
-    case 'anchors_missing':
+    case 'marks_missing':
     case 'sheet_not_flat':
     case 'low_contrast':
       return false;

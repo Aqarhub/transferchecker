@@ -46,7 +46,7 @@ import { layoutSheet, stockTemplate } from '@transferchecker/sheet-spec';
 import { findFiducials } from '../src/geometry/fiducials';
 import { readSheetCode } from '../src/code/index';
 import { paperFrame } from '../src/geometry/frame';
-import { readTimingMarks } from '../src/measure/timing';
+import { readEdgeMarks } from '../src/measure/edge';
 import { photometryOf } from '../src/measure/photometry';
 import { measureBubble } from '../src/measure/bubble';
 import { ringFor } from '../src/measure/ring';
@@ -85,10 +85,10 @@ describe('the ring asymmetry probe', () => {
     const frame = paperFrame(code.corners, layout);
     expect(frame).not.toBeNull();
     if (frame === null) return;
-    const timing = readTimingMarks(image, frame, layout);
-    expect(timing.kind).toBe('ok');
-    if (timing.kind !== 'ok') return;
-    const field = photometryOf(image, frame, layout, timing.marks);
+    const edges = readEdgeMarks(image, frame, layout);
+    expect(edges.kind).toBe('ok');
+    if (edges.kind !== 'ok') return;
+    const field = photometryOf(image, frame, layout, edges.marks);
     expect(field).not.toBeNull();
     if (field === null) return;
 
@@ -110,7 +110,7 @@ describe('the ring asymmetry probe', () => {
         dy: 0,
       });
       const values = bubbles
-        .map((bubble) => measureBubble(image, shifted, field, bubble, 0, 'none', ring))
+        .map((bubble) => measureBubble(image, shifted, field, bubble, 0, 0, 'none', ring))
         .filter((reading) => reading.asymXMeasured)
         .map((reading) => Math.abs(reading.asymX));
       return median(values);

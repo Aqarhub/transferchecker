@@ -49,7 +49,12 @@ export const BubbleGridFieldSchema = z.object({
   usage: z.enum(FIELD_USAGES),
   label: fieldLabel,
   kind: z.literal('bubbleGrid'),
-  length: z.number().int().min(1).max(12),
+  /**
+   * Ten at most, by the owner's decision of 2026-08-17: the student id is
+   * user-configurable up to ten characters, and past six the grid grows wider
+   * than a question column, so the layout falls back to fewer columns.
+   */
+  length: z.number().int().min(1).max(10),
   symbols: SymbolsSchema,
 });
 
@@ -167,23 +172,47 @@ export const BubbleMetricsSchema = z
  */
 export const SHEET_CODES = ['full', 'short'] as const;
 
+/**
+ * The white break between question groups: every ten rows, every five, or
+ * none. Ten is the default and the owner's approved design; the other two are
+ * the teacher's customization. It moves every row below the first gap, so it
+ * is geometry and the printed code carries it.
+ */
+export const GROUP_OPTIONS = ['none', 5, 10] as const;
+
 export const SheetSpecSchema = z.object({
   templateId: z.uuid(),
   /**
-   * Four, because `paper.ts` says its constants are part of the printed
-   * artifact and that changing them is a breaking change. Defenses د1, د3 and
-   * د6 changed the margins, the timing mark and the code module, and the sheet
-   * gained the anchor columns, so a version 3 sheet is a different piece of
-   * paper and must be refused rather than graded against these numbers.
+   * Five, because `paper.ts` says its constants are part of the printed
+   * artifact and that changing them is a breaking change. The version 5
+   * redesign of 2026-08-17 removed the timing strip and the anchor columns,
+   * added the four edge marks and the letterhead band, shrank the corner
+   * squares to 6 mm, regrouped the questions and moved the code to the bottom,
+   * so a version 4 sheet is a different piece of paper and must be refused
+   * rather than graded against these numbers.
    */
-  version: z.literal(4),
-  /** Printed on the right edge, so a teacher can identify a sheet by eye. */
+  version: z.literal(5),
+  /** Printed under the date box, so a teacher can identify a sheet by eye. */
   name: z.string().min(1).max(40),
-  /** Vertical text on the right edge, typically the product name. */
+  /** Printed beside the code at the foot of the sheet. */
   branding: z.string().max(30),
   paper: z.enum(PAPER_NAMES),
   /** 'auto' derives the count from row width and the space available. */
   columns: z.union([z.literal('auto'), z.number().int().min(1).max(6)]).default('auto'),
+  /** Rows between white breaks in a column. Geometry: the code carries it. */
+  groupEvery: z.union([z.literal('none'), z.literal(5), z.literal(10)]).default(10),
+  /**
+   * Whether the sheet reserves the institution letterhead band. On by default;
+   * switching it off gains the page two question rows. Small tiled papers
+   * never get one regardless, see `letterheadBandMm`.
+   */
+  letterhead: z.boolean().default(true),
+  /**
+   * Which side the header's first written box sits on. Arabic sheets read from
+   * the right, so their name box does too. Question numbers and bubbles keep
+   * one direction in both cases; only the header row mirrors.
+   */
+  direction: z.enum(['ltr', 'rtl']).default('ltr'),
   questions: z.array(QuestionSchema).min(1).max(200),
   headerFields: z.array(HeaderFieldSchema).max(8),
   bubble: BubbleMetricsSchema,

@@ -7,6 +7,7 @@ export {
   PAPER_FAMILIES,
   PAPER_NAMES,
   codeModuleMmFor,
+  letterheadBandMm,
 } from './paper';
 export type { PaperFamily, PaperName, PaperSize } from './paper';
 
@@ -28,6 +29,7 @@ export {
   DEFAULT_BUBBLE,
   FIELD_USAGES,
   FIELD_WIDTHS,
+  GROUP_OPTIONS,
   HeaderFieldSchema,
   LABEL_PLACEMENTS,
   QuestionSchema,
@@ -68,12 +70,12 @@ export { STOCK_TEMPLATES, stockQuestionCount, stockTemplate } from './templates'
 export type { StockTemplate, TemplateText } from './templates';
 
 export { layoutSheet } from './layout/index';
-export { columnWidthMm, questionWidthMm, resolveColumns } from './layout/grid';
+export { columnWidthMm, planColumns, questionWidthMm } from './layout/grid';
 
 export { bubbleGroups, fieldGroupId, questionGroupId } from './groups';
 
 export type {
-  AnchorColumn,
+  AnchoredText,
   Bubble,
   ChoiceLabel,
   BubbleGroup,
@@ -87,6 +89,5 @@ export type {
   Rect,
   SheetCodeLayout,
   SheetLayout,
-  VerticalText,
   WrittenBoxLayout,
 } from './types';

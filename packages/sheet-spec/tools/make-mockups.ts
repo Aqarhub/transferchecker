@@ -32,7 +32,7 @@ const choiceRows = (
 
 const english: SheetSpecInput = {
   templateId: TEMPLATE_ID,
-  version: 4,
+  version: 5,
   name: 'Standard 40',
   branding: 'TRANSFERCHECKER.COM',
   paper: 'A4',
@@ -67,6 +67,7 @@ const english: SheetSpecInput = {
 const arabic: SheetSpecInput = {
   ...english,
   name: 'نموذج قياسي 40',
+  direction: 'rtl',
   questions: choiceRows(40, arabicSymbols(4)),
   headerFields: [
     { id: 'name', usage: 'studentName', label: 'اسم الطالب', kind: 'writtenBox', width: 'large' },

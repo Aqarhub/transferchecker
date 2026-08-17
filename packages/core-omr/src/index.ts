@@ -7,14 +7,16 @@
 // conversion and Node gives it a decoded fixture.
 //
 // The architecture in one paragraph. The sheet is not a general document: four
-// solid 8 mm squares sit at known millimetres, a timing mark sits beside every
-// question row, and the printed code carries the whole geometry, so a device
-// that has never seen the template rebuilds it exactly. The corner squares give
-// a projective map between the sheet's millimetres and the frame's pixels, and
-// every measurement afterwards is a set of millimetre positions pushed through
-// that map and read on the frame at full resolution. Nothing is warped, nothing
-// is resampled, and the sample lattice is fixed on the paper rather than on the
-// sensor, which is what makes two photographs of one paper give one answer.
+// solid squares sit at known millimetres in the corners, four smaller ones at
+// the middle of the edges, and the printed code carries the whole geometry, so
+// a device that has never seen the template rebuilds it exactly. The corner
+// squares give a projective map between the sheet's millimetres and the
+// frame's pixels, the edge marks measure the middle of the page where the
+// corners are blind, and every measurement afterwards is a set of millimetre
+// positions pushed through that map and read on the frame at full resolution.
+// Nothing is warped, nothing is resampled, and the sample lattice is fixed on
+// the paper rather than on the sensor, which is what makes two photographs of
+// one paper give one answer.
 //
 // The decisions and their alternatives are in docs/CORE-OMR.md, and the
 // defenses the numbers implement are in docs/FAILURE-MODES.md.
@@ -53,5 +55,5 @@ export { measureBubble } from './measure/bubble';
 export type { BubbleReading, LabelSide } from './measure/bubble';
 export { inkRatio, photometryOf, referenceAt } from './measure/photometry';
 export type { PhotometricField, Reference } from './measure/photometry';
-export { MAX_RESIDUAL_MM, readTimingMarks, rowCorrectionMm } from './measure/timing';
-export type { RowMark, TimingRead } from './measure/timing';
+export { MAX_DISPLACEMENT_MM, readEdgeMarks, warpFrom } from './measure/edge';
+export type { EdgeMark, EdgeRead, Warp } from './measure/edge';

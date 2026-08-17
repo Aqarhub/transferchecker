@@ -1,5 +1,13 @@
-// Places question rows and the timing marks that let the scanner recover a row
-// index even when the print is slightly shifted.
+// Places question rows: side-by-side columns filled in whole groups, with the
+// remainder in a shorter tail column.
+//
+// Version 5 packing, from the approved design. A column is filled to a whole
+// number of groups (ten rows by default) before the next column starts, so
+// every white break lands after a complete group and a fifty question sheet
+// reads 20 + 20 + 10 rather than 17 + 17 + 16. The tail column is the shortest
+// and always the last, and the space under it is where the identity grids go
+// when they fit, which is what keeps the page fully used without a stretched
+// sidebar.
 //
 // Questions are not uniform: each carries its own symbol set and decides
 // whether its letters sit above the column, inside the bubbles or beside them.
@@ -9,22 +17,7 @@
 
 import { GEOMETRY } from '../paper';
 import type { Question, SheetSpec } from '../spec';
-import type {
-  AnchorColumn,
-  ChoiceHeader,
-  ChoiceLabel,
-  QuestionColumn,
-  QuestionRow,
-  Rect,
-} from '../types';
-
-export interface GridPlan {
-  readonly columns: readonly QuestionColumn[];
-  readonly timingMarks: readonly Rect[];
-  readonly anchorColumns: readonly AnchorColumn[];
-  readonly widthMm: number;
-  readonly heightMm: number;
-}
+import type { ChoiceHeader, ChoiceLabel, QuestionColumn, QuestionRow } from '../types';
 
 /** Ink width of one question row, number gutter included. */
 export function questionWidthMm(question: Question, spec: SheetSpec): number {
@@ -42,6 +35,41 @@ export function questionWidthMm(question: Question, spec: SheetSpec): number {
 /** Width every column is given: the widest question decides for all of them. */
 export function columnWidthMm(spec: SheetSpec): number {
   return Math.max(...spec.questions.map((question) => questionWidthMm(question, spec)));
+}
+
+/** Rows per group, or 0 when the sheet prints one unbroken column. */
+export function groupSizeOf(spec: SheetSpec): number {
+  return spec.groupEvery === 'none' ? 0 : spec.groupEvery;
+}
+
+/** White breaks that come before `rows` rows: one per completed group. */
+export function gapsBefore(rows: number, groupSize: number): number {
+  if (groupSize <= 0 || rows <= 0) return 0;
+  return Math.ceil(rows / groupSize) - 1;
+}
+
+/** Height of a column of `rows` rows at `pitchMm`, group gaps included. */
+export function columnHeightMm(rows: number, pitchMm: number, groupSize: number): number {
+  return rows * pitchMm + gapsBefore(rows, groupSize) * GEOMETRY.groupGapMm;
+}
+
+/** The most rows one column holds in `availableMm`, at the closest pitch. */
+export function rowsThatFit(spec: SheetSpec, availableMm: number): number {
+  const groupSize = groupSizeOf(spec);
+  let rows = 0;
+  while (rows < spec.questions.length) {
+    const headers = headerCountFor(spec, rows + 1);
+    const needed =
+      columnHeightMm(rows + 1, spec.bubble.pitchYMm, groupSize) + headers * GEOMETRY.choiceHeaderMm;
+    if (needed > availableMm) break;
+    rows += 1;
+  }
+  return rows;
+}
+
+/** Choice-letter header rows the first column prints, given its row count. */
+export function headerCountFor(spec: SheetSpec, rows: number): number {
+  return headerRows(spec.questions.slice(0, rows)).length;
 }
 
 const sameSymbols = (a: readonly string[], b: readonly string[]): boolean =>
@@ -121,57 +149,102 @@ function rowAt(
   };
 }
 
-/**
- * The row pitch the grid actually prints at.
- *
- * `bubble.pitchYMm` is the closest rows may sit. When the questions do not fill
- * the height they were given, the rows spread to use it, because questions
- * crammed at the top of a half empty page read as a mistake. The spreading is
- * capped so a three question sheet does not end up a finger apart, and the
- * result is rounded down to a tenth of a millimetre, the unit everything else
- * on the sheet is measured in.
- */
-function rowPitchMm(spec: SheetSpec, rows: number, headers: number, availableMm: number): number {
-  const minimumMm = spec.bubble.pitchYMm;
-  if (rows === 0) return minimumMm;
-  const forRowsMm = availableMm - headers * GEOMETRY.choiceHeaderMm;
-  const spreadMm = Math.floor((forRowsMm / rows) * 10) / 10;
-  return Math.min(Math.max(minimumMm, spreadMm), GEOMETRY.maxRowPitchMm);
+export interface ColumnPlan {
+  /** Rows in every column but the last. */
+  readonly rowsPerColumn: number;
+  /** Rows in the last column: equal or shorter, never longer. */
+  readonly tailRows: number;
+  readonly columnCount: number;
 }
 
+/**
+ * Splits the questions into columns filled by whole groups.
+ *
+ * The fewest columns whose rows fit the height wins, as in version 4, and the
+ * per-column count is rounded UP to a whole number of groups when that still
+ * fits, so the breaks land after complete groups and the remainder collects in
+ * the tail. When rounding up would overflow the height, the plain ceiling
+ * division stands and the last group of a column may run short, which the
+ * owner accepted for the wide-identity layout.
+ */
+export function planColumns(
+  spec: SheetSpec,
+  rowsCap: number,
+  fits: (plan: ColumnPlan) => boolean,
+): ColumnPlan | null {
+  const total = spec.questions.length;
+  const groupSize = groupSizeOf(spec);
+  if (rowsCap < 1) return null;
+
+  const maxColumns = spec.columns === 'auto' ? Math.min(6, total) : spec.columns;
+  const minColumns = spec.columns === 'auto' ? 1 : spec.columns;
+
+  for (let columns = minColumns; columns <= maxColumns; columns += 1) {
+    const plain = Math.ceil(total / columns);
+    const grouped = groupSize > 0 ? Math.ceil(plain / groupSize) * groupSize : plain;
+    for (const rows of grouped === plain ? [plain] : [grouped, plain]) {
+      if (rows > rowsCap) continue;
+      // Rounding up can leave a column with nothing: 20 questions over three
+      // columns of ten fill two. Under 'auto' the empty column is dropped, not
+      // printed; a FIXED count is the teacher's explicit request, so a rounding
+      // that would change it is skipped in favour of the plain division.
+      const used = Math.ceil(total / rows);
+      if (spec.columns !== 'auto' && used !== columns) continue;
+      const candidate: ColumnPlan = {
+        rowsPerColumn: rows,
+        tailRows: total - (used - 1) * rows,
+        columnCount: used,
+      };
+      if (fits(candidate)) return candidate;
+    }
+  }
+  return null;
+}
+
+export interface GridPlan {
+  readonly columns: readonly QuestionColumn[];
+  readonly widthMm: number;
+  readonly heightMm: number;
+  /** Height of the tail column alone, for placing the grids beneath it. */
+  readonly tailHeightMm: number;
+  readonly pitchYMm: number;
+}
+
+/** Lays the planned columns out at their final pitch. */
 export function planGrid(
   spec: SheetSpec,
+  plan: ColumnPlan,
   leftMm: number,
   topMm: number,
-  columnCount: number,
-  availableHeightMm: number,
+  pitchYMm: number,
 ): GridPlan {
-  const total = spec.questions.length;
-  const rowsPerColumn = Math.ceil(total / columnCount);
-  // Asking for more columns than the questions can fill would print blank ones.
-  const usedColumns = Math.ceil(total / rowsPerColumn);
   const width = columnWidthMm(spec);
+  const groupSize = groupSizeOf(spec);
+  const { rowsPerColumn, tailRows, columnCount } = plan;
 
   // Headers are counted from the first column, which is the fullest, so every
   // column shares one row grid however its own headers fall.
   const firstColumn = spec.questions.slice(0, rowsPerColumn);
   const headerAt = new Set(headerRows(firstColumn));
-  const pitchYMm = rowPitchMm(spec, rowsPerColumn, headerAt.size, availableHeightMm);
 
-  /** Top of a row, counting the header rows that come before it. */
+  /** Top of a row, counting group gaps and the header rows before it. */
   const rowTopMm = (row: number): number => {
     let headersBefore = 0;
     for (const at of headerAt) if (at <= row) headersBefore += 1;
-    return topMm + headersBefore * GEOMETRY.choiceHeaderMm + row * pitchYMm;
+    const gaps = groupSize > 0 ? Math.floor(row / groupSize) : 0;
+    return (
+      topMm + headersBefore * GEOMETRY.choiceHeaderMm + row * pitchYMm + gaps * GEOMETRY.groupGapMm
+    );
   };
   const centerYMm = (row: number): number => rowTopMm(row) + pitchYMm / 2;
 
-  const columns = Array.from({ length: usedColumns }, (_, columnIndex): QuestionColumn => {
+  const columns = Array.from({ length: columnCount }, (_, columnIndex): QuestionColumn => {
     const columnLeftMm = leftMm + columnIndex * (width + GEOMETRY.columnGapMm);
+    const rowCount = columnIndex === columnCount - 1 ? tailRows : rowsPerColumn;
     const rows: QuestionRow[] = [];
     const headers: ChoiceHeader[] = [];
 
-    for (let row = 0; row < rowsPerColumn; row += 1) {
+    for (let row = 0; row < rowCount; row += 1) {
       // Questions run down a column before moving to the next one.
       const index = columnIndex * rowsPerColumn + row;
       const question = spec.questions[index];
@@ -197,79 +270,12 @@ export function planGrid(
     return { index: columnIndex, headers, rows };
   });
 
-  const timingMarks = Array.from({ length: rowsPerColumn }, (_, row): Rect => ({
-    xMm: GEOMETRY.marginSideMm,
-    yMm: centerYMm(row) - GEOMETRY.timingHeightMm / 2,
-    wMm: GEOMETRY.timingWidthMm,
-    hMm: GEOMETRY.timingHeightMm,
-  }));
-
-  // One column of anchor marks per gap between question columns: the sheet's
-  // only evidence for registration in x anywhere between the corner squares.
-  //
-  // Every mark takes its y from `centerYMm(row)`, the same call the bubbles of
-  // that row take theirs from, so an anchor is locked to its row by
-  // construction exactly as a timing mark is. What it adds is the x: a sheet
-  // curled about a vertical axis moves these and moves nothing else the scanner
-  // can see, and a sheet printed flat leaves them where they were predicted.
-  //
-  // A one column sheet has no gap and therefore no anchor. That is a real hole
-  // and it is reported as one rather than filled with a zero: the scanner says
-  // the probe was unavailable, because "measured no error" and "could not
-  // measure" are different sentences and only one of them is true.
-  const anchorColumns = Array.from({ length: usedColumns - 1 }, (_, gap): AnchorColumn => {
-    const centreXMm =
-      leftMm + gap * (width + GEOMETRY.columnGapMm) + width + GEOMETRY.columnGapMm / 2;
-    return {
-      xMm: centreXMm,
-      marks: Array.from({ length: rowsPerColumn }, (_, row): Rect => ({
-        xMm: centreXMm - GEOMETRY.anchorWidthMm / 2,
-        yMm: centerYMm(row) - GEOMETRY.timingHeightMm / 2,
-        wMm: GEOMETRY.anchorWidthMm,
-        hMm: GEOMETRY.timingHeightMm,
-      })),
-    };
-  });
-
+  const headerHeightMm = headerAt.size * GEOMETRY.choiceHeaderMm;
   return {
     columns,
-    timingMarks,
-    anchorColumns,
-    widthMm: usedColumns * width + (usedColumns - 1) * GEOMETRY.columnGapMm,
-    heightMm: rowsPerColumn * pitchYMm + headerAt.size * GEOMETRY.choiceHeaderMm,
+    widthMm: columnCount * width + (columnCount - 1) * GEOMETRY.columnGapMm,
+    heightMm: columnHeightMm(rowsPerColumn, pitchYMm, groupSize) + headerHeightMm,
+    tailHeightMm: columnHeightMm(tailRows, pitchYMm, groupSize) + headerHeightMm,
+    pitchYMm,
   };
-}
-
-/**
- * Picks the fewest columns that fit the questions in the space available.
- * Fewer columns read better, so the search stops at the first count that fits
- * rather than packing as tightly as possible.
- */
-export function resolveColumns(
-  spec: SheetSpec,
-  availableWidthMm: number,
-  availableHeightMm: number,
-): number {
-  const width = columnWidthMm(spec);
-  const total = spec.questions.length;
-  const fitsWidth = (count: number): boolean =>
-    count * width + (count - 1) * GEOMETRY.columnGapMm <= availableWidthMm;
-
-  if (spec.columns !== 'auto') return spec.columns;
-
-  const maxColumns = Math.min(6, total);
-  for (let count = 1; count <= maxColumns; count += 1) {
-    if (!fitsWidth(count)) break;
-    const rows = Math.ceil(total / count);
-    const headers = headerRows(spec.questions.slice(0, rows)).length;
-    const neededMm = rows * spec.bubble.pitchYMm + headers * GEOMETRY.choiceHeaderMm;
-    if (neededMm <= availableHeightMm) return count;
-  }
-  // Nothing fits. Return the widest that fits horizontally so the caller can
-  // report a height overflow against a real attempt.
-  let best = 1;
-  for (let count = 1; count <= maxColumns; count += 1) {
-    if (fitsWidth(count)) best = count;
-  }
-  return best;
 }

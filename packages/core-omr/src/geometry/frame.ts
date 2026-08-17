@@ -32,17 +32,14 @@ export interface Frame {
 }
 
 /**
- * Distance from a paper edge to the nearest fiducial's centre.
+ * Distance from a paper edge to the nearest fiducial's centre, horizontally.
  *
- * Three numbers rather than one, defense د1: the bottom margin is larger than
- * the other two because the printer's bottom dead zone is larger, so the
- * rectangle the four squares form is NOT centred on the page. Reading it as
- * centred would put every predicted coordinate several millimetres out in y,
- * which is most of a row.
+ * Only the horizontal inset is a constant now. The top one stopped being one
+ * in version 5, when the letterhead band started moving the top corner row:
+ * the vertical insets come from the layout's own fiducial rectangles, which
+ * carry whatever the sheet actually printed.
  */
 export const FIDUCIAL_INSET_X_MM = GEOMETRY.marginSideMm + GEOMETRY.fiducialMm / 2;
-export const FIDUCIAL_INSET_TOP_MM = GEOMETRY.marginTopMm + GEOMETRY.fiducialMm / 2;
-export const FIDUCIAL_INSET_BOTTOM_MM = GEOMETRY.marginBottomMm + GEOMETRY.fiducialMm / 2;
 
 function build(corners: Corners, spanXMm: number, spanYMm: number, originMm: Point): Frame | null {
   const source: Point[] = [
@@ -94,12 +91,19 @@ export function estimateFrame(corners: Corners, sidesPx: readonly number[]): Fra
 
 /** The true frame, once the code has said which paper this is. */
 export function paperFrame(corners: Corners, layout: SheetLayout): Frame | null {
-  const spanXMm = layout.paper.widthMm - 2 * FIDUCIAL_INSET_X_MM;
-  const spanYMm = layout.paper.heightMm - FIDUCIAL_INSET_TOP_MM - FIDUCIAL_INSET_BOTTOM_MM;
-  return build(corners, spanXMm, spanYMm, {
-    x: FIDUCIAL_INSET_X_MM,
-    y: FIDUCIAL_INSET_TOP_MM,
-  });
+  // The rectangle comes from the layout's own fiducials rather than from
+  // GEOMETRY constants, because since version 5 the top corner row's position
+  // depends on the letterhead band and the layout is the one source of truth
+  // for where anything sits.
+  const first = layout.fiducials[0];
+  const last = layout.fiducials[3];
+  if (first === undefined || last === undefined) return null;
+  const originX = first.xMm + first.wMm / 2;
+  const originY = first.yMm + first.hMm / 2;
+  const spanXMm = last.xMm + last.wMm / 2 - originX;
+  const spanYMm = last.yMm + last.hMm / 2 - originY;
+  if (spanXMm <= 0 || spanYMm <= 0) return null;
+  return build(corners, spanXMm, spanYMm, { x: originX, y: originY });
 }
 
 export function toImage(frame: Frame, xMm: number, yMm: number): Point {

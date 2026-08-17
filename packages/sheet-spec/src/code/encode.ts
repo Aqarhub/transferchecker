@@ -10,24 +10,21 @@
 // renumbered. A change means a new CODE_FORMAT, not an edit to this one.
 
 import { PAPER_NAMES } from '../paper';
-import { FIELD_USAGES, FIELD_WIDTHS, LABEL_PLACEMENTS } from '../spec';
+import { FIELD_USAGES, FIELD_WIDTHS, GROUP_OPTIONS, LABEL_PLACEMENTS } from '../spec';
 import type { HeaderField, Question, SheetSpec } from '../spec';
 import { base32Encode } from './base32';
 import { CUSTOM_SET, symbolSetId } from './symbols';
 import { uuidToBytes } from './uuid';
 
 /**
- * Three, because the PAPER changed under the code even though the code's own
- * bytes did not.
- *
- * The payload carries what varies between sheets and never what is compiled
- * into both sides: margins, band widths, mark sizes and the code module are all
- * in `GEOMETRY`. Defenses د1, د3 and د6 moved every one of those. A format 2
- * sheet therefore still decodes byte for byte and rebuilds a geometry it was
- * not printed with, which is the silent wrong grade this format number exists
- * to prevent. Bumping it turns that into a refusal.
+ * Four: the version 5 sheet both moved the compiled-in geometry (marks,
+ * bands, the code's own position) and gained three fields that move bubbles
+ * and are carried here: the group breaks, the letterhead band and the header
+ * direction. A format 3 sheet would decode byte for byte and rebuild a
+ * geometry it was not printed with, which is the silent wrong grade this
+ * format number exists to prevent. Bumping it turns that into a refusal.
  */
-export const CODE_FORMAT = 3;
+export const CODE_FORMAT = 4;
 
 const utf8 = new TextEncoder();
 
@@ -106,6 +103,15 @@ export function encodeSheetBytes(spec: SheetSpec): Uint8Array {
     throw new Error('sheet code: paper or column count does not fit the geometry byte');
   }
   bytes.push((paper << 5) | (columns << 2));
+
+  // The format 4 flags byte: everything on it moves bubbles, which is the
+  // entry bar for this payload. Two bits of group size, one of letterhead,
+  // one of header direction, the rest spare.
+  const group = GROUP_OPTIONS.indexOf(spec.groupEvery);
+  if (group < 0 || group > 3) {
+    throw new Error('sheet code: group option does not fit the flags byte');
+  }
+  bytes.push((spec.letterhead ? 0x01 : 0) | (group << 1) | (spec.direction === 'rtl' ? 0x08 : 0));
 
   const { radiusMm, pitchXMm, pitchYMm, gridPitchYMm } = spec.bubble;
   for (const value of [radiusMm, pitchXMm, pitchYMm, gridPitchYMm]) {

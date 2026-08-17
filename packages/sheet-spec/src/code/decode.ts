@@ -9,7 +9,13 @@
 // never turn into a plausible looking sheet that grades wrongly.
 
 import { PAPER_NAMES } from '../paper';
-import { FIELD_USAGES, FIELD_WIDTHS, LABEL_PLACEMENTS, SheetSpecSchema } from '../spec';
+import {
+  FIELD_USAGES,
+  FIELD_WIDTHS,
+  GROUP_OPTIONS,
+  LABEL_PLACEMENTS,
+  SheetSpecSchema,
+} from '../spec';
 import type { SheetSpec, SheetSpecInput } from '../spec';
 import { base32Decode } from './base32';
 import { CODE_FORMAT } from './encode';
@@ -128,6 +134,14 @@ export function decodeSheetBytes(bytes: Uint8Array): DecodedCode | null {
   const columnCount = (geometry >> 2) & 0x07;
   if (paper === undefined) return null;
 
+  // The format 4 flags byte, matching encode.ts bit for bit.
+  const flags = byte(reader);
+  if (flags === null) return null;
+  const groupEvery = GROUP_OPTIONS[(flags >> 1) & 0x03];
+  if (groupEvery === undefined) return null;
+  const letterhead = (flags & 0x01) !== 0;
+  const direction = (flags & 0x08) !== 0 ? 'rtl' : 'ltr';
+
   const metrics: number[] = [];
   for (let index = 0; index < 4; index += 1) {
     const tenths = byte(reader);
@@ -161,12 +175,15 @@ export function decodeSheetBytes(bytes: Uint8Array): DecodedCode | null {
 
   const parsed = SheetSpecSchema.safeParse({
     templateId,
-    version: 4,
+    version: 5,
     // Neither is carried: both are printed text and neither moves a bubble.
     name: '?',
     branding: '',
     paper,
     columns: columnCount === 0 ? 'auto' : columnCount,
+    groupEvery,
+    letterhead,
+    direction,
     questions: found,
     headerFields,
     bubble: { radiusMm, pitchXMm, pitchYMm, gridPitchYMm },

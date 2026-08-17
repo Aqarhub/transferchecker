@@ -146,11 +146,12 @@ export function measureBubble(
   frame: Frame,
   field: PhotometricField,
   bubble: Bubble,
+  offsetXMm: number,
   offsetYMm: number,
   labelSide: LabelSide,
   ring: Ring,
 ): BubbleReading {
-  const cx = bubble.cxMm;
+  const cx = bubble.cxMm + offsetXMm;
   const cy = bubble.cyMm + offsetYMm;
   const reference = referenceAt(field, cx, cy);
   const glareLevel =

@@ -106,18 +106,18 @@ describe('the printed source carries the geometry the layout says it does', () =
 
   it('fails when the emitter moves an element, which is the point of it', () => {
     // A guard on the guard: a diff that cannot go red proves nothing. One
-    // timing mark is moved half a millimetre in the layout the comparison is
+    // edge mark is moved half a millimetre in the layout the comparison is
     // made against, and the check must see it.
     const layout = layoutOf('quick20');
     const typ = parseTypSheet(renderSheetTypst(layout, OPTIONS));
     const moved: SheetLayout = {
       ...layout,
-      timingMarks: layout.timingMarks.map((rect, index) =>
+      edgeMarks: layout.edgeMarks.map((rect, index) =>
         index === 3 ? { ...rect, yMm: rect.yMm + 0.5 } : rect,
       ),
     };
 
-    const row = geometryDiff(moved, typ).find((entry) => entry.element === 'timing marks');
+    const row = geometryDiff(moved, typ).find((entry) => entry.element === 'edge marks');
     expect(row?.worstMm).toBeGreaterThan(TOLERANCE_MM);
   });
 });

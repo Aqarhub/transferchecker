@@ -45,7 +45,10 @@ export interface GoldenCase {
   /** A cylindrical curl about a vertical axis, in millimetres at mid page. */
   readonly bendMm?: number;
   /** Timing mark rows painted over, as a pen line down the margin does. */
-  readonly coverRows?: readonly number[];
+  /** Edge marks to paint over, by index into the layout's four. */
+  readonly coverMarks?: readonly number[];
+  /** Draw dark logo blocks in the letterhead band, as a school's header would. */
+  readonly letterheadInk?: boolean;
   /** Two sheets tiled on one carrier, which is what the 2 up print path makes. */
   readonly twoUp?: boolean;
   /** Graded, or refused by this named cause. Both are correct answers. */

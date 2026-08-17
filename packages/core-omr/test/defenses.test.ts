@@ -13,7 +13,7 @@ import { layoutSheet, stockTemplate } from '@transferchecker/sheet-spec';
 import type { Rect, SheetLayout, SheetSpec } from '@transferchecker/sheet-spec';
 import { createGray, sampleAt } from '../src/image/gray';
 import type { GrayImage } from '../src/image/gray';
-import { MAX_RESIDUAL_RMS_MM } from '../src/measure/timing';
+import { MAX_DISPLACEMENT_MM } from '../src/measure/edge';
 import { scanSheet } from '../src/scan/pipeline';
 import type { ScanResult } from '../src/scan/result';
 import { messageKeyOf } from '../src/scan/reject';
@@ -320,8 +320,8 @@ describe('defense د8: the ink floor is a fraction AND an absolute darkening', (
   });
 });
 
-describe('defense د12: the timing strip is read, and believed only where it agrees', () => {
-  /** Paints over a printed mark, which is what a pen stroke down the margin does. */
+describe('defense د12: the edge marks are read, and believed only within the model', () => {
+  /** Paints over a printed mark, which is what a sticker or tape does. */
   const cover = (image: GrayImage, rect: Rect, pxPerMm: number): void => {
     for (
       let y = Math.round((rect.yMm - 1) * pxPerMm);
@@ -339,72 +339,42 @@ describe('defense د12: the timing strip is read, and believed only where it agr
     }
   };
 
-  it('grades the sheet with one mark gone, and numbers the rows the same', () => {
-    // Acceptance criterion 15 asks for the numbering to survive a fifth of the
-    // strip being occluded. Refusing at the first missing mark failed it
-    // outright, and a pen line down the left margin is a named failure mode
-    // rather than an exotic one, so the row registers from its neighbours.
-    const { layout } = sheet();
-    const options = { pxPerMm: 10, marks: answerEvery(layout, ['A', 'B', 'C', 'D']) };
-    const clean = scanSheet(renderSheet(layout, options));
-
-    const damaged = renderSheet(layout, options);
-    const covered = layout.timingMarks[6];
-    expect(covered).toBeDefined();
-    if (covered === undefined) return;
-    cover(damaged, covered, 10);
-
-    const result = scanSheet(damaged);
-    expect(result.kind).toBe('ok');
-    if (result.kind !== 'ok' || clean.kind !== 'ok') return;
-    // Every letter identical to the undamaged read: nothing renumbered, and
-    // the row whose own mark is gone is registered from the rows around it.
-    expect(result.sheet.marks).toBe(clean.sheet.marks);
-    expect(result.sheet.questions.map((entry) => answerOf(result, entry.question))).toEqual(
-      clean.sheet.questions.map((entry) => answerOf(clean, entry.question)),
-    );
-    // And it says so rather than hiding it.
-    expect(result.sheet.quality.rowsFound).toBe(result.sheet.quality.rowsExpected - 1);
-  });
-
-  it('refuses by name when too much of the strip is gone', () => {
+  it('refuses by name when an edge mark is hidden', () => {
+    // Each of the four marks is the only evidence for its own edge's bend, so
+    // there is no interpolation to bridge a missing one from: refusing is the
+    // honest answer, and the named reason is what the teacher can act on.
     const { layout } = sheet();
     const image = renderSheet(layout, {
       pxPerMm: 10,
       marks: answerEvery(layout, ['A', 'B', 'C', 'D']),
     });
-    // Three in a row: past what interpolation can bridge without inventing a
-    // row, whatever the fraction says.
-    for (const row of [3, 4, 5]) {
-      const rect = layout.timingMarks[row];
-      if (rect === undefined) continue;
-      cover(image, rect, 10);
-    }
+    const rect = layout.edgeMarks[0];
+    expect(rect).toBeDefined();
+    if (rect === undefined) return;
+    cover(image, rect, 10);
 
     const result = scanSheet(image);
     expect(result.kind).toBe('rejected');
     if (result.kind !== 'rejected') return;
-    expect(result.reason.kind).toBe('rows_missing');
-    if (result.reason.kind !== 'rows_missing') return;
-    expect(result.reason.found).toBe(result.reason.expected - 3);
-    expect(messageKeyOf(result.reason)).toBe('scan.reject.rowsMissing');
+    expect(result.reason.kind).toBe('marks_missing');
+    if (result.reason.kind !== 'marks_missing') return;
+    expect(result.reason.found).toBe(result.reason.expected - 1);
+    expect(messageKeyOf(result.reason)).toBe('scan.reject.marksMissing');
   });
 
-  it('drops a mark printed out of place instead of dragging its row with it', () => {
-    // [measured] On `full100` one mark printed 3.0 mm out of place gives an RMS
-    // of 0.486 mm, which passed the old single gate of 0.5 mm, and the engine
-    // then applied it: that row's sample lattice moved 2.613 mm off its
-    // bubbles, which is 1.7 disc radii, and the row came back blank with no
-    // warning. A root mean square divides one bad row by the square root of the
-    // count, so it cannot see a single bad row at all.
+  it('corrects a slightly misprinted mark and grades the letters the same', () => {
+    // Half a millimetre of misprint reads as half a millimetre of measured
+    // displacement, and the correction it induces peaks at exactly that spot
+    // and fades to zero at the corners. The letters must not change: the disc
+    // is 1.5 mm and the induced shift is a third of it at its worst point.
     const { layout } = sheet();
     const options = { pxPerMm: 10, marks: answerEvery(layout, ['A', 'B', 'C', 'D']) };
     const clean = scanSheet(renderSheet(layout, options));
 
     const misprinted: SheetLayout = {
       ...layout,
-      timingMarks: layout.timingMarks.map((rect, row) =>
-        row === 4 ? { ...rect, yMm: rect.yMm + 2 } : rect,
+      edgeMarks: layout.edgeMarks.map((rect, at) =>
+        at === 1 ? { ...rect, yMm: rect.yMm + 0.5 } : rect,
       ),
     };
     const result = scanSheet(renderSheet(misprinted, options));
@@ -412,15 +382,30 @@ describe('defense د12: the timing strip is read, and believed only where it agr
     expect(result.kind).toBe('ok');
     if (result.kind !== 'ok' || clean.kind !== 'ok') return;
     expect(result.sheet.marks).toBe(clean.sheet.marks);
-    expect(result.sheet.quality.timingResidualMm).toBeLessThan(MAX_RESIDUAL_RMS_MM);
-    // TWO rows lost, not one, and that is measured rather than assumed: at this
-    // sheet's 12 mm pitch the search window reaches 9 mm, which clears a
-    // correctly printed neighbour by 1.05 mm, so a mark displaced by 2 mm puts
-    // 0.95 mm of its own body inside the next row's window and drags that
-    // centroid 1.750 mm off. Both rows fail the per mark gate and both are
-    // dropped. Dropping the pair is the safe answer: neither position is
-    // believed, nothing is renumbered, and the letters come back identical.
-    expect(result.sheet.quality.rowsFound).toBe(result.sheet.quality.rowsExpected - 2);
+    expect(result.sheet.quality.edgeResidualMm).toBeLessThan(MAX_DISPLACEMENT_MM);
+  });
+
+  it('refuses a mark displaced past what the model can honestly correct', () => {
+    // The correction is exact at the marks and smooth between them, and that
+    // stops being a description of paper once an edge midpoint has moved this
+    // far. Believing it anyway would be the silent wrong grade the marks exist
+    // to prevent, so the sheet is refused with the axis named.
+    const { layout } = sheet();
+    const options = { pxPerMm: 10, marks: answerEvery(layout, ['A', 'B', 'C', 'D']) };
+    const misprinted: SheetLayout = {
+      ...layout,
+      edgeMarks: layout.edgeMarks.map((rect, at) =>
+        at === 0 ? { ...rect, xMm: rect.xMm + 2.5 } : rect,
+      ),
+    };
+    const result = scanSheet(renderSheet(misprinted, options));
+
+    expect(result.kind).toBe('rejected');
+    if (result.kind !== 'rejected') return;
+    expect(result.reason.kind).toBe('sheet_not_flat');
+    if (result.reason.kind !== 'sheet_not_flat') return;
+    expect(result.reason.axis).toBe('x');
+    expect(result.reason.residualMm).toBeGreaterThan(MAX_DISPLACEMENT_MM / 2);
   });
 });
 

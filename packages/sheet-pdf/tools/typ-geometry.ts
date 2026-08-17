@@ -162,7 +162,6 @@ interface Rect {
  * count of rectangles.
  */
 export function geometryDiff(layout: SheetLayout, typ: TypSheet): GeometryDiff[] {
-  const anchorMarks = layout.anchorColumns.flatMap((column) => column.marks);
   const bubbles = bubbleGroups(layout).flatMap((group) => group.bubbles);
   const codeAcross = layout.code.modules.length + 2 * GEOMETRY.codeQuietModules;
   const moduleMm = codeAcross === 0 ? 0 : layout.code.box.wMm / codeAcross;
@@ -185,21 +184,12 @@ export function geometryDiff(layout: SheetLayout, typ: TypSheet): GeometryDiff[]
       ),
     },
     {
-      element: 'timing marks',
-      expected: layout.timingMarks.length,
-      found: solid(typ.rects, GEOMETRY.timingWidthMm, GEOMETRY.timingHeightMm).length,
+      element: 'edge marks',
+      expected: layout.edgeMarks.length,
+      found: solid(typ.rects, GEOMETRY.edgeMarkMm, GEOMETRY.edgeMarkMm).length,
       worstMm: worstOf(
-        solid(typ.rects, GEOMETRY.timingWidthMm, GEOMETRY.timingHeightMm),
-        boxes(layout.timingMarks),
-      ),
-    },
-    {
-      element: 'anchor marks',
-      expected: anchorMarks.length,
-      found: solid(typ.rects, GEOMETRY.anchorWidthMm, GEOMETRY.timingHeightMm).length,
-      worstMm: worstOf(
-        solid(typ.rects, GEOMETRY.anchorWidthMm, GEOMETRY.timingHeightMm),
-        boxes(anchorMarks),
+        solid(typ.rects, GEOMETRY.edgeMarkMm, GEOMETRY.edgeMarkMm),
+        boxes(layout.edgeMarks),
       ),
     },
     {

@@ -16,8 +16,7 @@ import type { LabelSide } from '../measure/bubble';
 import type { PhotometricField } from '../measure/photometry';
 import { ringFor } from '../measure/ring';
 import type { Ring } from '../measure/ring';
-import { rowCorrectionMm } from '../measure/timing';
-import type { RowMark } from '../measure/timing';
+import type { Warp } from '../measure/edge';
 
 export interface GroupResult {
   readonly id: string;
@@ -36,7 +35,7 @@ function readGroup(
   image: GrayImage,
   frame: Frame,
   field: PhotometricField,
-  marks: readonly RowMark[],
+  warp: Warp,
   id: string,
   bubbles: readonly Bubble[],
   many: boolean,
@@ -44,17 +43,21 @@ function readGroup(
   thresholds: Thresholds,
   ring: Ring,
 ): GroupResult {
-  const readings = bubbles.map((bubble) =>
-    measureBubble(
+  const readings = bubbles.map((bubble) => {
+    // The correction the edge marks measured, evaluated where this bubble is:
+    // this is registration, the whole reason the marks are printed.
+    const correction = warp.at(bubble.cxMm, bubble.cyMm);
+    return measureBubble(
       image,
       frame,
       field,
       bubble,
-      rowCorrectionMm(marks, bubble.cyMm),
+      correction.dxMm,
+      correction.dyMm,
       labelSide,
       ring,
-    ),
-  );
+    );
+  });
   const first = bubbles[0];
   return {
     id,
@@ -71,7 +74,7 @@ export function measureSheet(
   image: GrayImage,
   frame: Frame,
   field: PhotometricField,
-  marks: readonly RowMark[],
+  warp: Warp,
   layout: SheetLayout,
   spec: SheetSpec,
   thresholds: Thresholds,
@@ -92,7 +95,7 @@ export function measureSheet(
           image,
           frame,
           field,
-          marks,
+          warp,
           `q:${String(row.question)}`,
           row.bubbles,
           question?.select === 'many',
@@ -114,7 +117,7 @@ export function measureSheet(
         image,
         frame,
         field,
-        marks,
+        warp,
         `f:${grid.id}:${String(gridColumn.index)}`,
         gridColumn.bubbles,
         // Defense د14: two marks in one grid column are always an error and

@@ -42,18 +42,18 @@ function pageOf(item: GoldenCase): GrayImage {
   return made;
 }
 
-/** A pen line down the margin, which is what takes a timing mark away. */
-function coverRows(image: GrayImage, item: GoldenCase, pxPerMm: number): GrayImage {
-  const rows = item.coverRows ?? [];
-  if (rows.length === 0) return image;
+/** Correction tape or a sticker over an edge mark, which is what takes one away. */
+function coverMarks(image: GrayImage, item: GoldenCase, pxPerMm: number): GrayImage {
+  const marks = item.coverMarks ?? [];
+  if (marks.length === 0) return image;
 
   const { layout } = sheetOf(item.template);
   const paper = (item.ink ?? DEFAULT_INK).paper;
   const out = createGray(image.width, image.height, paper);
   out.data.set(image.data);
 
-  for (const row of rows) {
-    const rect = layout.timingMarks[row];
+  for (const at of marks) {
+    const rect = layout.edgeMarks[at];
     if (rect === undefined) continue;
     const x0 = Math.max(0, Math.round((rect.xMm - 1) * pxPerMm));
     const x1 = Math.min(out.width - 1, Math.round((rect.xMm + rect.wMm + 1) * pxPerMm));
@@ -63,6 +63,38 @@ function coverRows(image: GrayImage, item: GoldenCase, pxPerMm: number): GrayIma
       for (let x = x0; x <= x1; x += 1) out.data[y * out.stride + x] = paper;
     }
   }
+  return out;
+}
+
+/**
+ * A school's letterhead: a dark crest block and two lines of dense text ink,
+ * drawn inside the reserved band. This is exactly the ink the corner search
+ * has to survive, because every ministry-style header prints something dark
+ * a few millimetres above the top corner squares.
+ */
+function letterheadInk(image: GrayImage, item: GoldenCase, pxPerMm: number): GrayImage {
+  if (item.letterheadInk !== true) return image;
+  const { layout } = sheetOf(item.template);
+  const band = layout.letterhead;
+  if (band === null) return image;
+
+  const out = createGray(image.width, image.height, (item.ink ?? DEFAULT_INK).paper);
+  out.data.set(image.data);
+  const dark = 30;
+  const fill = (xMm: number, yMm: number, wMm: number, hMm: number): void => {
+    const x0 = Math.max(0, Math.round(xMm * pxPerMm));
+    const x1 = Math.min(out.width - 1, Math.round((xMm + wMm) * pxPerMm));
+    const y0 = Math.max(0, Math.round(yMm * pxPerMm));
+    const y1 = Math.min(out.height - 1, Math.round((yMm + hMm) * pxPerMm));
+    for (let y = y0; y <= y1; y += 1) {
+      for (let x = x0; x <= x1; x += 1) out.data[y * out.stride + x] = dark;
+    }
+  };
+  // A crest-sized block near the band's left edge, straight above the top-left
+  // corner square, and two text lines across the middle.
+  fill(band.xMm + 2, band.yMm + 3, 14, band.hMm - 6);
+  fill(band.xMm + 24, band.yMm + 4, band.wMm * 0.55, 3);
+  fill(band.xMm + 24, band.yMm + 10, band.wMm * 0.4, 3);
   return out;
 }
 
@@ -87,16 +119,17 @@ export function imageOf(item: GoldenCase): GrayImage {
   const paper = (item.ink ?? DEFAULT_INK).paper;
   const { layout } = sheetOf(item.template);
 
-  let image = coverRows(pageOf(item), item, pxPerMm);
+  let image = letterheadInk(coverMarks(pageOf(item), item, pxPerMm), item, pxPerMm);
 
   if (item.bendMm !== undefined && item.bendMm !== 0) {
-    const firstRow = layout.questionColumns[0]?.rows[0]?.numberAnchor.yMm ?? 60;
     image = bendSheet(image, {
       pxPerMm,
       bulgeMm: item.bendMm,
       leftMm: GEOMETRY.marginSideMm + GEOMETRY.fiducialMm / 2,
       rightMm: layout.paper.widthMm - GEOMETRY.marginSideMm - GEOMETRY.fiducialMm / 2,
-      fromYMm: firstRow - 12,
+      // The whole page: the ordinary physical curl, and the shape the
+      // edge-mark correction models exactly.
+      fromYMm: -20,
     });
   }
 

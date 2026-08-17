@@ -1,22 +1,22 @@
 {
   "tier": "synthetic",
-  "cases": 55,
-  "questions": 2300,
-  "answerable": 777,
-  "answersRead": 777,
+  "cases": 56,
+  "questions": 2350,
+  "answerable": 797,
+  "answersRead": 797,
   "readRate": 1,
   "counts": {
-    "correct": 2294,
+    "correct": 2344,
     "flagged": 6,
     "missed": 0,
     "wrong": 0
   },
   "accuracy": 1,
   "warned": 12,
-  "warnRate": 0.0052173913043478265,
+  "warnRate": 0.005106382978723404,
   "papersWarned": 5,
-  "paperWarnRate": 0.09090909090909091,
-  "gradedPapers": 48,
+  "paperWarnRate": 0.08928571428571429,
+  "gradedPapers": 49,
   "refused": 0,
   "rejectRate": 0,
   "wrongSheets": [],
@@ -88,11 +88,11 @@
     },
     {
       "stratum": "geometry",
-      "cases": 7,
-      "asked": 7,
-      "questions": 150,
+      "cases": 8,
+      "asked": 8,
+      "questions": 200,
       "counts": {
-        "correct": 150,
+        "correct": 200,
         "flagged": 0,
         "missed": 0,
         "wrong": 0
@@ -100,7 +100,7 @@
       "accuracy": 1
     }
   ],
-  "marginP1": 0.233922733892167,
+  "marginP1": 0.23006379749599584,
   "gates": [
     {
       "gate": "no silent wrong answer",
@@ -130,13 +130,13 @@
       "gate": "warnings at or below 2 percent of questions",
       "armed": true,
       "passed": true,
-      "detail": "0.52 percent of 2300 questions carry a flag, and 5 of 55 papers carry at least one (9.1 percent)"
+      "detail": "0.51 percent of 2350 questions carry a flag, and 5 of 56 papers carry at least one (8.9 percent)"
     },
     {
       "gate": "refusals at or below 2 percent of papers",
       "armed": true,
       "passed": true,
-      "detail": "0.00 percent of 48 papers that asked to be graded were refused"
+      "detail": "0.00 percent of 49 papers that asked to be graded were refused"
     },
     {
       "gate": "the marks string carries what the paper carries",
@@ -148,16 +148,16 @@
       "gate": "margin: first percentile above the uncertain band",
       "armed": true,
       "passed": true,
-      "detail": "first percentile of the margin of answers the engine was SURE of 0.234, over 776 of them"
+      "detail": "first percentile of the margin of answers the engine was SURE of 0.230, over 796 of them"
     },
     {
       "gate": "synthetic regression: a drawn answer still comes back",
       "armed": true,
       "passed": true,
-      "detail": "100.00 percent of 777 drawn answers came back, floor 98"
+      "detail": "100.00 percent of 797 drawn answers came back, floor 98"
     }
   ],
-  "elapsedMs": 21411.69999999879,
+  "elapsedMs": 21251.315000002272,
   "caveat": "Synthetic pages drawn from the same layout object the engine reads. This measures whether the named defenses work and whether a change moved a number. It does NOT measure accuracy on paper: no rasteriser, no toner, no graphite and no camera are involved, and the accuracy gate stays disarmed until 30 real papers are captured. The unit of every rate here is the question, except the refusal rate and the paper warning share, whose unit is the paper.",
   "records": [
     {
@@ -177,7 +177,7 @@
       },
       "marks": "bbbbbbbbbbbbbbbbbbbb",
       "charFault": "",
-      "elapsedMs": 337.85000000009313
+      "elapsedMs": 322.41200000047684
     },
     {
       "id": "clean/quick20/answered-2",
@@ -196,7 +196,7 @@
       },
       "marks": "bbbbbbbbbbbbbbbbbbbb",
       "charFault": "",
-      "elapsedMs": 58.15500000026077
+      "elapsedMs": 52.614000000059605
     },
     {
       "id": "clean/quick20/answered-5",
@@ -215,7 +215,7 @@
       },
       "marks": "bbbbbbbbbbbbbbbbbbbc",
       "charFault": "",
-      "elapsedMs": 221.18300000019372
+      "elapsedMs": 207.6049999995157
     },
     {
       "id": "clean/quick20/answered-10",
@@ -234,7 +234,7 @@
       },
       "marks": "bbbbbbbbbcbbbbbbbbbc",
       "charFault": "",
-      "elapsedMs": 212.79599999962375
+      "elapsedMs": 200.15499999932945
     },
     {
       "id": "clean/quick20/answered-20",
@@ -253,7 +253,7 @@
       },
       "marks": "bbbbcbbbbcbbbbcbbbbc",
       "charFault": "",
-      "elapsedMs": 206.40599999995902
+      "elapsedMs": 198.13999999966472
     },
     {
       "id": "clean/quick20/answered-50",
@@ -272,7 +272,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 210.05799999972805
+      "elapsedMs": 207.07000000029802
     },
     {
       "id": "clean/quick20/answered-100",
@@ -291,7 +291,7 @@
       },
       "marks": "cccccccccccccccccccc",
       "charFault": "",
-      "elapsedMs": 215.89099999982864
+      "elapsedMs": 204.6920000007376
     },
     {
       "id": "clean/standard50/answered-0",
@@ -310,7 +310,7 @@
       },
       "marks": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       "charFault": "",
-      "elapsedMs": 385.02399999974295
+      "elapsedMs": 363.5259999996051
     },
     {
       "id": "clean/standard50/answered-2",
@@ -329,7 +329,7 @@
       },
       "marks": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
       "charFault": "",
-      "elapsedMs": 376.0189999998547
+      "elapsedMs": 372.1570000005886
     },
     {
       "id": "clean/standard50/answered-5",
@@ -348,7 +348,7 @@
       },
       "marks": "bbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbc",
       "charFault": "",
-      "elapsedMs": 366.4879999998957
+      "elapsedMs": 363.1440000003204
     },
     {
       "id": "clean/standard50/answered-10",
@@ -367,7 +367,7 @@
       },
       "marks": "bbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbc",
       "charFault": "",
-      "elapsedMs": 378.49099999992177
+      "elapsedMs": 348.38300000038
     },
     {
       "id": "clean/standard50/answered-20",
@@ -386,7 +386,7 @@
       },
       "marks": "bbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbc",
       "charFault": "",
-      "elapsedMs": 379.29999999981374
+      "elapsedMs": 358.8279999997467
     },
     {
       "id": "clean/standard50/answered-50",
@@ -405,7 +405,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 394.3379999999888
+      "elapsedMs": 399.5829999996349
     },
     {
       "id": "clean/standard50/answered-100",
@@ -424,7 +424,7 @@
       },
       "marks": "cccccccccccccccccccccccccccccccccccccccccccccccccc",
       "charFault": "",
-      "elapsedMs": 428.31199999991804
+      "elapsedMs": 432.25800000038
     },
     {
       "id": "clean/full100/answered-0",
@@ -443,7 +443,7 @@
       },
       "marks": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       "charFault": "",
-      "elapsedMs": 645.6929999999702
+      "elapsedMs": 582.714999999851
     },
     {
       "id": "clean/full100/answered-2",
@@ -462,7 +462,7 @@
       },
       "marks": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
       "charFault": "",
-      "elapsedMs": 537.1770000001416
+      "elapsedMs": 586.2020000005141
     },
     {
       "id": "clean/full100/answered-5",
@@ -481,7 +481,7 @@
       },
       "marks": "bbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbc",
       "charFault": "",
-      "elapsedMs": 524.6620000000112
+      "elapsedMs": 597.6569999996573
     },
     {
       "id": "clean/full100/answered-10",
@@ -500,7 +500,7 @@
       },
       "marks": "bbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbcbbbbbbbbbc",
       "charFault": "",
-      "elapsedMs": 551.6340000000782
+      "elapsedMs": 560.1919999998063
     },
     {
       "id": "clean/full100/answered-20",
@@ -519,7 +519,7 @@
       },
       "marks": "bbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbcbbbbc",
       "charFault": "",
-      "elapsedMs": 550.5459999996237
+      "elapsedMs": 574.6979999998584
     },
     {
       "id": "clean/full100/answered-50",
@@ -538,7 +538,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 617.8670000000857
+      "elapsedMs": 585.0950000006706
     },
     {
       "id": "clean/full100/answered-100",
@@ -557,7 +557,7 @@
       },
       "marks": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "charFault": "",
-      "elapsedMs": 679.4979999996722
+      "elapsedMs": 621.0159999998286
     },
     {
       "id": "framing/quick20/1080p",
@@ -576,7 +576,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 648.7930000000633
+      "elapsedMs": 625.8070000000298
     },
     {
       "id": "framing/quick20/1440p",
@@ -595,7 +595,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 369.76800000015646
+      "elapsedMs": 365.17599999997765
     },
     {
       "id": "framing/quick20/1920p",
@@ -614,7 +614,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 569.6759999999776
+      "elapsedMs": 569.589999999851
     },
     {
       "id": "framing/quick20/1440p-far",
@@ -633,7 +633,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 282.7579999999143
+      "elapsedMs": 300.32100000046194
     },
     {
       "id": "framing/quick20/1440p-steep",
@@ -652,7 +652,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 330.36499999975786
+      "elapsedMs": 341.17300000041723
     },
     {
       "id": "framing/quick20/beyond-the-angle",
@@ -671,7 +671,7 @@
       },
       "marks": "",
       "charFault": "",
-      "elapsedMs": 286.70700000040233
+      "elapsedMs": 286.0929999994114
     },
     {
       "id": "framing/standard50/1080p",
@@ -690,7 +690,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 1037.5840000002645
+      "elapsedMs": 989.7690000003204
     },
     {
       "id": "framing/standard50/1440p",
@@ -709,7 +709,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 423.09700000006706
+      "elapsedMs": 443.41399999987334
     },
     {
       "id": "framing/standard50/1920p",
@@ -728,7 +728,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 620.4610000001267
+      "elapsedMs": 643.3420000001788
     },
     {
       "id": "framing/standard50/1440p-far",
@@ -747,7 +747,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 369.3939999998547
+      "elapsedMs": 362.66500000003725
     },
     {
       "id": "framing/standard50/1440p-steep",
@@ -766,7 +766,7 @@
       },
       "marks": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 399.94900000002235
+      "elapsedMs": 396.1820000000298
     },
     {
       "id": "framing/standard50/beyond-the-angle",
@@ -785,7 +785,7 @@
       },
       "marks": "",
       "charFault": "",
-      "elapsedMs": 322.9459999999963
+      "elapsedMs": 333.08600000012666
     },
     {
       "id": "lighting/shadow-across-the-page",
@@ -804,7 +804,7 @@
       },
       "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
       "charFault": "",
-      "elapsedMs": 1077.0720000001602
+      "elapsedMs": 1050.5509999999776
     },
     {
       "id": "lighting/under-exposed",
@@ -823,7 +823,7 @@
       },
       "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
       "charFault": "",
-      "elapsedMs": 432.5570000000298
+      "elapsedMs": 436.1720000002533
     },
     {
       "id": "lighting/over-exposed",
@@ -842,7 +842,7 @@
       },
       "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
       "charFault": "",
-      "elapsedMs": 391.2239999999292
+      "elapsedMs": 392.7510000001639
     },
     {
       "id": "lighting/glare-on-a-shaded-bubble",
@@ -861,7 +861,7 @@
       },
       "marks": "",
       "charFault": "",
-      "elapsedMs": 458.84800000023097
+      "elapsedMs": 459.2709999997169
     },
     {
       "id": "printing/toner-96",
@@ -880,7 +880,7 @@
       },
       "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
       "charFault": "",
-      "elapsedMs": 378.4620000002906
+      "elapsedMs": 360.9309999998659
     },
     {
       "id": "printing/toner-56",
@@ -899,7 +899,7 @@
       },
       "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
       "charFault": "",
-      "elapsedMs": 388.0380000001751
+      "elapsedMs": 369.96900000050664
     },
     {
       "id": "printing/toner-40",
@@ -918,7 +918,7 @@
       },
       "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
       "charFault": "",
-      "elapsedMs": 347.84700000006706
+      "elapsedMs": 352.6440000003204
     },
     {
       "id": "printing/speck-on-weak-toner",
@@ -937,7 +937,7 @@
       },
       "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
       "charFault": "",
-      "elapsedMs": 349.6779999998398
+      "elapsedMs": 361.67599999997765
     },
     {
       "id": "printing/fit-to-page-96",
@@ -956,7 +956,7 @@
       },
       "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
       "charFault": "",
-      "elapsedMs": 446.8739999998361
+      "elapsedMs": 428.45700000040233
     },
     {
       "id": "printing/scaled-104",
@@ -975,7 +975,7 @@
       },
       "marks": "bbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbcbbbcbbcbbc",
       "charFault": "",
-      "elapsedMs": 149.6589999999851
+      "elapsedMs": 145.17800000030547
     },
     {
       "id": "marks/a-real-hand-flat",
@@ -994,7 +994,7 @@
       },
       "marks": "bbcbebccecdbxbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
       "charFault": "",
-      "elapsedMs": 369.1129999998957
+      "elapsedMs": 355.22499999962747
     },
     {
       "id": "marks/a-real-hand-photographed",
@@ -1013,7 +1013,7 @@
       },
       "marks": "bbcbebccecdbxbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
       "charFault": "",
-      "elapsedMs": 1064.1729999999516
+      "elapsedMs": 1051.9220000002533
     },
     {
       "id": "marks/strength-ladder",
@@ -1032,7 +1032,7 @@
       },
       "marks": "uucccbbbbbbbbbbbbbbb",
       "charFault": "",
-      "elapsedMs": 188.8059999998659
+      "elapsedMs": 173.75699999928474
     },
     {
       "id": "marks/a-mark-that-must-be-doubted",
@@ -1051,7 +1051,7 @@
       },
       "marks": "cccucccccccccccccccc",
       "charFault": "",
-      "elapsedMs": 195.3179999999702
+      "elapsedMs": 186.2620000001043
     },
     {
       "id": "marks/strong-and-medium-pair",
@@ -1070,7 +1070,7 @@
       },
       "marks": "bdbcbcbcbcbcbcbcbcbc",
       "charFault": "",
-      "elapsedMs": 186.20200000004843
+      "elapsedMs": 175.43400000035763
     },
     {
       "id": "geometry/flat",
@@ -1089,7 +1089,7 @@
       },
       "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
       "charFault": "",
-      "elapsedMs": 377.9799999999814
+      "elapsedMs": 336.5
     },
     {
       "id": "geometry/curl-0.3mm",
@@ -1108,51 +1108,13 @@
       },
       "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
       "charFault": "",
-      "elapsedMs": 208.7719999998808
+      "elapsedMs": 204.0339999999851
     },
     {
-      "id": "geometry/curl-1.5mm",
+      "id": "geometry/curl-1.2mm",
       "stratum": "geometry",
       "template": "standard50",
-      "why": "a curl that moves the middle of the page",
-      "got": "sheet_not_flat",
-      "wanted": "sheet_not_flat",
-      "asked": true,
-      "questions": 0,
-      "counts": {
-        "correct": 0,
-        "flagged": 0,
-        "missed": 0,
-        "wrong": 0
-      },
-      "marks": "",
-      "charFault": "",
-      "elapsedMs": 154.77499999990687
-    },
-    {
-      "id": "geometry/curl-5.6mm",
-      "stratum": "geometry",
-      "template": "standard50",
-      "why": "a whole bubble pitch of curl, the silent wrong grade",
-      "got": "anchors_missing",
-      "wanted": "anchors_missing",
-      "asked": true,
-      "questions": 0,
-      "counts": {
-        "correct": 0,
-        "flagged": 0,
-        "missed": 0,
-        "wrong": 0
-      },
-      "marks": "",
-      "charFault": "",
-      "elapsedMs": 155.02299999957904
-    },
-    {
-      "id": "geometry/one-mark-covered",
-      "stratum": "geometry",
-      "template": "standard50",
-      "why": "a pen line over one timing mark",
+      "why": "a curl the edge marks measure and the warp corrects, version 5 grades what version 4 refused",
       "got": "graded",
       "wanted": "graded",
       "asked": true,
@@ -1165,15 +1127,15 @@
       },
       "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
       "charFault": "",
-      "elapsedMs": 70.24899999983609
+      "elapsedMs": 198.75700000021607
     },
     {
-      "id": "geometry/three-marks-covered",
+      "id": "geometry/curl-2.5mm",
       "stratum": "geometry",
       "template": "standard50",
-      "why": "more of the strip than interpolation may bridge",
-      "got": "rows_missing",
-      "wanted": "rows_missing",
+      "why": "a curl past the correction model, named rather than absorbed",
+      "got": "sheet_not_flat",
+      "wanted": "sheet_not_flat",
       "asked": true,
       "questions": 0,
       "counts": {
@@ -1184,7 +1146,64 @@
       },
       "marks": "",
       "charFault": "",
-      "elapsedMs": 19.527000000234693
+      "elapsedMs": 152.98000000044703
+    },
+    {
+      "id": "geometry/curl-5.6mm",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "a whole bubble pitch of curl, the silent wrong grade, named for what it is",
+      "got": "sheet_not_flat",
+      "wanted": "sheet_not_flat",
+      "asked": true,
+      "questions": 0,
+      "counts": {
+        "correct": 0,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "",
+      "charFault": "",
+      "elapsedMs": 132.2829999998212
+    },
+    {
+      "id": "geometry/one-mark-covered",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "a sticker over one edge mark: each is the only evidence for its edge",
+      "got": "marks_missing",
+      "wanted": "marks_missing",
+      "asked": true,
+      "questions": 0,
+      "counts": {
+        "correct": 0,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "",
+      "charFault": "",
+      "elapsedMs": 15.842999999411404
+    },
+    {
+      "id": "geometry/letterhead-ink",
+      "stratum": "geometry",
+      "template": "standard50",
+      "why": "a dark school header above the top corners must not steal the corner search",
+      "got": "graded",
+      "wanted": "graded",
+      "asked": true,
+      "questions": 50,
+      "counts": {
+        "correct": 50,
+        "flagged": 0,
+        "missed": 0,
+        "wrong": 0
+      },
+      "marks": "bbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbcbbcbc",
+      "charFault": "",
+      "elapsedMs": 63.64799999911338
     },
     {
       "id": "geometry/two-sheets-in-frame",
@@ -1203,7 +1222,7 @@
       },
       "marks": "",
       "charFault": "",
-      "elapsedMs": 62.61700000008568
+      "elapsedMs": 52.31000000052154
     }
   ]
 }

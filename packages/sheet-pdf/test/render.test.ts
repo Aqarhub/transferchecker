@@ -57,13 +57,11 @@ describe('renderSheetTypst', () => {
     }
   });
 
-  it('draws one timing mark per question row', () => {
+  it('draws the four edge marks at their layout positions', () => {
     const layout = makeLayout({ questions: choiceQuestions(40), columns: 2 });
     const source = renderSheetTypst(layout, makeOptions());
-    // Twenty timing marks plus four fiducials are the only filled rectangles
-    // besides the QR modules, which the next test counts on its own.
-    expect(layout.timingMarks).toHaveLength(20);
-    for (const mark of layout.timingMarks) {
+    expect(layout.edgeMarks).toHaveLength(4);
+    for (const mark of layout.edgeMarks) {
       expect(source).toContain(`dy: ${String(Math.round(mark.yMm * 1000) / 1000)}mm`);
     }
   });
@@ -73,10 +71,9 @@ describe('renderSheetTypst', () => {
     const dark = layout.code.modules.flat().filter(Boolean).length;
     const source = renderSheetTypst(layout, makeOptions());
     const fills = countOf(source, /rect\(width: [\d.]+mm, height: [\d.]+mm, fill: rgb/g);
-    // The fiducials, the timing marks and the anchor marks are filled too, so
-    // the modules are the rest.
-    const anchors = layout.anchorColumns.reduce((total, column) => total + column.marks.length, 0);
-    expect(fills).toBe(dark + layout.fiducials.length + layout.timingMarks.length + anchors);
+    // The fiducials and the four edge marks are filled too, so the modules are
+    // the rest.
+    expect(fills).toBe(dark + layout.fiducials.length + layout.edgeMarks.length);
 
     const quiet = GEOMETRY.codeQuietModules;
     const moduleMm = layout.code.box.wMm / (layout.code.modules.length + 2 * quiet);
@@ -188,13 +185,12 @@ describe('renderSheetTypst', () => {
     expect(source).toContain(`place(dx: ${String(left)}mm,`);
   });
 
-  it('rotates the branding and the template name into their edge bands', () => {
+  it('prints the branding and the template name on their anchors, unrotated', () => {
     const source = renderSheetTypst(makeLayout(), makeOptions());
-    // Both bands run down the right edge and both read the same way up, since
-    // defense د3 moved the branding off the left edge to give the timing marks
-    // their clearance. Two rotations, not one of each sign.
-    expect(countOf(source, /rotate\(90deg, origin: center/g)).toBe(2);
-    expect(source).not.toContain('rotate(-90deg');
+    // Version 5 retired the vertical edge bands: the site name sits beside the
+    // code on the foot line and the template name under the smallest header
+    // box, both horizontal.
+    expect(source).not.toContain('rotate(');
     expect(source).toContain('"TRANSFERCHECKER.COM"');
     expect(source).toContain('"Standard 40"');
   });

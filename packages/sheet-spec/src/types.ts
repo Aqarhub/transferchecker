@@ -101,14 +101,14 @@ export interface GridFieldLayout {
   readonly columns: readonly GridFieldColumn[];
 }
 
-export interface VerticalText {
+/**
+ * A short printed line. Layout owns the anchor and the alignment; the renderer
+ * owns typography, so the exact baseline is resolved from font metrics there.
+ */
+export interface AnchoredText {
   readonly text: string;
-  /**
-   * Band the text is centered within. Layout owns geometry and the renderer
-   * owns typography, so the exact baseline is resolved from font metrics there.
-   */
-  readonly band: Rect;
-  readonly rotationDeg: number;
+  readonly anchor: Point;
+  readonly align: 'start' | 'center' | 'end';
 }
 
 /**
@@ -123,32 +123,30 @@ export interface SheetCodeLayout {
   readonly payload: string;
 }
 
-/**
- * A column of anchor marks, printed in the gap between two question columns.
- *
- * The timing marks all sit at one x, inside the band the left corner squares
- * already occupy, so they say nothing about the middle of the page in x. These
- * do: they are the same mark, in the same rows, at an x the corners do not pin.
- */
-export interface AnchorColumn {
-  /** Centre of the marks in x. This is the value a scanner measures against. */
-  readonly xMm: number;
-  /** One mark per question row, index aligned with `timingMarks`. */
-  readonly marks: readonly Rect[];
-}
-
 export interface SheetLayout {
-  readonly version: 4;
+  readonly version: 5;
   readonly paper: { readonly widthMm: number; readonly heightMm: number };
   /** Perspective reference points, in top-left, top-right, bottom-left, bottom-right order. */
   readonly fiducials: readonly Rect[];
-  /** One mark per question row, used to recover the row index after warping. */
-  readonly timingMarks: readonly Rect[];
-  /** Empty on a one column sheet, which therefore has no evidence in x. */
-  readonly anchorColumns: readonly AnchorColumn[];
+  /**
+   * The four small squares at the middle of each page edge, in left, right,
+   * top, bottom order. Four corner points fix a homography exactly and say
+   * nothing about the middle of the page; these are the sheet's only evidence
+   * there, in both axes, and they replace version 4's per-row timing strip and
+   * anchor columns.
+   */
+  readonly edgeMarks: readonly Rect[];
+  /**
+   * The institution letterhead band, or null when this sheet prints none.
+   * The band itself is blank paper: the school stamps or prints its own
+   * header there, so the renderer draws nothing in it.
+   */
+  readonly letterhead: Rect | null;
   readonly code: SheetCodeLayout;
-  readonly branding: VerticalText;
-  readonly title: VerticalText;
+  /** The site name, printed beside the code at the foot of the sheet. */
+  readonly branding: AnchoredText;
+  /** The template name, printed under the smallest header box. */
+  readonly title: AnchoredText;
   readonly writtenFields: readonly WrittenBoxLayout[];
   readonly gridFields: readonly GridFieldLayout[];
   readonly questionColumns: readonly QuestionColumn[];

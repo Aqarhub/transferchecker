@@ -17,6 +17,7 @@ export function planHeader(
   leftMm: number,
   rightMm: number,
   topMm: number,
+  direction: 'ltr' | 'rtl' = 'ltr',
 ): HeaderPlan {
   if (fields.length === 0) {
     return { fields: [], heightMm: 0 };
@@ -24,7 +25,11 @@ export function planHeader(
 
   const availableMm = Math.max(rightMm - leftMm, 0);
   const placed: WrittenBoxLayout[] = [];
-  let cursorXMm = leftMm;
+  // An Arabic sheet reads from the right, so its first box sits there and the
+  // row grows leftward. The cursor tracks the NEXT box's leading edge either
+  // way, and only the arithmetic that advances it differs.
+  const rtl = direction === 'rtl';
+  let cursorXMm = rtl ? rightMm : leftMm;
   let rowTopMm = topMm;
   let rows = 1;
 
@@ -32,24 +37,28 @@ export function planHeader(
     // A field wider than the band is clamped rather than allowed to overflow,
     // since the header can always be made to fit by shrinking a box.
     const widthMm = Math.min(FIELD_WIDTH_MM[field.width], availableMm);
-    const startsRow = cursorXMm === leftMm;
-    if (!startsRow && cursorXMm + widthMm > rightMm) {
-      cursorXMm = leftMm;
+    const startsRow = cursorXMm === (rtl ? rightMm : leftMm);
+    const overflows = rtl ? cursorXMm - widthMm < leftMm : cursorXMm + widthMm > rightMm;
+    if (!startsRow && overflows) {
+      cursorXMm = rtl ? rightMm : leftMm;
       rowTopMm += ROW_HEIGHT_MM + GEOMETRY.headerRowGapMm;
       rows += 1;
     }
+    const boxLeftMm = rtl ? cursorXMm - widthMm : cursorXMm;
     placed.push({
       id: field.id,
       label: field.label,
-      labelAnchor: { xMm: cursorXMm, yMm: rowTopMm + GEOMETRY.headerLabelMm - 1.2 },
+      labelAnchor: { xMm: boxLeftMm, yMm: rowTopMm + GEOMETRY.headerLabelMm - 1.2 },
       box: {
-        xMm: cursorXMm,
+        xMm: boxLeftMm,
         yMm: rowTopMm + GEOMETRY.headerLabelMm,
         wMm: widthMm,
         hMm: GEOMETRY.writtenBoxHeightMm,
       },
     });
-    cursorXMm += widthMm + GEOMETRY.headerFieldGapMm;
+    cursorXMm = rtl
+      ? cursorXMm - widthMm - GEOMETRY.headerFieldGapMm
+      : cursorXMm + widthMm + GEOMETRY.headerFieldGapMm;
   }
 
   return {

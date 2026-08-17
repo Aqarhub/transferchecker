@@ -63,14 +63,13 @@ describe('generated Typst', () => {
 
   it('compiles a dense sheet, four columns of a hundred questions', () => {
     const layout = makeLayout({
-      // Four choices rather than five. Defenses د1 and د3 took 12 mm of content
-      // width and the anchor's clearance took 6 mm more, so four columns of
-      // five choices no longer fit A4 at the default bubble: 169.6 mm of ink
-      // and gap against 164 mm of content [measured]. Three columns of five is
-      // the widest A4 now takes with the identifier sidebar beside it.
+      // The dense row pitch the stock hundred-question template uses: at the
+      // default 7 mm, a hundred rows plus the version 5 foot line no longer
+      // fit an A4 body, and that is the same trade templates.ts documents.
       questions: choiceQuestions(100, latinSymbols(4)),
       columns: 4,
       headerFields: [{ id: 'name', usage: 'studentName', label: 'Name', kind: 'writtenBox' }],
+      bubble: { radiusMm: 2, pitchXMm: 5.6, pitchYMm: 5.5, gridPitchYMm: 5.4 },
     });
     expect(compile(renderSheetTypst(layout, makeOptions())).length).toBeGreaterThan(4000);
   });

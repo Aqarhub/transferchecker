@@ -40,7 +40,7 @@ export function arabicQuestions(choices: number, count = 40): QuestionInput[] {
 export function makeSpec(overrides: Partial<SheetSpecInput> = {}): SheetSpec {
   const base: SheetSpecInput = {
     templateId: TEMPLATE_ID,
-    version: 4,
+    version: 5,
     name: 'Standard 40',
     branding: 'TRANSFERCHECKER.COM',
     paper: 'A4',

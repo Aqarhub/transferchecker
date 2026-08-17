@@ -4,14 +4,14 @@
 // scanner does not know the paper, the bubble metrics or how many questions
 // there are. Everything after this stage is arithmetic on what it says.
 //
-// Where to look is arithmetic too. On every sheet sheet-spec lays out, the
-// code's top-right corner sits a fixed distance from the top-right corner
-// square: `titleBandMm - fiducialMm / 2` to its left and
-// `fiducialMm / 2 + headerGapMm` below it. Neither offset depends on the paper,
-// which is the point, because the paper is exactly what we do not know yet.
-// Anchoring on the top-right corner square also keeps the estimated frame's few
-// percent of scale error harmless: the error is a fraction of the short offset
-// to the code, not of the whole page.
+// Where to look is arithmetic too. On every sheet sheet-spec lays out since
+// version 5, the code sits at the foot: its right edge on the same line as the
+// bottom-right corner square's outer edge, its bottom edge `codeBottomClearMm`
+// above that square. Neither offset depends on the paper, which is the point,
+// because the paper is exactly what we do not know yet. Anchoring on the
+// corner square also keeps the estimated frame's few percent of scale error
+// harmless: the error is a fraction of the short offset to the code, not of
+// the whole page.
 
 import { GEOMETRY, codeModuleMmFor, decodeSheetCode } from '@transferchecker/sheet-spec';
 import type { DecodedCode } from '@transferchecker/sheet-spec';
@@ -76,23 +76,25 @@ interface Found {
 }
 
 function attempt(image: GrayImage, frame: Frame): Found | null {
-  // Distance from the top-right corner square's CENTRE to the printed code's
-  // own top-right corner. Neither term depends on the paper, which is the
-  // point, because the paper is exactly what has not been read yet.
-  const rightOffsetMm = GEOMETRY.titleBandMm + GEOMETRY.brandingBandMm - GEOMETRY.fiducialMm / 2;
-  const topOffsetMm = GEOMETRY.fiducialMm / 2 + GEOMETRY.headerGapMm;
+  // From the bottom-right corner square's CENTRE: the code's right edge sits
+  // half a fiducial outward, and its bottom edge the printed clearance above
+  // the square's top. Neither term depends on the paper, which is the point,
+  // because the paper is exactly what has not been read yet.
+  const rightEdgeMm = frame.spanXMm + GEOMETRY.fiducialMm / 2;
+  const bottomEdgeMm = frame.spanYMm - GEOMETRY.fiducialMm / 2 - GEOMETRY.codeBottomClearMm;
 
   for (const size of candidateSizes()) {
     // Defense د6 made the module a function of the module count, so the whole
     // search is now per candidate: a 21 module code prints at 1.0 mm and a 49
-    // module one at 0.5 mm, which puts their top-right finder centres 4 mm
-    // apart. Deriving it from the SAME function the layout printed with is what
+    // module one at 0.5 mm, which puts their top-right finder centres apart.
+    // Deriving it from the SAME function the layout printed with is what
     // keeps this arithmetic rather than search.
     const moduleMm = codeModuleMmFor(size);
     const inMm = GEOMETRY.codeQuietModules * moduleMm + finderHalfMm(moduleMm);
+    const acrossMm = (size + 2 * GEOMETRY.codeQuietModules) * moduleMm;
     const topRightGuess: Centre = {
-      xMm: frame.spanXMm - rightOffsetMm - inMm,
-      yMm: topOffsetMm + inMm,
+      xMm: rightEdgeMm - inMm,
+      yMm: bottomEdgeMm - acrossMm + inMm,
     };
 
     const topRight = refineFinder(image, frame, topRightGuess, moduleMm);

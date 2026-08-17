@@ -1,7 +1,7 @@
 // The whole scan, in the order the sheet makes possible.
 //
 // Corner squares, then the code, then the geometry the code rebuilds, then the
-// sheet's own photometric reference, then the timing marks, then every bubble.
+// four edge marks, then the sheet's own photometric reference, then every bubble.
 // Each stage either produces the input the next one needs or returns a named
 // refusal, and nothing downstream ever runs on a guess about what came before.
 //
@@ -23,17 +23,16 @@ import type { Thresholds } from '../decide/thresholds';
 import { findFiducials } from '../geometry/fiducials';
 import { fiducialSideMm, paperFrame } from '../geometry/frame';
 import type { GrayImage } from '../image/gray';
-import { readAnchors } from '../measure/anchor';
+import { readEdgeMarks, warpFrom } from '../measure/edge';
 import { photometryOf } from '../measure/photometry';
-import { readTimingMarks } from '../measure/timing';
 import { groupsOf, identityOf, measureSheet } from './measure-sheet';
 import type { GroupResult, SheetPass } from './measure-sheet';
 import { perturbFrame, perturbationsFor } from './perturb';
 import type { FieldReading, FieldState, QuestionReading, ScanResult } from './result';
 
 /**
- * How far the printed corner square may measure from its 8 mm before the four
- * points are not one sheet's four points.
+ * How far the printed corner square may measure from its printed side before
+ * the four points are not one sheet's four points.
  *
  * [measured] Two percent, against a worst legitimate reading of 0.2 percent
  * over flat renders and photographs with tilt, blur, noise and shadow, and
@@ -46,7 +45,7 @@ const MAX_FIDUCIAL_ERROR = 0.02;
  * How unequal the four corner squares may look before the page is too steep to
  * read rather than too far away.
  *
- * All four are the same 8 mm of printed ink, so the ratio between the largest
+ * All four are the same printed ink, so the ratio between the largest
  * and the smallest measured one is perspective and nothing else. [measured] It
  * is 1.00 square on, 1.36 at the steepest frame that still decodes, and 2.07 to
  * 2.15 past it. The threshold sits between those two, and it only ever changes
@@ -184,50 +183,37 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
     return { kind: 'rejected', reason: { kind: 'not_this_geometry', area: 'sheet', axis: 'both' } };
   }
 
-  // The corner squares are 8 mm of printed ink, and their size was never fed to
-  // the solve, so it is the only thing about the map the map cannot absorb.
+  // The corner squares are solid printed ink of a known side, and their size
+  // was never fed to the solve, so it is the only thing about the map the map
+  // cannot absorb.
   const sideMm = fiducialSideMm(frame, layout, found.quad.sidesPx);
   if (Math.abs(sideMm - GEOMETRY.fiducialMm) / GEOMETRY.fiducialMm > MAX_FIDUCIAL_ERROR) {
     return { kind: 'rejected', reason: { kind: 'not_one_sheet', fiducialMm: sideMm } };
   }
 
-  const timing = readTimingMarks(image, frame, layout);
-  if (timing.kind === 'missing') {
+  // The middle of the page, which the corners cannot measure at all: a curled
+  // sheet solves its four corners exactly and still moves the middle bubbles.
+  // The four edge marks measure that displacement in both axes, and what they
+  // measure within the model's reach is CORRECTED rather than refused.
+  const edges = readEdgeMarks(image, frame, layout);
+  if (edges.kind === 'missing') {
     return {
       kind: 'rejected',
-      reason: { kind: 'rows_missing', expected: timing.expected, found: timing.found },
+      reason: { kind: 'marks_missing', expected: edges.expected, found: edges.found },
     };
   }
-  if (timing.kind !== 'ok') {
+  if (edges.kind === 'unstable') {
     return {
       kind: 'rejected',
-      reason: { kind: 'sheet_not_flat', residualMm: timing.residualMm, axis: 'y' },
+      reason: { kind: 'sheet_not_flat', residualMm: edges.residualMm, axis: edges.axis },
     };
   }
+  const warp = warpFrom(layout, edges.marks);
 
-  // The horizontal axis, which nothing before the anchor marks could measure.
-  // A sheet curled about a vertical axis solves its four corners exactly and
-  // leaves the timing residual at zero, so this is the only stage that can
-  // refuse it, and a sheet that prints no anchor at all is reported as
-  // unmeasured rather than as measured and clean.
-  const anchors = readAnchors(image, frame, layout);
-  if (anchors.kind === 'missing') {
-    return {
-      kind: 'rejected',
-      reason: { kind: 'anchors_missing', expected: anchors.expected, found: anchors.found },
-    };
-  }
-  if (anchors.kind === 'unstable') {
-    return {
-      kind: 'rejected',
-      reason: { kind: 'sheet_not_flat', residualMm: anchors.residualMm, axis: 'x' },
-    };
-  }
-
-  const field = photometryOf(image, frame, layout, timing.marks);
+  const field = photometryOf(image, frame, layout, edges.marks);
   if (field === null) return { kind: 'rejected', reason: { kind: 'low_contrast', contrast: 0 } };
 
-  const base = measureSheet(image, frame, field, timing.marks, layout, spec, thresholds);
+  const base = measureSheet(image, frame, field, warp, layout, spec, thresholds);
 
   // Defense د10: glare rejects the FRAME, never the question. It is a property
   // of where the light and the phone are, and the next frame from a slightly
@@ -246,12 +232,12 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
     };
   }
 
-  // Defense د13. Each member nudges the MAP, and everything that depends on the
-  // map is then derived again, including the timing marks: reusing the base
-  // pass's marks would leave every row correction identical under every member,
-  // so nothing whose source is a mark centroid would be visible to criterion 12
-  // at all, and the set would be testing half the pipeline while reporting on
-  // all of it. The cost is one extra strip reading per member.
+  // Defense د13. Each member nudges the MAP, and everything that depends on
+  // the map is then derived again, including the edge marks: reusing the base
+  // pass's correction would leave it identical under every member, so nothing
+  // whose source is a mark centroid would be visible to criterion 12 at all,
+  // and the set would be testing half the pipeline while reporting on all of
+  // it. The cost is one extra reading of four marks per member.
   const unstable =
     options.perturb === false
       ? new Set<string>()
@@ -259,12 +245,12 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
           base,
           perturbationsFor(frame).map((nudge) => {
             const moved = perturbFrame(frame, nudge);
-            const shifted = readTimingMarks(image, moved, layout);
+            const shifted = readEdgeMarks(image, moved, layout);
             return measureSheet(
               image,
               moved,
               field,
-              shifted.kind === 'ok' ? shifted.marks : timing.marks,
+              warpFrom(layout, shifted.kind === 'ok' ? shifted.marks : edges.marks),
               layout,
               spec,
               thresholds,
@@ -300,10 +286,7 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
       marks: questions.map((entry) => markOf(entry.outcome)).join(''),
       quality: {
         modulePx: code.modulePx,
-        timingResidualMm: timing.residualMm,
-        rowsFound: timing.found,
-        rowsExpected: timing.expected,
-        anchorResidualMm: anchors.kind === 'ok' ? anchors.residualMm : null,
+        edgeResidualMm: edges.residualMm,
         contrast: field.contrast,
         blanks: questions.filter((entry) => entry.outcome.kind === 'blank').length,
         ambiguous: questions.filter((entry) => entry.outcome.kind === 'ambiguous').length,

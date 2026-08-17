@@ -30,7 +30,7 @@ const ALPHANUMERIC = /^[0-9A-Z $%*+\-./:]*$/;
 const geometryOf = (layout: SheetLayout): unknown => ({
   paper: layout.paper,
   fiducials: layout.fiducials,
-  timingMarks: layout.timingMarks,
+  edgeMarks: layout.edgeMarks,
   writtenFields: layout.writtenFields.map((field) => field.box),
   gridFields: layout.gridFields.map((field) => field.columns),
   questionColumns: layout.questionColumns,
@@ -274,10 +274,12 @@ describe('the printed code', () => {
     const moduleMm = (code: typeof full): number =>
       code.box.wMm / (code.modules.length + 2 * GEOMETRY.codeQuietModules);
     expect(moduleMm(short) - moduleMm(full)).toBeLessThanOrEqual(0.25);
-    // Both still clear the floor by a wide margin, which is what makes the
-    // full code the default: carrying the whole geometry is what lets a device
-    // that has never seen the template grade the paper.
-    expect(moduleMm(full)).toBeGreaterThanOrEqual(0.7);
+    // Both still clear the 0.5 mm floor, which is what makes the full code
+    // the default: carrying the whole geometry is what lets a device that has
+    // never seen the template grade the paper. The margin narrowed when the
+    // budget went from 30 mm to 24 in version 5, and that trade was taken
+    // deliberately: the foot line's height is paid for by question rows.
+    expect(moduleMm(full)).toBeGreaterThanOrEqual(0.6);
   });
 
   it('refuses a sheet whose geometry cannot fit a readable code', () => {
@@ -293,11 +295,19 @@ describe('the printed code', () => {
     });
   });
 
-  it('sits inside the page and clear of the template name band', () => {
+  it('sits at the foot with its right edge on the corner column', () => {
+    // A fixed offset from the bottom-right corner square is what lets the
+    // scanner put a window over the code before it knows the paper size.
     const layout = layoutOf(makeSpec());
-    const rightEdgeMm =
-      layout.paper.widthMm - GEOMETRY.marginSideMm - GEOMETRY.titleBandMm - GEOMETRY.brandingBandMm;
-    expect(layout.code.box.xMm + layout.code.box.wMm).toBeCloseTo(rightEdgeMm, 6);
+    expect(layout.code.box.xMm + layout.code.box.wMm).toBeCloseTo(
+      layout.paper.widthMm - GEOMETRY.marginSideMm,
+      6,
+    );
+    const bottomCorner = layout.fiducials[2];
+    expect((bottomCorner?.yMm ?? 0) - (layout.code.box.yMm + layout.code.box.hMm)).toBeCloseTo(
+      GEOMETRY.codeBottomClearMm,
+      6,
+    );
   });
 });
 

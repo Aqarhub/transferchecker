@@ -2,7 +2,7 @@
 //
 // This is the golden set before there is a golden set. It draws what the PDF
 // generator draws, from the same layout object, so a sheet rendered here has
-// its corner squares, timing marks, printed code and bubbles at exactly the
+// its corner squares, edge marks, printed code and bubbles at exactly the
 // millimetres the scanner is going to look for.
 //
 // What it does NOT draw is text the scanner must not depend on: the question
@@ -23,7 +23,7 @@ import { createGray, fillCircle, fillRect, fillRing, strokeCircle, strokeRect } 
 export interface Ink {
   /** Paper white. Real paper photographs closer to 240 than to 255. */
   readonly paper: number;
-  /** Solid printed ink: the corner squares, the timing marks, the code. */
+  /** Solid printed ink: the corner squares, the edge marks, the code. */
   readonly ink: number;
   /** The bubble outline, printed light so an empty bubble reads as paper. */
   readonly bubbleStroke: number;
@@ -154,10 +154,7 @@ export function renderSheet(layout: SheetLayout, options: RenderOptions = {}): G
   );
 
   for (const rect of layout.fiducials) fillRect(image, pxPerMm, rect, ink.ink);
-  for (const rect of layout.timingMarks) fillRect(image, pxPerMm, rect, ink.ink);
-  for (const column of layout.anchorColumns) {
-    for (const rect of column.marks) fillRect(image, pxPerMm, rect, ink.ink);
-  }
+  for (const rect of layout.edgeMarks) fillRect(image, pxPerMm, rect, ink.ink);
   drawCode(image, pxPerMm, layout, ink);
   if (options.furniture !== false) drawFurniture(image, pxPerMm, layout, ink);
 

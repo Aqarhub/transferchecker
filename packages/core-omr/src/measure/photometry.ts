@@ -7,13 +7,13 @@
 // confident answer. The fix is not a better denominator inside the row, it is a
 // denominator from outside it.
 //
-// The sheet prints its own reference and nobody was reading it. Four 8 mm
-// squares of solid ink sit at known millimetres, a timing mark of the same ink
-// sits beside every question row, and guaranteed white paper surrounds all of
-// them. Two point calibration per sheet, corrected per row, gives every bubble
-// a locally expected black and a locally expected white. A shadow then becomes
-// a measured gradient rather than an unknown, and an absolute floor measured on
-// that scale means what it says.
+// The sheet prints its own reference and nobody was reading it. Four squares
+// of solid ink sit at known millimetres in the corners, four more at the
+// middle of the edges, and guaranteed white paper surrounds all of them. Two
+// point calibration per sheet, corrected from the edge marks, gives every
+// bubble a locally expected black and a locally expected white. A shadow then
+// becomes a measured gradient rather than an unknown, and an absolute floor
+// measured on that scale means what it says.
 
 import { GEOMETRY } from '@transferchecker/sheet-spec';
 import type { SheetLayout } from '@transferchecker/sheet-spec';
@@ -21,6 +21,8 @@ import type { Frame } from '../geometry/frame';
 import { toImage } from '../geometry/frame';
 import { sampleAt } from '../image/gray';
 import type { GrayImage } from '../image/gray';
+import { transfiniteWeights } from './edge';
+import type { EdgeMark } from './edge';
 
 export interface Reference {
   readonly black: number;
@@ -34,9 +36,11 @@ export interface PhotometricField {
   readonly topMm: number;
   readonly spanXMm: number;
   readonly spanYMm: number;
-  /** Per row corrections measured from the timing marks, sorted by y. */
-  readonly rows: readonly {
-    readonly yMm: number;
+  /**
+   * Mid-edge corrections measured at the four edge marks, in left, right,
+   * top, bottom order. Empty when the marks were not read.
+   */
+  readonly edges: readonly {
     readonly blackShift: number;
     readonly whiteShift: number;
   }[];
@@ -119,17 +123,17 @@ function referenceAtFiducial(
 /**
  * Builds the reference field from the sheet's own printed furniture.
  *
- * `rowMarks` are the measured centres of the timing marks, which carry the same
- * ink as the corner squares and sit beside the question rows, so they correct a
- * shadow that changes down the page rather than across it. Without them the
- * field is bilinear between four corners, which a hard shadow edge crossing one
- * row defeats exactly where the bubbles are.
+ * `edgeMarks` are the measured mid-edge marks, which carry the same ink as
+ * the corner squares. Measuring black and white at them corrects a shadow
+ * whose gradient bends between the corners, in both directions of the page.
+ * Without them the field is bilinear between four corners, which a hard
+ * shadow edge crossing the middle defeats exactly where the bubbles are.
  */
 export function photometryOf(
   image: GrayImage,
   frame: Frame,
   layout: SheetLayout,
-  rowMarks: readonly { readonly yMm: number; readonly xMm: number }[],
+  edgeMarks: readonly EdgeMark[],
 ): PhotometricField | null {
   const corners = layout.fiducials.map((rect) =>
     referenceAtFiducial(image, frame, rect.xMm + rect.wMm / 2, rect.yMm + rect.hMm / 2),
@@ -154,33 +158,30 @@ export function photometryOf(
     topMm: topMm + half,
     spanXMm,
     spanYMm,
-    rows: [],
+    edges: [],
     contrast,
   };
 
-  const rows = rowMarks
-    .map((mark) => {
-      const measured: Reference = {
-        black: inkOf(image, frame, mark.xMm, mark.yMm, GEOMETRY.timingHeightMm * 0.3),
-        white: paperAround(
-          image,
-          frame,
-          mark.xMm,
-          mark.yMm,
-          GEOMETRY.timingHeightMm * 0.8,
-          GEOMETRY.timingHeightMm * 1.4,
-        ),
-      };
-      const predicted = referenceAt(base, mark.xMm, mark.yMm);
-      return {
-        yMm: mark.yMm,
-        blackShift: measured.black - predicted.black,
-        whiteShift: measured.white - predicted.white,
-      };
-    })
-    .sort((a, b) => a.yMm - b.yMm);
+  // Measured at the marks' MEASURED centres rather than their predicted ones,
+  // so a corrected sheet's photometry is read off the ink that is actually
+  // there. The shift each mark contributes is against what the corner
+  // bilinear predicts at that spot.
+  const markMm = GEOMETRY.edgeMarkMm;
+  const edges = edgeMarks.map((mark) => {
+    const xMm = mark.predictedXMm + mark.dxMm;
+    const yMm = mark.predictedYMm + mark.dyMm;
+    const measured: Reference = {
+      black: inkOf(image, frame, xMm, yMm, markMm * 0.3),
+      white: paperAround(image, frame, xMm, yMm, markMm * 0.8, markMm * 1.4),
+    };
+    const predicted = referenceAt(base, xMm, yMm);
+    return {
+      blackShift: measured.black - predicted.black,
+      whiteShift: measured.white - predicted.white,
+    };
+  });
 
-  return { ...base, rows };
+  return { ...base, edges: edges.length === 4 ? edges : [] };
 }
 
 function bilinear(
@@ -205,39 +206,33 @@ function bilinear(
   return top + (bottom - top) * v;
 }
 
-/** Linear interpolation between the two nearest measured rows. */
-function rowShift(
+/**
+ * The mid-edge corrections' contribution at one point, through the same
+ * transfinite weights the geometric correction uses: exact at each mark, zero
+ * at the corners the bilinear already fits.
+ */
+function edgeShift(
   field: PhotometricField,
+  xMm: number,
   yMm: number,
-  pick: (row: PhotometricField['rows'][number]) => number,
+  pick: (edge: PhotometricField['edges'][number]) => number,
 ): number {
-  const rows = field.rows;
-  if (rows.length === 0) return 0;
-  const first = rows[0];
-  const last = rows.at(-1);
-  if (first === undefined || last === undefined) return 0;
-  if (yMm <= first.yMm) return pick(first);
-  if (yMm >= last.yMm) return pick(last);
-
-  for (let index = 1; index < rows.length; index += 1) {
-    const above = rows[index - 1];
-    const below = rows[index];
-    if (above === undefined || below === undefined) continue;
-    if (yMm > below.yMm) continue;
-    const span = below.yMm - above.yMm;
-    if (span <= 0) return pick(above);
-    const t = (yMm - above.yMm) / span;
-    return pick(above) + (pick(below) - pick(above)) * t;
+  const [left, right, top, bottom] = field.edges;
+  if (left === undefined || right === undefined || top === undefined || bottom === undefined) {
+    return 0;
   }
-  return pick(last);
+  const u = Math.max(0, Math.min(1, (xMm - field.leftMm) / field.spanXMm));
+  const v = Math.max(0, Math.min(1, (yMm - field.topMm) / field.spanYMm));
+  const [wLeft, wRight, wTop, wBottom] = transfiniteWeights(u, v);
+  return wLeft * pick(left) + wRight * pick(right) + wTop * pick(top) + wBottom * pick(bottom);
 }
 
 /** What black and white are expected to read as, at one point on the sheet. */
 export function referenceAt(field: PhotometricField, xMm: number, yMm: number): Reference {
   const black =
-    bilinear(field, xMm, yMm, (r) => r.black) + rowShift(field, yMm, (r) => r.blackShift);
+    bilinear(field, xMm, yMm, (r) => r.black) + edgeShift(field, xMm, yMm, (e) => e.blackShift);
   const white =
-    bilinear(field, xMm, yMm, (r) => r.white) + rowShift(field, yMm, (r) => r.whiteShift);
+    bilinear(field, xMm, yMm, (r) => r.white) + edgeShift(field, xMm, yMm, (e) => e.whiteShift);
   // A shadow may push both together, but it may never cross them over.
   return white - black < 20 ? { black, white: black + 20 } : { black, white };
 }

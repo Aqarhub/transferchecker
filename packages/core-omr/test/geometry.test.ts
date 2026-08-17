@@ -5,18 +5,11 @@
 // millimetres rather than that a fixture went stale.
 
 import { describe, expect, it } from 'vitest';
-import { layoutSheet, stockTemplate } from '@transferchecker/sheet-spec';
+import { GEOMETRY, layoutSheet, stockTemplate } from '@transferchecker/sheet-spec';
 import type { SheetLayout, SheetSpec } from '@transferchecker/sheet-spec';
 import { findFiducials } from '../src/geometry/fiducials';
 import { MIN_MODULE_PX, readSheetCode } from '../src/code/index';
-import {
-  FIDUCIAL_INSET_BOTTOM_MM,
-  FIDUCIAL_INSET_TOP_MM,
-  FIDUCIAL_INSET_X_MM,
-  estimateFrame,
-  paperFrame,
-  toImage,
-} from '../src/geometry/frame';
+import { FIDUCIAL_INSET_X_MM, estimateFrame, paperFrame, toImage } from '../src/geometry/frame';
 import { renderSheet } from '../tools/render';
 import { photograph } from '../tools/photograph';
 
@@ -61,10 +54,10 @@ describe('the four corner squares are found', () => {
       expect(nearest).toBeLessThan(pxPerMm / 3);
     }
 
-    // Eight millimetres of printed square, measured back out of the pixels.
+    // The printed square's own side, measured back out of the pixels.
     for (const side of found.quad.sidesPx) {
-      expect(side / pxPerMm).toBeGreaterThan(7.5);
-      expect(side / pxPerMm).toBeLessThan(8.5);
+      expect(side / pxPerMm).toBeGreaterThan(GEOMETRY.fiducialMm - 0.5);
+      expect(side / pxPerMm).toBeLessThan(GEOMETRY.fiducialMm + 0.5);
     }
   });
 
@@ -158,8 +151,12 @@ describe('the sheet says what it is', () => {
     const { spec, layout } = sheet('standard50');
     const flat = renderSheet(layout, { pxPerMm: 12 });
     const frame = photograph(flat, layout.paper.widthMm, layout.paper.heightMm, {
-      width: 720,
-      height: 1280,
+      // 900 by 1600: with the version 5 module at 0.64 mm this lands just
+      // under the three pixel floor while the symbol still decodes, which is
+      // the exact claim under test. The old 720 by 1280 sat under the floor
+      // for the 0.87 mm module the 30 mm budget used to buy.
+      width: 900,
+      height: 1600,
       fill: 0.86,
       yawDeg: 5,
       pitchDeg: 4,
@@ -255,7 +252,7 @@ describe('the paper frame puts every printed feature where it was printed', () =
     // The frame was solved from the four corner squares alone. If the model is
     // right, it predicts the middle of the page, which is where every bubble
     // lives and where a wrong model does its damage.
-    for (const mark of layout.timingMarks) {
+    for (const mark of layout.edgeMarks) {
       const centre = toImage(frame, mark.xMm + mark.wMm / 2, mark.yMm + mark.hMm / 2);
       const expectedX = (mark.xMm + mark.wMm / 2) * pxPerMm;
       const expectedY = (mark.yMm + mark.hMm / 2) * pxPerMm;
@@ -279,8 +276,13 @@ describe('the paper frame puts every printed feature where it was printed', () =
     // fiducial side can honestly deliver. The two spans are not the same inset
     // on both ends any more: defense د1 pushed the bottom pair further in than
     // the top pair, so the rectangle the squares form is not centred.
+    // The vertical span comes from the layout's own corner rows, which since
+    // version 5 depend on the letterhead band.
+    const first = layout.fiducials[0];
+    const last = layout.fiducials[3];
     const expectedX = layout.paper.widthMm - 2 * FIDUCIAL_INSET_X_MM;
-    const expectedY = layout.paper.heightMm - FIDUCIAL_INSET_TOP_MM - FIDUCIAL_INSET_BOTTOM_MM;
+    const expectedY =
+      (last?.yMm ?? 0) + (last?.hMm ?? 0) / 2 - ((first?.yMm ?? 0) + (first?.hMm ?? 0) / 2);
     expect(Math.abs(estimate.spanXMm - expectedX) / expectedX).toBeLessThan(0.04);
     expect(Math.abs(estimate.spanYMm - expectedY) / expectedY).toBeLessThan(0.04);
   });

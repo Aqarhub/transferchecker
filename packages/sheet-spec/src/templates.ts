@@ -29,13 +29,15 @@ const TEMPLATE_ID: Readonly<Record<StockTemplate, string>> = {
 
 /** Every human readable string on a stock sheet. */
 export interface TemplateText {
-  /** Printed on the right edge so a teacher can tell two sheets apart by eye. */
+  /** Printed under the date box so a teacher can tell two sheets apart by eye. */
   readonly name: string;
-  /** Vertical text on the left edge, normally the product name. */
+  /** Printed beside the code at the foot of the sheet, normally the product name. */
   readonly branding: string;
   readonly studentName: string;
   readonly studentId: string;
   readonly keyVersion: string;
+  /** 'rtl' for an Arabic sheet: the header boxes start from the right. */
+  readonly direction?: 'ltr' | 'rtl';
 }
 
 /**
@@ -69,10 +71,11 @@ export function stockTemplate(
 
   const withoutPaper: Omit<SheetSpecInput, 'paper'> = {
     templateId: TEMPLATE_ID[kind],
-    version: 4,
+    version: 5,
     name: text.name,
     branding: text.branding,
     columns: 'auto',
+    direction: text.direction ?? 'ltr',
     questions: Array.from({ length: shape.questions }, () => ({
       kind: 'choice',
       symbols: [...latinSymbols(shape.choices)],

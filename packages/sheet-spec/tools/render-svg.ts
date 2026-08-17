@@ -116,24 +116,33 @@ export interface RenderOptions {
 
 export function renderSheetSvg(layout: SheetLayout, options: RenderOptions): string {
   const { widthMm, heightMm } = layout.paper;
-  const vertical = (text: string, band: Rect, rotationDeg: number): string => {
-    // The band is centered on its long axis and the renderer owns the baseline.
-    const xMm = band.xMm + band.wMm / 2 + (rotationDeg < 0 ? 1.6 : -1.2);
-    const yMm = band.yMm + band.hMm / 2;
+  const anchored = (
+    text: string,
+    at: { anchor: { xMm: number; yMm: number }; align: 'start' | 'center' | 'end' },
+  ): string => {
+    const anchor = at.align === 'center' ? 'middle' : at.align;
     return (
-      `<text transform="rotate(${String(rotationDeg)} ${round(xMm)} ${round(yMm)})" x="${round(xMm)}" y="${round(yMm)}"` +
-      ` font-size="4" text-anchor="middle" ${FONT} fill="${INK}">${escapeText(text)}</text>`
+      `<text x="${round(at.anchor.xMm)}" y="${round(at.anchor.yMm)}" font-size="3.2"` +
+      ` text-anchor="${anchor}" ${FONT} fill="${INK}">${escapeText(text)}</text>`
     );
   };
 
   const body = [
     `<rect width="${String(widthMm)}" height="${String(heightMm)}" fill="white"/>`,
+    // The letterhead band prints as blank paper; the preview outlines it so a
+    // reviewer sees the reserved space.
+    ...(layout.letterhead === null
+      ? []
+      : [
+          `<rect x="${round(layout.letterhead.xMm)}" y="${round(layout.letterhead.yMm)}"` +
+            ` width="${round(layout.letterhead.wMm)}" height="${round(layout.letterhead.hMm)}"` +
+            ` fill="none" stroke="#bbb" stroke-width="0.4" stroke-dasharray="2.4 1.6"/>`,
+        ]),
     ...layout.fiducials.map((box) => rect(box, INK)),
-    ...layout.timingMarks.map((box) => rect(box, INK)),
-    ...layout.anchorColumns.flatMap((column) => column.marks.map((box) => rect(box, INK))),
+    ...layout.edgeMarks.map((box) => rect(box, INK)),
     ...renderCode(layout.code),
-    vertical(layout.branding.text, layout.branding.band, layout.branding.rotationDeg),
-    vertical(layout.title.text, layout.title.band, layout.title.rotationDeg),
+    anchored(layout.branding.text, layout.branding),
+    anchored(layout.title.text, layout.title),
     ...layout.writtenFields.flatMap((field) => [
       `<text x="${round(field.labelAnchor.xMm)}" y="${round(field.labelAnchor.yMm)}" font-size="3.2"` +
         ` ${FONT} fill="${INK}">${escapeText(field.label)}</text>`,

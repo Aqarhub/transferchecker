@@ -17,11 +17,11 @@
 // tenth of a millimetre, so the residual comes back at 0.00 mm while the
 // middle of the page has moved by a whole bubble pitch.
 //
-// The displacement is faded in below `fromYMm` rather than applied to the whole
-// page. A real sheet can curl that way, with its top held down by a hand or a
-// clipboard, and it also keeps the printed code, which sits at the top right,
-// where the decoder can still read it. The point of the test is the stage after
-// the code, so the injected fault has to leave the code alone to reach it.
+// The displacement can be faded in below `fromYMm` rather than applied to the
+// whole page, the way a sheet curls with its top held down by a hand. Passing
+// a `fromYMm` above the page top applies the cylinder to the whole page, which
+// is the ordinary physical curl and the shape the edge-mark correction models
+// exactly.
 
 import { createGray, sampleAt } from '../src/image/gray';
 import type { GrayImage } from '../src/image/gray';

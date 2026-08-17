@@ -48,39 +48,65 @@ export const GEOMETRY = {
    *
    * Unequal margins cost nothing, because the perspective solve needs four
    * points at KNOWN positions and not at EQUAL ones, and the scanner reads the
-   * positions out of the paper size the printed code carries.
+   * positions out of the paper size the printed code carries. Since version 5
+   * the top margin only applies when the sheet prints no letterhead band: with
+   * one, the corner row sits below the band instead, see `letterheadOf`.
    */
   marginTopMm: 10,
   marginSideMm: 10,
   marginBottomMm: 18,
-  /** Side length of each of the four square corner fiducials. */
-  fiducialMm: 8,
   /**
-   * Timing mark drawn on the left edge, one per question row.
+   * Side length of each of the four square corner fiducials.
    *
-   * Four millimetres rather than three, defense د3: three is under everything
-   * the field's literature recommends, and a 3 mm mark is the first thing to
-   * clog when the toner runs low or the sheet is a third generation photocopy.
-   * The mark is a measuring instrument and not a decoration, so it is given the
-   * height that keeps it measurable at the end of its life rather than the
-   * height that looks tidy when new.
+   * Six since version 5, eight before it. [computed] On a 1080 px frame of an
+   * A4 page a 6 mm square is about 31 px per side, several times what a centre
+   * of mass needs, and the change is proven against the full golden sweep
+   * rather than assumed.
    */
-  timingWidthMm: 6,
-  timingHeightMm: 4,
+  fiducialMm: 6,
   /**
-   * Blank paper beside a timing mark, before any printed ink, defense د3.
+   * Side of the four small squares printed at the middle of each page edge,
+   * new in version 5.
    *
-   * The sheet used to leave NONE: marks ran from 6 mm to 12 mm and the branding
-   * band started at 12 mm exactly, so the mark's own measurement window opened
-   * onto the ink beside it. Four millimetres is what moved the branding band to
-   * the other edge, and the timing reader no longer has to inset its window to
-   * keep that ink out.
+   * They replace both the per-row timing strip and the anchor columns of
+   * version 4. Four corner points fix a homography exactly and say nothing
+   * about the middle of the page, which is where a curled sheet does its
+   * damage: a curl about a vertical axis moves the edge midpoints in x, one
+   * about a horizontal axis moves them in y, and these four marks measure both
+   * where nothing else on the sheet can. Every camera-phone competitor
+   * (ZipGrade, Akindi, GradeCam) registers this way rather than with per-row
+   * marks, which belong to sheet-fed scanners.
    */
-  timingClearMm: 4,
-  /** Vertical text band reserved for the site name, on the right edge. */
-  brandingBandMm: 8,
-  /** Vertical text band reserved for the template name on the right edge. */
-  titleBandMm: 8,
+  edgeMarkMm: 4,
+  /**
+   * Blank paper an edge mark needs on each side before any printed ink, so its
+   * measurement window never opens onto something else's ink.
+   */
+  edgeMarkClearMm: 4,
+  /**
+   * The institution letterhead band, version 5: blank space above the top
+   * corner squares where a school prints or stamps its own header, the way
+   * ministry exam papers carry one. Heights by paper class are in
+   * `letterheadOf`; this is the gap between the paper edge and the band.
+   */
+  letterheadTopMm: 5,
+  /** Blank paper between the letterhead band and the top corner squares. */
+  letterheadClearMm: 5,
+  /**
+   * White gap inserted after every so many question rows, version 5. The count
+   * itself is `groupEvery` on the spec (default ten); this is the gap's
+   * height. Ten is the count a student counts in, and the break is what keeps
+   * a long column from reading as one undifferentiated stack.
+   *
+   * Four rather than five because of one sheet: a hundred dense rows plus two
+   * gaps at five millimetres run 0.5 mm past an A4 body, and a constant that
+   * fails exactly one member of the family is the wrong constant.
+   */
+  groupGapMm: 4,
+  /** Blank paper between the printed code's bottom edge and the corner row. */
+  codeBottomClearMm: 4,
+  /** Gap between the printed code and the site name printed beside it. */
+  brandGapMm: 4,
   /**
    * Smallest a printed code module may be. Below this a phone camera at normal
    * distance stops resolving modules, which is a scan that fails rather than a
@@ -92,8 +118,19 @@ export const GEOMETRY = {
   codeMinModuleMm: 0.5,
   /** Quiet zone the QR specification requires, in modules, on each side. */
   codeQuietModules: 4,
-  /** Past this the code would eat the header, so the sheet is refused instead. */
-  codeMaxSizeMm: 30,
+  /**
+   * Past this the code is refused rather than printed.
+   *
+   * Twenty-four since version 5, thirty before it. The code moved from the
+   * header to the foot of the sheet, where its height is what the question
+   * columns and the identity stack pay for row by row: at thirty, the hundred
+   * question sheet loses its thirtieth row and the family's approved 30+30+30+10
+   * split with it. [computed] Every stock payload still fits with the module
+   * above its 0.5 mm floor; what shrinks is the ceiling for exotic custom
+   * payloads, which are refused loudly at design time exactly as they were at
+   * thirty, just a little sooner.
+   */
+  codeMaxSizeMm: 24,
   /** Vertical space between the fiducial row and the header band. */
   headerGapMm: 4,
   /** Height reserved above a written box for its printed label. */
@@ -110,35 +147,13 @@ export const GEOMETRY = {
   /**
    * Horizontal space between question columns.
    *
-   * Eight rather than six because the gap now carries the anchor marks, and a
-   * 3 mm mark in a 6 mm gap would have had its measurement window open onto the
-   * bubble outline beside it.
+   * Since version 5 the gaps no longer carry anchor marks, so their width is
+   * a reading decision rather than a measuring one: wide enough that the
+   * columns read as separate blocks, and no wider, because [measured] at
+   * twelve an A6 sheet is 0.6 mm short of holding two four-choice columns.
+   * The whole block of columns is centred on the page.
    */
-  columnGapMm: 8,
-  /**
-   * Width of an anchor mark, printed in each gap between question columns.
-   *
-   * This is the only evidence on the sheet for registration in x anywhere
-   * between the corner squares. Every timing mark sits at one x inside the left
-   * corner square's own band, so a cylindrical curl about a vertical axis, zero
-   * at the corners and peaking mid page, solves the four corners exactly, leaves
-   * a timing residual of 0.00 mm, and still moves the middle of the page by a
-   * whole bubble pitch. The anchor is what makes that measurable.
-   *
-   * Three millimetres in an 8 mm gap leaves 2.5 mm of blank paper on each side.
-   * That is less than `timingClearMm` and it is enough here, because the ink it
-   * would meet first is the bubble outline, which is printed light and falls on
-   * the paper side of the mark's own black to white cut. The nearest SOLID ink,
-   * the printed question number, is 5 mm away.
-   */
-  anchorWidthMm: 3,
-  /**
-   * Blank paper an anchor mark needs on each side. Exactly what an anchor gets
-   * inside a column gap, which is where the number comes from: it is also the
-   * width a band anywhere else on the sheet must have before an anchor is
-   * printed in it.
-   */
-  anchorClearMm: 2.5,
+  columnGapMm: 10,
   /**
    * How far apart rows may be pushed when the questions do not fill the page.
    * `bubble.pitchYMm` is the closest rows may sit; the grid then spreads to use
@@ -147,18 +162,18 @@ export const GEOMETRY = {
    * so three questions on a page do not end up a finger apart.
    */
   maxRowPitchMm: 12,
-  /** Horizontal space between the question grid and the sidebar. */
-  sidebarGapMm: 8,
   /** Height reserved above a sidebar grid for its printed label. */
   sidebarLabelMm: 5,
   /** Padding inside the frame drawn around a sidebar grid. */
-  sidebarPadMm: 3,
+  sidebarPadMm: 2.5,
   /** Height of the write-in boxes drawn above a sidebar grid. */
-  sidebarWriteBoxMm: 8,
+  sidebarWriteBoxMm: 7,
   /** Vertical space between two stacked sidebar grids. */
   sidebarStackGapMm: 6,
-  /** Band at the bottom of the page reserved for the print warning. */
-  warningBandMm: 12,
+  /** Gap between the tail question column and the identity stack under it. */
+  sidebarTailGapMm: 3,
+  /** Blank paper between the identity stack's bottom and the printed code's top edge. */
+  sidebarBottomClearMm: 2.5,
   /** Height of a row of choice letters printed above its column. */
   choiceHeaderMm: 4,
   /**
@@ -202,6 +217,22 @@ export function codeModuleMmFor(moduleCount: number): number {
   // printer rasterises at about 0.04 mm, so it can hold a hundredth.
   const fits = Math.floor((GEOMETRY.codeMaxSizeMm / across) * 100) / 100;
   return Math.max(GEOMETRY.codeMinModuleMm, fits);
+}
+
+/**
+ * Height of the institution letterhead band a paper gets, when the sheet asks
+ * for one at all.
+ *
+ * A logic and not a constant, which was measured the hard way: a quarter page
+ * sheet is 139 mm tall and giving it a 24 mm band eats a fifth of it, so the
+ * band scales with the paper class and disappears on the small sizes that are
+ * tiled several to a printed page, where per-sheet letterheads would print an
+ * institution's header four times on one page.
+ */
+export function letterheadBandMm(paper: PaperSize): number {
+  if (paper.heightMm >= 260) return 24;
+  if (paper.heightMm >= 200) return 18;
+  return 0;
 }
 
 /**

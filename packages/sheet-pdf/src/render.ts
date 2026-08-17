@@ -14,7 +14,7 @@ import type {
   SheetCodeLayout,
   SheetLayout,
 } from '@transferchecker/sheet-spec';
-import { bubble, bubbleLabel, filledRect, strokedRect, textAt, textInBand } from './draw';
+import { bubble, bubbleLabel, filledRect, strokedRect, textAt } from './draw';
 import type { PagePlan } from './page';
 import { DEFAULT_THEME, type SheetTheme } from './theme';
 import { color, mm, strArray } from './typst-value';
@@ -133,35 +133,32 @@ function renderGridField(field: GridFieldLayout, theme: SheetTheme): string[] {
   ];
 }
 
+/** A short anchored line: the site name or the template name. */
+function anchoredText(at: SheetLayout['branding'], sizeMm: number, fill: string): string {
+  const align = at.align === 'center' ? 'center' : at.align === 'end' ? 'right' : 'left';
+  // The box the alignment resolves within is generous and invisible: layout
+  // owns the anchor, typography stays the renderer's.
+  return textAt(at.anchor.xMm, at.anchor.yMm, sizeMm, fill, at.text, {
+    align,
+    widthMm: align === 'left' ? 0 : 80,
+  });
+}
+
 /** Every mark on one sheet, in the sheet's own coordinates. */
 function sheetBody(layout: SheetLayout, options: RenderOptions, theme: SheetTheme): string[] {
   const { widthMm } = layout.paper;
 
   return [
     ...layout.fiducials.map((box) => filledRect(box, theme.ink)),
-    ...layout.timingMarks.map((box) => filledRect(box, theme.ink)),
-    // Printed in the same solid ink as the timing marks, because they are the
-    // same instrument turned ninety degrees: these are what the scanner has to
-    // measure registration in x with, anywhere between the corner squares.
-    ...layout.anchorColumns.flatMap((column) =>
-      column.marks.map((box) => filledRect(box, theme.ink)),
-    ),
+    // The four mid-edge marks, printed in the same solid ink as the corner
+    // squares: they are the sheet's only registration evidence between the
+    // corners, in both axes. The letterhead band is deliberately NOT drawn:
+    // it is blank paper the institution stamps or prints its own header on.
+    ...layout.edgeMarks.map((box) => filledRect(box, theme.ink)),
     ...renderCode(layout.code, theme.ink),
 
-    textInBand(
-      layout.branding.band,
-      layout.branding.rotationDeg,
-      theme.bandSizeMm,
-      theme.ink,
-      layout.branding.text,
-    ),
-    textInBand(
-      layout.title.band,
-      layout.title.rotationDeg,
-      theme.bandSizeMm,
-      theme.ink,
-      layout.title.text,
-    ),
+    anchoredText(layout.branding, theme.bandSizeMm, theme.ink),
+    anchoredText(layout.title, theme.bandSizeMm, theme.ink),
 
     ...layout.writtenFields.flatMap((field) => [
       textAt(
