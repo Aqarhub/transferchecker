@@ -187,6 +187,8 @@ const SHEETS: readonly Sample[] = [
       studentName: 'اسم الطالب',
       studentId: 'رقم الطالب',
       keyVersion: 'النموذج',
+      // The Arabic sheet reads from the right, so its name box starts there.
+      direction: 'rtl',
     }),
     warnings: [WARNING_EN, WARNING_AR],
   },

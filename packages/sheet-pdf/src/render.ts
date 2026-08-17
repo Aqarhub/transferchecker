@@ -181,7 +181,20 @@ function sheetBody(layout: SheetLayout, options: RenderOptions, theme: SheetThem
         theme.warningSizeMm,
         theme.ink,
         line,
-        { align: 'center', widthMm: widthMm - 40 },
+        {
+          align: 'center',
+          // Bounded on both sides: by the sheet's left margin and by the
+          // printed code, so a narrow paper never runs the warning into
+          // either. The layout owns the anchor; this only sizes the box.
+          widthMm: Math.max(
+            30,
+            Math.min(
+              widthMm - 40,
+              2 * (layout.warningAnchor.xMm - 12),
+              2 * (layout.code.box.xMm - 4 - layout.warningAnchor.xMm),
+            ),
+          ),
+        },
       ),
     ),
   ];

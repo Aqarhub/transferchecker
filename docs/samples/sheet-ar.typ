@@ -918,8 +918,8 @@
   place(dx: 145.4mm, dy: 175.5mm, box(width: 4mm, height: 4mm, align(center + horizon, text(size: 5.39pt, fill: rgb("#8c9196"), "C"))))
   place(dx: 151mm, dy: 175.5mm, circle(radius: 2mm, fill: none, stroke: 0.25mm + rgb("#8c9196")))
   place(dx: 151mm, dy: 175.5mm, box(width: 4mm, height: 4mm, align(center + horizon, text(size: 5.39pt, fill: rgb("#8c9196"), "D"))))
-  place(dx: -4.84mm, dy: 265.128mm, box(width: 170mm, align(center, text(size: 6.8pt, fill: rgb("#000000"), "Print at 100% scale. Do not use Fit to page."))))
-  place(dx: -4.84mm, dy: 268.968mm, box(width: 170mm, align(center, text(size: 6.8pt, fill: rgb("#000000"), "اطبع بمقياس 100٪. لا تستخدم خيار ملاءمة الصفحة."))))
+  place(dx: 12mm, dy: 265.128mm, box(width: 120.32mm, align(center, text(size: 6.8pt, fill: rgb("#000000"), "Print at 100% scale. Do not use Fit to page."))))
+  place(dx: 12mm, dy: 268.968mm, box(width: 120.32mm, align(center, text(size: 6.8pt, fill: rgb("#000000"), "اطبع بمقياس 100٪. لا تستخدم خيار ملاءمة الصفحة."))))
 }
 
 #place(dx: 0mm, dy: 0mm, box(width: 210mm, height: 297mm, sheet))

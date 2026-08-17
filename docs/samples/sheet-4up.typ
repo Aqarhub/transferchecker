@@ -523,7 +523,7 @@
   place(dx: 71.1mm, dy: 83.05mm, box(width: 4mm, height: 4mm, align(center + horizon, text(size: 5.39pt, fill: rgb("#8c9196"), "B"))))
   place(dx: 76.7mm, dy: 83.05mm, box(width: 4mm, height: 4mm, align(center + horizon, text(size: 5.39pt, fill: rgb("#8c9196"), "C"))))
   place(dx: 82.3mm, dy: 83.05mm, box(width: 4mm, height: 4mm, align(center + horizon, text(size: 5.39pt, fill: rgb("#8c9196"), "D"))))
-  place(dx: -4.84mm, dy: 116.128mm, box(width: 65mm, align(center, text(size: 6.8pt, fill: rgb("#000000"), "Print at 100% scale. Do not use Fit to page."))))
+  place(dx: 22mm, dy: 92.448mm, box(width: 45.32mm, align(center, text(size: 6.8pt, fill: rgb("#000000"), "Print at 100% scale. Do not use Fit to page."))))
 }
 
 #place(dx: 0mm, dy: 0mm, box(width: 105mm, height: 148mm, sheet))

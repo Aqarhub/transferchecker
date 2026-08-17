@@ -338,12 +338,17 @@ export function layoutSheet(spec: SheetSpec): LayoutResult {
     writtenFields: header.fields,
     gridFields: sidebar.fields,
     questionColumns: grid.columns,
-    // The print warning shares the foot line, centred in the room left of the
-    // brand text.
-    warningAnchor: {
-      xMm: (contentLeftMm + code.box.xMm - GEOMETRY.brandGapMm - 30) / 2,
-      yMm: code.box.yMm + code.box.hMm - 2,
-    },
+    // The print warning shares the foot line when the paper is wide enough to
+    // hold it beside the brand text; on the narrow papers it moves one line
+    // up, into the gap above the code, because [measured] on A5 the two texts
+    // overlap on one line.
+    warningAnchor:
+      code.box.xMm - GEOMETRY.brandGapMm - 46 - contentLeftMm >= 55
+        ? {
+            xMm: contentLeftMm + (code.box.xMm - GEOMETRY.brandGapMm - 46 - contentLeftMm) / 2,
+            yMm: code.box.yMm + code.box.hMm - 2,
+          }
+        : { xMm: (contentLeftMm + code.box.xMm) / 2, yMm: code.box.yMm - 2 },
   };
 
   return { kind: 'ok', layout };
