@@ -45,6 +45,24 @@ export interface Grade {
   readonly reviews: number;
   /** True while anything on this paper is waiting for a person. */
   readonly needsReview: boolean;
+  /**
+   * Whether the paper agreed with the key about WHICH PRINTED FORM it is.
+   *
+   * THIS IS THE ONE FAULT ON THE PAPER THAT COSTS EVERY QUESTION AT ONCE. A
+   * wrong answer loses a mark. A form read against the wrong key rewrites the
+   * whole sheet, and it does it quietly, because a full set of plausible answers
+   * scored against the wrong table still looks like a graded paper.
+   *
+   * `unreadable` is the case the first real sheet showed: `standard50` prints a
+   * version box on every copy, the owner's paper left it empty, and the grade
+   * came out 50 of 50 or 0 of 50 with nothing anywhere saying the paper had not
+   * said which form it was.
+   *
+   * The engine cannot decide this itself, because it does not know whether the
+   * exam has one form or four. It reports what the paper said and this layer,
+   * which holds the key, decides what that means.
+   */
+  readonly formFault: 'none' | 'unreadable' | 'mismatch';
 }
 
 const sameSet = (left: readonly number[], right: readonly number[]): boolean =>
@@ -93,7 +111,19 @@ function awardOf(
  * an eraser ghost or a mark that left its bubble is worth its points and still
  * costs the teacher a look, and only that string remembers which.
  */
-export function gradeAnswers(key: AnswerKey, answers: readonly Answer[], marks = ''): Grade {
+export function gradeAnswers(
+  key: AnswerKey,
+  answers: readonly Answer[],
+  marks = '',
+  /**
+   * The form the paper declared, from `formOf` in core-omr.
+   *
+   * `undefined` means the sheet prints no version box, which is the single form
+   * case and stays exactly as it was. `null` means it prints one and the paper
+   * did not answer it. A string is what the paper said.
+   */
+  sheetForm?: string | null,
+): Grade {
   const questions: QuestionGrade[] = [];
   let score = 0;
   let unresolved = 0;
@@ -114,6 +144,17 @@ export function gradeAnswers(key: AnswerKey, answers: readonly Answer[], marks =
     questions.push({ question: at + 1, awarded, max, correct, review });
   }
 
+  // `undefined` is not a fault. A sheet with no version box has nothing to say
+  // about forms, and demanding one would refuse every quick20 in the product.
+  const formFault: Grade['formFault'] =
+    sheetForm === undefined
+      ? 'none'
+      : sheetForm === null
+        ? 'unreadable'
+        : sheetForm === key.form
+          ? 'none'
+          : 'mismatch';
+
   return {
     score,
     total: totalPointsOf(key),
@@ -121,7 +162,10 @@ export function gradeAnswers(key: AnswerKey, answers: readonly Answer[], marks =
     unresolved,
     blanks,
     reviews,
-    needsReview: reviews > 0,
+    // A form fault outranks the question count. Every answer on the paper may be
+    // clean and the grade still cannot stand.
+    needsReview: reviews > 0 || formFault !== 'none',
+    formFault,
   };
 }
 

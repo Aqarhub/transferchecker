@@ -13,6 +13,7 @@
 import { describe, expect, it } from 'vitest';
 import { bubbleGroups, layoutSheet, stockTemplate } from '@transferchecker/sheet-spec';
 import type { SheetLayout } from '@transferchecker/sheet-spec';
+import { formOf } from '../src/scan/form';
 import { scanSheet } from '../src/scan/pipeline';
 import type { ScanResult } from '../src/scan/result';
 import { renderSheet } from '../tools/render';
@@ -125,5 +126,60 @@ describe('and a doubt the engine computed is not thrown away', () => {
     expect(field.uncertain).toBe(false);
     expect(quality.fieldUncertain).toBe(0);
     expect(quality.fieldAmbiguous).toBe(0);
+  });
+});
+
+describe('and the version box, which is the field that costs a whole paper', () => {
+  function standard50(): SheetLayout {
+    const result = layoutSheet(stockTemplate('standard50', { ...TEXT, name: 'Standard 50' }));
+    if (result.kind !== 'ok') throw new Error('layout failed');
+    return result.layout;
+  }
+
+  it('says nothing at all about a sheet that prints no version box', () => {
+    // quick20 sets keyVersions false. `undefined` is the answer, and it has to
+    // be distinct from null, or every sheet in the product would look like a
+    // paper that failed to declare its form.
+    const sheet = graded(scanSheet(renderSheet(sheetOf(), { pxPerMm: PX }))).sheet;
+    expect(formOf(sheet)).toBeUndefined();
+  });
+
+  // The owner's own paper. standard50 prints the box on every copy and his was
+  // left empty, and until now nothing read it: the paper graded 50 of 50 or 0 of
+  // 50 with needsReview false either way.
+  it('returns null for a printed box the paper never answered', () => {
+    const sheet = graded(scanSheet(renderSheet(standard50(), { pxPerMm: PX }))).sheet;
+    expect(formOf(sheet)).toBeNull();
+  });
+
+  it('returns the letter the paper actually marked', () => {
+    const layout = standard50();
+    const groups = bubbleGroups(layout).filter((group) => group.id.startsWith('f:keyVersion'));
+    const first = groups[0];
+    if (first === undefined) throw new Error('standard50 printed no key version grid');
+    const symbol = first.bubbles[1]?.symbol ?? 'B';
+    const image = renderSheet(layout, {
+      pxPerMm: PX,
+      marks: [{ groupId: first.id, symbol, coverage: 0.92, value: PEN }],
+    });
+    expect(formOf(graded(scanSheet(image)).sheet)).toBe(symbol);
+  });
+
+  it('returns null when the paper marked the box twice', () => {
+    // A circled version box and a blank one were byte identical downstream
+    // before this. Two marks now make the field ambiguous by the grid rule
+    // above, and an ambiguous field is not a form.
+    const layout = standard50();
+    const groups = bubbleGroups(layout).filter((group) => group.id.startsWith('f:keyVersion'));
+    const first = groups[0];
+    if (first === undefined) throw new Error('standard50 printed no key version grid');
+    const image = renderSheet(layout, {
+      pxPerMm: PX,
+      marks: [
+        { groupId: first.id, symbol: first.bubbles[0]?.symbol ?? 'A', coverage: 0.92, value: PEN },
+        { groupId: first.id, symbol: first.bubbles[2]?.symbol ?? 'C', coverage: 0.7, value: PEN },
+      ],
+    });
+    expect(formOf(graded(scanSheet(image)).sheet)).toBeNull();
   });
 });
