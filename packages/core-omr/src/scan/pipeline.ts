@@ -285,6 +285,11 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
       id: grid.id,
       usage: declared?.usage ?? 'other',
       state: fieldStateOf(outcomes),
+      uncertain: outcomes.some(
+        (outcome) =>
+          (outcome.kind === 'answer' && (outcome.uncertain || outcome.trace)) ||
+          (outcome.kind === 'blank' && outcome.trace),
+      ),
       columns,
       text: columns.map((value) => value ?? '_').join(''),
     };
@@ -315,6 +320,8 @@ export function scanSheet(image: GrayImage, options: ScanOptions = {}): ScanResu
         escaped: questions.filter(
           (entry) => entry.outcome.kind === 'answer' && entry.outcome.escaped,
         ).length,
+        fieldAmbiguous: fields.filter((entry) => entry.state === 'ambiguous').length,
+        fieldUncertain: fields.filter((entry) => entry.uncertain).length,
       },
     },
   };

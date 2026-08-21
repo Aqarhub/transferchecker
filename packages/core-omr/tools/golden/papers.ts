@@ -22,7 +22,7 @@ import type { SheetLayout, SheetSpec } from '@transferchecker/sheet-spec';
 import type { Thresholds } from '../../src/decide/thresholds';
 import type { GrayImage } from '../../src/image/gray';
 import { scanSheet } from '../../src/scan/pipeline';
-import { ManifestSchema, TruthSchema } from './manifest';
+import { ManifestShapeSchema, PaperSchema, TruthSchema } from './manifest';
 import type { Manifest, PaperEntry, PaperTruth, Shot, TruthEntry } from './manifest';
 import { readPgm } from './pgm';
 import { scoreResult } from './score';
@@ -201,17 +201,53 @@ export function loadPapers(root: string = defaultRoot()): GoldenPapers {
     return { ...empty, present: false, faults: [] };
   }
 
-  const parsed: ReturnType<typeof ManifestSchema.safeParse> = ManifestSchema.safeParse(
-    JSON.parse(readFileSync(manifestPath, 'utf8')),
-  );
-  if (!parsed.success) {
-    return { ...empty, present: true, faults: [`${manifestPath}: ${parsed.error.message}`] };
+  // TWO PARSES, AND THE SPLIT IS THE POINT.
+  //
+  // The file's SHAPE is fatal: a manifest that is not a manifest, or one whose
+  // two papers share an id, cannot be read at all and there is nothing to
+  // salvage. But a paper that is merely INCOMPLETE is the normal state of a
+  // corpus that is still being collected, and `PaperSchema` refuses one until it
+  // has three shots differing in lighting or angle.
+  //
+  // Running those per paper rules through the whole array made one unfinished
+  // paper discard every finished one beside it. [measured] The owner's first
+  // real set is three papers, one of them two shots along, and the loader
+  // accepted ZERO of the three and said so in one sentence about the file. A
+  // person reading that has no way to tell a corpus with a typo from a corpus
+  // that is simply not finished yet.
+  //
+  // So the shape is parsed first, then each paper on its own, and an unfinished
+  // one is named and skipped rather than taking its siblings with it. Nothing is
+  // loosened by this: `realPapers` below still counts only papers that are
+  // complete, read and fault free, so a skipped paper cannot arm anything.
+  const shaped = ManifestShapeSchema.safeParse(JSON.parse(readFileSync(manifestPath, 'utf8')));
+  if (!shaped.success) {
+    return { ...empty, present: true, faults: [`${manifestPath}: ${shaped.error.message}`] };
   }
-  const manifest: Manifest = parsed.data;
+  const ids = shaped.data.papers.map((entry) => entry.id);
+  if (new Set(ids).size !== ids.length) {
+    return {
+      ...empty,
+      present: true,
+      faults: [`${manifestPath}: two papers share an id, so one would be scored against the other`],
+    };
+  }
+  const manifest: Manifest = shaped.data;
 
   const papers: LoadedPaper[] = [];
   const faults: string[] = [];
   for (const entry of manifest.papers) {
+    const whole = PaperSchema.safeParse(entry);
+    if (!whole.success) {
+      // Named, and named as unfinished rather than as broken, because those are
+      // different problems and only one of them is somebody's mistake.
+      faults.push(
+        `papers/${entry.id}: not ready to be scored yet: ${whole.error.issues
+          .map((issue) => issue.message)
+          .join('; ')}`,
+      );
+      continue;
+    }
     const loaded = loadPaper(entry, root);
     if (typeof loaded === 'string') {
       faults.push(loaded);

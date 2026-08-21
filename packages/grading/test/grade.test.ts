@@ -162,3 +162,51 @@ describe('re-grading, which is why alternates live in the key', () => {
     expect(gradeStored(key, '0000')).toBeNull();
   });
 });
+
+describe('the printed form, which is the one fault that costs every question', () => {
+  const key = keyOf([q({ intended: 0 }), q({ intended: 1 }), q({ intended: 2 })]);
+  const clean = [
+    { kind: 'one' as const, index: 0 },
+    { kind: 'one' as const, index: 1 },
+    { kind: 'one' as const, index: 2 },
+  ];
+
+  it('says nothing about a sheet that prints no version box', () => {
+    // quick20 and full100 set keyVersions false, so most papers in the product
+    // never declare a form and demanding one would refuse all of them.
+    const grade = gradeAnswers(key, clean, 'ccc');
+    expect(grade.formFault).toBe('none');
+    expect(grade.needsReview).toBe(false);
+    expect(grade.score).toBe(3);
+  });
+
+  it('accepts a paper that named the key it is being graded against', () => {
+    const grade = gradeAnswers(key, clean, 'ccc', 'A');
+    expect(grade.formFault).toBe('none');
+    expect(grade.needsReview).toBe(false);
+  });
+
+  // The owner's own standard50: the box is printed on every copy of that
+  // template and his paper left it empty. Before this, the grade came back 3 of
+  // 3 with needsReview false and nothing anywhere recording that the paper had
+  // not said which form it was.
+  it('refuses to let an unanswered version box pass as a clean grade', () => {
+    const grade = gradeAnswers(key, clean, 'ccc', null);
+    expect(grade.formFault).toBe('unreadable');
+    expect(grade.needsReview).toBe(true);
+  });
+
+  it('catches a paper graded against another form entirely', () => {
+    const grade = gradeAnswers(key, clean, 'ccc', 'B');
+    expect(grade.formFault).toBe('mismatch');
+    expect(grade.needsReview).toBe(true);
+  });
+
+  it('flags the paper even when every single question was clean', () => {
+    // The point worth stating: this fault is not visible in the question
+    // counters. Every one of them is zero here.
+    const grade = gradeAnswers(key, clean, 'ccc', null);
+    expect([grade.unresolved, grade.blanks, grade.reviews]).toEqual([0, 0, 0]);
+    expect(grade.needsReview).toBe(true);
+  });
+});

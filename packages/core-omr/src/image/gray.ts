@@ -1,4 +1,4 @@
-// The only image this engine knows about: one byte of luminance per pixel.
+// The only image this engine knows about: one byte per pixel.
 //
 // A camera frame arrives as YUV and its Y plane is exactly this, so a phone
 // hands over a view rather than a conversion. A stride is carried because that
@@ -7,6 +7,40 @@
 //
 // 0 is black and 255 is white, which is the direction paper reads in: a blank
 // sheet is a high number and ink is a low one.
+//
+// AND THE BYTE IS LUMA, NOT LUMINANCE. This file said luminance and that was
+// wrong in a way that cost a real measurement. Luminance is a linear light
+// quantity; a Y plane is a weighted sum of the GAMMA ENCODED components, under
+// a matrix the device declares. The two agree on grey and disagree on colour,
+// so the error is invisible on an achromatic corpus and appears the moment
+// somebody uses a red pen. [measured] The importer's own conversion read a red
+// gel mark 20.2 grey levels lighter than a phone does, which is enough to turn a
+// mark into blank paper, and the whole synthetic corpus was achromatic so
+// nothing could see it.
+//
+// The engine deliberately does NOT convert colour: it takes the plane it is
+// given. Everything that produces a plane for it, importer included, has to
+// produce the one a phone would.
+
+/**
+ * The luma weights a phone's Y plane is built with, on gamma encoded components.
+ *
+ * BT.601, which is what Android declares as JFIF and what iOS uses for video
+ * range SD. iOS HD declares BT.709 (0.2126, 0.7152, 0.0722), and the difference
+ * between the two is real but small beside the difference from LINEAR light,
+ * which is what a naive greyscale conversion does.
+ *
+ * These are duplicated in `tools/decode-image.mjs`, which cannot import them: it
+ * is plain JavaScript kept outside the tsconfig on purpose, so that resolving
+ * `sharp` never becomes a type check time dependency. A test asserts the two
+ * copies carry the same three numbers, because a silent drift between them is
+ * exactly the defect this constant exists to close.
+ */
+export const BT601_LUMA = { r: 0.299, g: 0.587, b: 0.114 } as const;
+
+/** That sum, for one gamma encoded pixel. */
+export const lumaOf = (r: number, g: number, b: number): number =>
+  BT601_LUMA.r * r + BT601_LUMA.g * g + BT601_LUMA.b * b;
 
 export interface GrayImage {
   readonly width: number;

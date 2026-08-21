@@ -178,6 +178,27 @@ describe('the truth of a case comes from the paper, not from the engine', () => 
     ).toBe('wrong');
   });
 
+  // `report.ts` adds `missed` to `wrong` and prints the sum as "misgraded in
+  // silence". A blank carrying a trace is not silent: `marksOf` publishes it as
+  // `e`, which is a flag the teacher sees. Scoring it as missed charged the
+  // engine for a warning it did give, and on a corpus of pen marks, where a
+  // stroke lands under the floor far more often than a shaded bubble does, that
+  // one line was worth twenty points of accuracy it had not lost.
+  it('does not call a loss silent when the engine flagged it', () => {
+    const answer = expectedOf([{ groupId: 'q:1', symbol: 'B', coverage: 0.9, value: 55 }]);
+    expect(verdictOf(answer, { kind: 'blank', margin: 0.2, trace: true })).toBe('flagged');
+    expect(verdictOf(answer, { kind: 'blank', margin: 0.2, trace: false })).toBe('missed');
+
+    // And the same on a group the paper itself declared doubtful.
+    const doubtful = expectedOf([
+      { groupId: 'q:2', symbol: 'A', coverage: 0.9, value: 55 },
+      { groupId: 'q:2', symbol: 'C', coverage: 0.9, value: 55 },
+    ]);
+    expect(doubtful.kind).toBe('flagged');
+    expect(verdictOf(doubtful, { kind: 'blank', margin: 0.2, trace: true })).toBe('flagged');
+    expect(verdictOf(doubtful, { kind: 'blank', margin: 0.2, trace: false })).toBe('missed');
+  });
+
   it('treats an untouched question as blank, where a letter is the worst outcome', () => {
     const blank = expectedOf([]);
     expect(blank).toEqual({ kind: 'blank' });

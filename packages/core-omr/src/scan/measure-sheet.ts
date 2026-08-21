@@ -43,6 +43,7 @@ function readGroup(
   labelSide: LabelSide,
   thresholds: Thresholds,
   ring: Ring,
+  grid = false,
 ): GroupResult {
   const readings = bubbles.map((bubble) =>
     measureBubble(
@@ -59,7 +60,7 @@ function readGroup(
   return {
     id,
     outcome: decideGroup(
-      { symbols: bubbles.map((bubble) => bubble.symbol), readings, many },
+      { symbols: bubbles.map((bubble) => bubble.symbol), readings, many, grid },
       thresholds,
     ),
     xMm: first?.cxMm ?? 0,
@@ -117,12 +118,18 @@ export function measureSheet(
         marks,
         `f:${grid.id}:${String(gridColumn.index)}`,
         gridColumn.bubbles,
-        // Defense د14: two marks in one grid column are always an error and
-        // never an answer, so a grid column is never read as multiple choice.
+        // Never multiple choice. `many` would make two marks the ANSWER, which
+        // is the opposite of what a digit column means.
         false,
         'none',
         thresholds,
         ring,
+        // And د14 proper: two marks over the floor are ambiguous whatever the
+        // ratio between them says. The old comment claimed this rule while
+        // passing only `many: false`, which is strictly weaker: it stopped two
+        // marks becoming two digits, and let a heavy one beside a faint one
+        // become a confident single digit.
+        true,
       ),
     ),
   }));

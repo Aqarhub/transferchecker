@@ -29,6 +29,7 @@ export type {
   ScanResult,
   ScannedSheet,
 } from './scan/result';
+export { formOf } from './scan/form';
 export { isFrameFault, messageKeyOf } from './scan/reject';
 export type { Rejection } from './scan/reject';
 

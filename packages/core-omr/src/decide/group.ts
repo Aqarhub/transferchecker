@@ -41,7 +41,7 @@ export type GroupOutcome =
     }
   | {
       readonly kind: 'ambiguous';
-      readonly reason: 'all_marked' | 'two_close';
+      readonly reason: 'all_marked' | 'two_close' | 'two_marked';
       readonly margin: number;
     }
   | { readonly kind: 'unmeasurable'; readonly worst: number };
@@ -51,6 +51,20 @@ export interface GroupInput {
   readonly readings: readonly BubbleReading[];
   /** A question that asks for several answers, where several marks are the answer. */
   readonly many: boolean;
+  /**
+   * One character column of a grid field rather than a question.
+   *
+   * Defense د14 is stricter here than anywhere else on the sheet, and it has to
+   * be: a question with a heavy A and a faint B has a defensible answer, while a
+   * digit column with a heavy 3 and a faint 8 has none. There is no "mostly
+   * three". A mangled identity does not look wrong, it looks like a different
+   * student, so it fails reconciliation in silence and produces exactly the
+   * duplicate record acceptance criterion 9 exists to prevent.
+   *
+   * So on a grid column, more than one bubble over the ink floor is ambiguous,
+   * full stop, without consulting the ratio between them.
+   */
+  readonly grid?: boolean;
 }
 
 const at = <T>(list: readonly T[], index: number): T | undefined => list[index];
@@ -159,6 +173,15 @@ export function decideGroup(input: GroupInput, thresholds: Thresholds): GroupOut
       margin: floor - top,
       trace: hasTrace(input, thresholds, -1, floor),
     };
+  }
+
+  // د14, and only for a grid. See `GroupInput.grid`.
+  if (input.grid === true) {
+    const marked = fills.filter((fill) => fill >= floor);
+    if (marked.length > 1) {
+      const second = Math.max(...marked.filter((fill) => fill < top), 0);
+      return { kind: 'ambiguous', reason: 'two_marked', margin: second - floor };
+    }
   }
 
   const lowest = Math.min(...fills);
