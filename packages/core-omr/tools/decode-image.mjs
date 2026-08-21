@@ -36,11 +36,54 @@ try {
   process.exit(3);
 }
 
-// Greyscale, no alpha, no colour profile, one byte per pixel. `rotate()` with
-// no argument applies the EXIF orientation and nothing else, which matters
-// because a phone writes a landscape buffer with a portrait tag and the sheet
-// would arrive on its side.
-let pipeline = sharp(input, { failOn: 'error' }).rotate().greyscale();
+// THE CONVERSION IS THE PHONE'S, NOT THE LIBRARY'S, and this is the whole of
+// what this block is for.
+//
+// `sharp().greyscale()` is Rec.709 luminance computed in LINEAR light. A phone's
+// Y plane, which is what the engine reads at run time, is BT.601 luma computed
+// on the GAMMA ENCODED components. On grey they agree. On colour they do not,
+// and the gap is not academic [measured, on solid patches through this same
+// library]:
+//
+//   ink               greyscale()   a phone      error
+//   white paper           242         241.8       +0.2
+//   HB graphite           102         102.2       -0.2
+//   black ballpoint        38          38.5       -0.5
+//   blue ballpoint         66          63.2       +2.8
+//   red ballpoint          94          82.5      +11.5
+//   red gel               106          85.8      +20.2
+//
+// Twenty grey levels is the difference between a mark and blank paper. Two of
+// the first four real sheets were marked in red, and the corpus that was
+// supposed to measure the engine would have measured a DIFFERENT engine than the
+// one the product runs, silently, on exactly the papers where it matters.
+//
+// The matrix below reproduces the phone to within half a grey level on every
+// patch above, and is byte identical to `greyscale()` on achromatic pages, which
+// is why no golden paper needs re-importing. `.linear(1, 0.5)` rounds rather
+// than truncating; without it every value is biased half a level low.
+//
+// The three weights are BT601_LUMA in src/image/gray.ts. They are copied rather
+// than imported because this file is plain JavaScript held outside the tsconfig
+// on purpose, so that resolving `sharp` never becomes a type check dependency,
+// and a test asserts the two copies still agree.
+//
+// `rotate()` with no argument applies the EXIF orientation and nothing else,
+// which matters because a phone writes a landscape buffer with a portrait tag
+// and the sheet would arrive on its side.
+const BT601 = [
+  [0.299, 0.587, 0.114],
+  [0.299, 0.587, 0.114],
+  [0.299, 0.587, 0.114],
+];
+
+let pipeline = sharp(input, { failOn: 'error' })
+  .rotate()
+  .flatten({ background: '#ffffff' })
+  .toColourspace('srgb')
+  .recomb(BT601)
+  .extractChannel(0)
+  .linear(1, 0.5);
 const limit = Number(maxWidth);
 if (Number.isFinite(limit) && limit > 0) {
   pipeline = pipeline.resize({ width: limit, withoutEnlargement: true, kernel: 'lanczos3' });

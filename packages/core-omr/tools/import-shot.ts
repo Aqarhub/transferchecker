@@ -111,18 +111,33 @@ function toPgm(input: string): Uint8Array {
 
   // No sharp on this machine. ImageMagick writes the same format and is on most
   // of them already, so it is tried before the command gives up.
+  //
+  // `-grayscale Rec601Luma` and NOT `-colorspace Gray`. The latter converts in
+  // linear light, which is the same mistake decode-image.mjs used to make and
+  // which reads a red gel mark about twenty grey levels too light. This flag
+  // computes the weighted sum on the encoded values, which is what a phone's Y
+  // plane carries. [reasoned, not measured: `magick` was not installed on the
+  // machine this was written on, so the flag is right by its documentation and
+  // has not been run.]
   const viaMagick = spawnSync(
     'magick',
-    [input, '-auto-orient', '-colorspace', 'Gray', '-depth', '8', 'pgm:-'],
+    [input, '-auto-orient', '-grayscale', 'Rec601Luma', '-depth', '8', 'pgm:-'],
     {
       maxBuffer: 512 * 1024 * 1024,
     },
   );
   if (viaMagick.status === 0) return new Uint8Array(viaMagick.stdout);
 
+  // The advice used to say `pnpm add -g sharp`, and [measured] that does not
+  // work: decode-image.mjs is an ES module, so a bare specifier resolves by
+  // walking node_modules upward from the MODULE'S OWN path, and a global install
+  // is not on that chain. Neither is NODE_PATH, which ESM ignores. Installing
+  // into a directory ABOVE the clone is on the chain, and touches no file inside
+  // this repository, which is the constraint that matters.
   process.stderr.write(
     'no image decoder found. Install one, and neither becomes a dependency of this workspace:\n' +
-      '  pnpm add -g sharp        (then rerun this command)\n' +
+      `  npm install sharp --prefix ${resolve(DECODER, '../../../../..')}\n` +
+      '  (a global install does NOT work: ESM resolves from the module upward)\n' +
       '  or install ImageMagick, so that `magick` is on the path\n',
   );
   process.exit(3);
