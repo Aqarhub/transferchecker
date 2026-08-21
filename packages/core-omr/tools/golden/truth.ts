@@ -40,7 +40,16 @@ export type Verdict =
   | 'correct'
   /** Right, or honestly doubtful, but it costs the teacher a look. */
   | 'flagged'
-  /** The engine had the answer and gave it up: an answer read as blank. */
+  /**
+   * The engine had the answer and gave it up IN SILENCE: read as blank, with
+   * nothing on the record to say so.
+   *
+   * The silence is the whole of it. `report.ts` adds this to `wrong` and calls
+   * the sum "misgraded in silence", so a loss the teacher was told about must
+   * never land here: a blank carrying `trace` is published as the mark
+   * character `e`, which is a flag on the teacher's screen, and counting that
+   * as silent charges the engine for a warning it did give.
+   */
   | 'missed'
   /** A confident letter that is not what the paper says. This must be zero. */
   | 'wrong';
@@ -110,7 +119,8 @@ export function verdictOf(expected: Expected, outcome: GroupOutcome): Verdict {
       if (outcome.kind === 'answer' && outcome.symbol === expected.symbol) {
         return outcome.uncertain ? 'flagged' : 'correct';
       }
-      if (outcome.kind === 'blank') return 'missed';
+      // A blank the engine flagged is not a silent loss. See `Verdict`.
+      if (outcome.kind === 'blank') return outcome.trace ? 'flagged' : 'missed';
       if (outcome.kind === 'ambiguous') return 'flagged';
       // An answer or a multiple naming a letter the student did not shade.
       return 'wrong';
@@ -122,7 +132,7 @@ export function verdictOf(expected: Expected, outcome: GroupOutcome): Verdict {
     }
     case 'flagged': {
       if (outcome.kind === 'ambiguous' || outcome.kind === 'multiple') return 'correct';
-      if (outcome.kind === 'blank') return 'missed';
+      if (outcome.kind === 'blank') return outcome.trace ? 'flagged' : 'missed';
       return 'wrong';
     }
     case 'either': {
