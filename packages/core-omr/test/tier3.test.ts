@@ -17,7 +17,12 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import { stockTemplate } from '@transferchecker/sheet-spec';
 import type { Rejection } from '../src/scan/reject';
-import { ManifestSchema, REFUSALS, TruthSchema } from '../tools/golden/manifest';
+import {
+  ManifestSchema,
+  ManifestShapeSchema,
+  REFUSALS,
+  TruthSchema,
+} from '../tools/golden/manifest';
 import { answerFraction, sheetOf } from '../tools/golden/corpus';
 import { imageOf } from '../tools/golden/image';
 import { loadPapers, runShot } from '../tools/golden/papers';
@@ -340,5 +345,101 @@ describe('a paper received, verified and scored, with no camera involved', () =>
     expect(set.faults[0]).toContain('sha256');
     expect(set.shotsPresent).toBe(0);
     expect(set.realPapers).toBe(0);
+  });
+});
+
+describe('a corpus that is still being collected still loads', () => {
+  /** The manifest buildRoot wrote, with a second paper appended to it. */
+  function withSecondPaper(root: string, shots: number): void {
+    const path = join(root, 'manifest.json');
+    const manifest: unknown = JSON.parse(readFileSync(path, 'utf8'));
+    const parsed = ManifestShapeSchema.parse(manifest);
+    const first = parsed.papers[0];
+    if (first === undefined) throw new Error('buildRoot wrote no papers');
+
+    const id = 'half-collected-a4';
+    const dir = join(root, 'papers', id);
+    mkdirSync(join(dir, 'shots'), { recursive: true });
+    // Its own spec and truth, copied from the finished paper: what is being
+    // tested is the shot count, and nothing else about it should be wrong.
+    for (const name of ['spec.json', 'truth.json']) {
+      const bytes = readFileSync(join(root, 'papers', first.id, name));
+      writeFileSync(join(dir, name), name === 'truth.json' ? patchPaper(bytes, id) : bytes);
+    }
+    const shotBytes = readFileSync(join(root, 'papers', first.id, 'shots', '01-daylight-flat.pgm'));
+    const firstShot = first.shots[0];
+    if (firstShot === undefined) throw new Error('buildRoot wrote no shots');
+
+    const angles = ['flat', 'tilted', 'steep'] as const;
+    const made = Array.from({ length: shots }, (_, index) => {
+      const file = `0${String(index + 1)}-daylight-${angles[index] ?? 'flat'}.pgm`;
+      writeFileSync(join(dir, 'shots', file), shotBytes);
+      return {
+        ...firstShot,
+        file,
+        angle: angles[index] ?? ('flat' as const),
+        source: 'phone' as const,
+      };
+    });
+
+    const spec = readFileSync(join(dir, 'spec.json'));
+    const truth = readFileSync(join(dir, 'truth.json'));
+    parsed.papers.push({
+      ...first,
+      id,
+      kind: 'real',
+      spec: { sha256: sha(spec), bytes: spec.byteLength },
+      truth: { sha256: sha(truth), bytes: truth.byteLength },
+      shots: made,
+    });
+    writeFileSync(path, encode(parsed));
+  }
+
+  /** The truth file names the paper it belongs to, so the copy has to be renamed. */
+  function patchPaper(bytes: Uint8Array, id: string): Uint8Array {
+    const truth: unknown = JSON.parse(new TextDecoder().decode(bytes));
+    return encode({ ...(truth as Record<string, unknown>), paper: id });
+  }
+
+  // The state the owner's first real set was actually in: three papers, one of
+  // them two shots along. Every paper in the file was discarded because of it,
+  // and the whole thing was reported in one sentence about the manifest.
+  it('names the unfinished paper and keeps the finished one', () => {
+    const { root } = buildRoot();
+    withSecondPaper(root, 2);
+    const set = loadPapers(root);
+
+    expect(set.papers.map((paper) => paper.entry.id)).toEqual(['drawn-a5-quick20']);
+    expect(set.faults.join('\n')).toContain('half-collected-a4');
+    expect(set.faults.join('\n')).toContain('not ready to be scored yet');
+    // And it is not counted, which is the property that must not loosen: a
+    // paper nobody could score may never move the number that arms the gates.
+    expect(set.realPapers).toBe(0);
+  });
+
+  it('picks the paper up once its third shot arrives', () => {
+    const { root } = buildRoot();
+    withSecondPaper(root, 3);
+    const set = loadPapers(root);
+    expect(set.papers.map((paper) => paper.entry.id)).toEqual([
+      'drawn-a5-quick20',
+      'half-collected-a4',
+    ]);
+  });
+
+  // Still fatal, and it should be: two papers sharing an id means one of them
+  // would be scored against the other's truth, and there is no safe half of that.
+  it('still refuses a file whose papers share an id', () => {
+    const { root } = buildRoot();
+    const path = join(root, 'manifest.json');
+    const parsed = ManifestShapeSchema.parse(JSON.parse(readFileSync(path, 'utf8')));
+    const first = parsed.papers[0];
+    if (first === undefined) throw new Error('buildRoot wrote no papers');
+    parsed.papers.push({ ...first });
+    writeFileSync(path, encode(parsed));
+
+    const set = loadPapers(root);
+    expect(set.papers).toEqual([]);
+    expect(set.faults.join('\n')).toContain('share an id');
   });
 });
