@@ -100,10 +100,15 @@ export const scans = pgTable(
     // into a sequential scan of the whole table.
     index('idx_scans_org_exam').on(table.orgId, table.examId),
     index('idx_scans_org_created').on(table.orgId, table.createdAt.desc()),
-    // The key schema caps a form at four characters, so a value longer than
-    // that is not a rare form, it is a device writing garbage into a column
-    // that decides which key grades a paper. The character set is deliberately
-    // not constrained: a custom sheet chooses its own version symbols.
+    // AnswerKeySchema in grading caps a form at four characters, so a value
+    // longer than that is not a rare form, it is a device writing garbage into
+    // a column that decides which key grades a paper. Stated precisely: the
+    // four is the GRADING schema's ceiling. The key TABLE's `form_code` is
+    // `char(1)` today, so a stored key cannot name a multi-character form yet
+    // and a 2-4 character paper can only ever grade as `mismatch`; widening
+    // that column is a migration for the day a stock sheet grows a second
+    // version column. The character set is deliberately not constrained: a
+    // custom sheet chooses its own version symbols.
     check('scans_form_length', sql`char_length(${table.form}) <= 4`),
     isolate('scans'),
   ],

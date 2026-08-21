@@ -194,7 +194,36 @@ describe('the version box, stored and read back in all three of its states', () 
     expect(added.form).toBeUndefined();
   });
 
+  // The whole round exists for this case, so it is pinned through the real
+  // storage, not only through the pure function: a paper that named form B is
+  // returned by examDataOf unfiltered, and grading it against the A key that
+  // the caller viewed raises the mismatch fault instead of a silent grade.
+  it('carries a foreign form through storage and out as a mismatch fault', async () => {
+    await client.exec(
+      `insert into scans (id, org_id, exam_id, student_ext_id, form, answers, marks,
+                          score, total, device_id, client_ts)
+       values ('77777777-7777-4777-8777-777777777777', '${ORG_A}', '${EXAM_A}', '00099',
+               'B', '021301132021', 'cccccccccccc', 0, 0, 'demo-device', now())`,
+    );
+    const data = await examDataOf(db, ORG_A, EXAM_A);
+    const foreign = data?.scans.find((scan) => scan.id === '77777777-7777-4777-8777-777777777777');
+    if (foreign === undefined || data === null) throw new Error('the B paper did not come back');
+    expect(foreign.form).toBe('B');
+    const grade = gradeStored(data.key, foreign.answers, foreign.marks, foreign.form);
+    expect(grade?.formFault).toBe('mismatch');
+    expect(grade?.needsReview).toBe(true);
+  });
+
   it('refuses a form longer than any key can be, which is a device writing garbage', async () => {
+    // The bound is pinned from BOTH sides. Four characters is the grading
+    // schema's own ceiling and must be accepted, or tightening the constraint
+    // to something narrower would pass every other test in this suite.
+    await client.exec(
+      `insert into scans (id, org_id, exam_id, student_ext_id, form, answers, marks,
+                          score, total, device_id, client_ts)
+       values ('66666666-6666-4666-8666-666666666666', '${ORG_A}', '${EXAM_A}', '00007',
+               'ABCD', '021301132021', 'cccccccccccc', 0, 0, 'demo-device', now())`,
+    );
     await expect(
       client.exec(
         `insert into scans (id, org_id, exam_id, student_ext_id, form, answers, marks,

@@ -3,6 +3,18 @@ docs/mockups/
 coverage/
 SKILLS/
 
+# Vendored skills, kept byte-identical to their upstreams so they can be
+# diffed and updated against them (provenance in .claude/skills/README.md).
+# tc-interface and README.md are authored here and stay formatted.
+.claude/skills/animate/
+.claude/skills/animate-expo/
+.claude/skills/animation-vocabulary/
+.claude/skills/emil-design-eng/
+.claude/skills/improve-animations/
+.claude/skills/prototype/
+.claude/skills/review-animations/
+.claude/skills/ui-ux-pro-max/
+
 # The golden set's spec.json and truth.json are bound to manifest.json by
 # SHA-256, so reformatting them changes their bytes and breaks the hash the
 # loader checks. They are data under a checksum, not source under a style.

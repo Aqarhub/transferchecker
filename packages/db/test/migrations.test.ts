@@ -10,6 +10,7 @@
 // column, in both directions.
 
 import { getTableColumns, getTableName } from 'drizzle-orm';
+import { getTableConfig } from 'drizzle-orm/pg-core';
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
@@ -104,5 +105,27 @@ describe('the migrations and the schema describe the same database', () => {
       `select count(*)::int as n from pg_extension where extname = 'citext'`,
     );
     expect(extension[0]?.n).toBe(1);
+  });
+
+  // A check constraint drifts the same one-way manner a column does: declared
+  // on the Drizzle table but deleted from it later, everything stays green
+  // because the behavioural tests exercise the MIGRATION, and the next
+  // `generate` quietly emits a DROP. So both sides are read and compared as
+  // explicit lists, in this file's own style.
+  it('declares and builds the same check constraints, listed', async () => {
+    const declared = tables
+      .flatMap((table) =>
+        getTableConfig(table).checks.map((check) => `${getTableName(table)}.${check.name}`),
+      )
+      .sort();
+    const built = await rows<{ name: string }>(
+      client,
+      `select rel.relname || '.' || con.conname as name
+       from pg_constraint con join pg_class rel on rel.oid = con.conrelid
+       where con.contype = 'c' and rel.relnamespace = 'public'::regnamespace
+       order by 1`,
+    );
+    expect(declared).toEqual(['scans.scans_form_length']);
+    expect(built.map((row) => row.name)).toEqual(declared);
   });
 });
