@@ -166,6 +166,7 @@ describe('the migrations', () => {
       '0001_tables',
       '0002_grants',
       '0003_credentials',
+      '0004_scan_form',
     ]);
   });
 

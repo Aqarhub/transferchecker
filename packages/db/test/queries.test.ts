@@ -164,3 +164,44 @@ describe('re-grading, which is what the string storage is for', () => {
     expect(columns[0]?.n).toBe(0);
   });
 });
+
+describe('the version box, stored and read back in all three of its states', () => {
+  it('returns what each seeded paper declared, with the blank box as null', async () => {
+    const data = await examDataOf(db, ORG_A, EXAM_A);
+    const declared = (data?.scans ?? []).map((scan) => scan.form);
+    // Five papers said A. The sixth is the owner's own case: a standard50,
+    // which prints the box on every copy, with the box left blank. It must come
+    // back null, never the empty string the column holds and never undefined,
+    // because undefined is the state that would excuse it from the fault.
+    expect(declared.filter((form) => form === 'A')).toHaveLength(5);
+    const unmatched = data?.scans.find((scan) => scan.studentExtId === null);
+    expect(unmatched?.form).toBeNull();
+  });
+
+  it('keeps a sheet that prints no box distinct from a box left blank', async () => {
+    // Written raw, as the sync layer one day will: SQL NULL is the no-box
+    // state. If the query layer folded it into the blank-box state, this exact
+    // read would refuse every quick20 in the product once grading sees it.
+    await client.exec(
+      `insert into scans (id, org_id, exam_id, student_ext_id, form, answers, marks,
+                          score, total, device_id, client_ts)
+       values ('99999999-9999-4999-8999-999999999999', '${ORG_A}', '${EXAM_A}', '00007',
+               null, '021301132021', 'cccccccccccc', 0, 0, 'demo-device', now())`,
+    );
+    const data = await examDataOf(db, ORG_A, EXAM_A);
+    const added = data?.scans.find((scan) => scan.id === '99999999-9999-4999-8999-999999999999');
+    if (added === undefined) throw new Error('the inserted scan did not come back');
+    expect(added.form).toBeUndefined();
+  });
+
+  it('refuses a form longer than any key can be, which is a device writing garbage', async () => {
+    await expect(
+      client.exec(
+        `insert into scans (id, org_id, exam_id, student_ext_id, form, answers, marks,
+                            score, total, device_id, client_ts)
+         values ('88888888-8888-4888-8888-888888888888', '${ORG_A}', '${EXAM_A}', '00007',
+                 'ABCDE', '021301132021', 'cccccccccccc', 0, 0, 'demo-device', now())`,
+      ),
+    ).rejects.toThrow(/scans_form_length/);
+  });
+});

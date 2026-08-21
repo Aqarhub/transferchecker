@@ -79,6 +79,10 @@ describe('the migrations and the schema describe the same database', () => {
       'credentials.confirmed_at',
       'login_attempts.last_failure_at',
       'refresh_tokens.used_at',
+      // NULL is the no-version-box state, one of the column's three. A sheet
+      // that prints no box has nothing to say, and forcing a value here would
+      // mean inventing a form for every quick20 in the product.
+      'scans.form',
       'scans.student_ext_id',
       'students.name',
       'token_families.device_label',

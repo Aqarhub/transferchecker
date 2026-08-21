@@ -16,6 +16,8 @@ export type { Database } from './database';
 export { keyOf, keyRow } from './keys';
 export type { AnswerKeyRow, NewAnswerKeyRow } from './keys';
 
+export { declaredForm, storedForm } from './form';
+
 export { examDataOf, examsOf, rosterOf } from './queries';
 export type { ExamData, ExamSummary, ScanRecord } from './queries';
 

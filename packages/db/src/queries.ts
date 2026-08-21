@@ -16,6 +16,7 @@
 
 import { and, asc, desc, eq } from 'drizzle-orm';
 import type { AnswerKey, Student } from '@transferchecker/grading';
+import { declaredForm } from './form';
 import { keyOf } from './keys';
 import { answerKeys } from './schema/answer-keys';
 import { exams } from './schema/exams';
@@ -33,6 +34,13 @@ export interface ExamSummary {
 export interface ScanRecord {
   readonly id: string;
   readonly studentExtId: string | null;
+  /**
+   * The printed form this paper declared, in `formOf`'s vocabulary: `undefined`
+   * for a sheet that prints no version box, `null` for a box the paper did not
+   * answer, a string for what it said. Handed to `gradeStored` as is, so the
+   * fault the device raised over a blank or foreign box survives re-grading.
+   */
+  readonly form: string | null | undefined;
   readonly answers: string;
   readonly marks: string;
   /** What the device scored it at, kept for comparison and never displayed. */
@@ -82,6 +90,12 @@ export async function rosterOf(db: Database, orgId: string): Promise<Student[]> 
  * it belongs to another organisation and the policy hid it, or its key row is
  * malformed. A caller cannot tell them apart, and should not: telling a client
  * that a row it may not read exists is itself a small leak.
+ *
+ * `form` selects WHICH KEY this view is of, which is the tab in the screens'
+ * design, and it deliberately does not filter the papers: every scan comes back
+ * carrying the form ITS OWN version box declared, and grading compares the two.
+ * A paper that named another form, or answered no form at all, therefore
+ * surfaces as a fault instead of being quietly scored against this tab's key.
  */
 export async function examDataOf(
   db: Database,
@@ -121,6 +135,7 @@ export async function examDataOf(
     .select({
       id: scans.id,
       studentExtId: scans.studentExtId,
+      form: scans.form,
       answers: scans.answers,
       marks: scans.marks,
       deviceScore: scans.score,
@@ -130,5 +145,13 @@ export async function examDataOf(
     .where(and(eq(scans.orgId, orgId), eq(scans.examId, examId)))
     .orderBy(asc(scans.id));
 
-  return { exam, key, roster: await rosterOf(db, orgId), scans: papers };
+  return {
+    exam,
+    key,
+    roster: await rosterOf(db, orgId),
+    // The one place the column's encoding turns back into `formOf`'s three
+    // states. Handing the raw column out would make every caller re-learn that
+    // the empty string is not a form.
+    scans: papers.map((paper) => ({ ...paper, form: declaredForm(paper.form) })),
+  };
 }

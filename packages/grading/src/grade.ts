@@ -175,8 +175,18 @@ export function gradeAnswers(
  * Null for a stored string that does not decode to this key's question count,
  * because a score computed against the wrong sheet looks exactly like a real
  * one, and this is the only place that can still tell.
+ *
+ * `sheetForm` rides through unchanged, in `formOf`'s vocabulary. It has to:
+ * re-grading is the same function run later over the same record, and a stored
+ * path that dropped the form would clear a form fault the device raised, on the
+ * exact screen a teacher trusts to re-mark a class.
  */
-export function gradeStored(key: AnswerKey, stored: string, marks = ''): Grade | null {
+export function gradeStored(
+  key: AnswerKey,
+  stored: string,
+  marks = '',
+  sheetForm?: string | null,
+): Grade | null {
   const answers = decodeAnswers(stored, key.questions.length);
-  return answers === null ? null : gradeAnswers(key, answers, marks);
+  return answers === null ? null : gradeAnswers(key, answers, marks, sheetForm);
 }
