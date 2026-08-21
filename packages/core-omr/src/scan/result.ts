@@ -33,6 +33,16 @@ export interface FieldReading {
    */
   readonly usage: FieldUsage;
   readonly state: FieldState;
+  /**
+   * True when any column the engine DID resolve was resolved close to a
+   * threshold, or was not stable under the perturbation set.
+   *
+   * `state` cannot carry this. A doubtful column still produces a character, so
+   * without this flag the reading is `ok` with a full number in it and the doubt
+   * the decision rule computed is thrown away between `decideGroup` and here.
+   * The caller sees a clean student id and has no way to learn it was close.
+   */
+  readonly uncertain: boolean;
   /** One entry per character column, null where that column holds nothing. */
   readonly columns: readonly (string | null)[];
   /** The same thing for a card to show, with an underscore for a blank column. */
@@ -80,6 +90,22 @@ export interface ScanQuality {
    * student's real answer drops behind it.
    */
   readonly escaped: number;
+  /**
+   * The same two counts for GRID COLUMNS, kept apart from the question counts
+   * rather than added to them.
+   *
+   * Folding them in would have been shorter and would have been wrong: the
+   * golden report states that the unit of every rate it publishes is the
+   * QUESTION, and a sheet with four identity columns would then report warnings
+   * against a denominator that never counted them. Two names, two units, no
+   * silent drift in a published number.
+   *
+   * They exist at all because until now every counter here was question only,
+   * so a grid column the engine itself called ambiguous incremented nothing and
+   * left no trace outside its own `FieldReading`.
+   */
+  readonly fieldAmbiguous: number;
+  readonly fieldUncertain: number;
 }
 
 export interface ScannedSheet {
