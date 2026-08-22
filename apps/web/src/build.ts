@@ -37,8 +37,13 @@ const NAV: readonly { key: Screen; glyph: string }[] = [
   { key: 'settings', glyph: 'settings' },
 ];
 
-/** Which sidebar item is lit for a screen. The exam detail belongs to Exams. */
-const owner = (name: Screen): Screen => (name === 'exam' ? 'exams' : name);
+/**
+ * Which sidebar item is lit for a screen. The exam detail belongs to Exams and
+ * the builder belongs to Sheets, so neither adds a fifth destination: the
+ * sidebar stays at four, which is design system rule 16.
+ */
+const owner = (name: Screen): Screen =>
+  name === 'exam' ? 'exams' : name === 'sheet' ? 'sheets' : name;
 
 export interface BuiltFile {
   readonly path: string;

@@ -54,6 +54,69 @@ export interface Copy {
   };
   readonly students: { title: string; help: string; import: string; columns: readonly string[] };
   readonly sheets: { title: string; help: string; make: string; columns: readonly string[] };
+  readonly builder: {
+    readonly title: string;
+    readonly titleHelp: string;
+    readonly choicesTitle: string;
+    readonly choicesHelp: string;
+    readonly outcomeTitle: string;
+    readonly outcomeHelp: string;
+    readonly download: string;
+    /** Rule 17: a value that is not there gets its own word, never a zero. */
+    readonly missing: string;
+    readonly rowsDefault: string;
+    readonly rowsDense: string;
+    /** A measured consequence of asking for key versions, not advice. */
+    readonly keyVersionCost: string;
+    readonly fields: {
+      readonly name: string;
+      readonly questions: string;
+      readonly choices: string;
+      readonly alphabet: string;
+      readonly placement: string;
+      readonly select: string;
+      readonly studentId: string;
+      readonly keyVersions: string;
+      readonly family: string;
+    };
+    readonly help: {
+      readonly name: string;
+      readonly questions: string;
+      readonly choices: string;
+      readonly alphabet: string;
+      readonly placement: string;
+      readonly select: string;
+      readonly studentId: string;
+      readonly keyVersions: string;
+      readonly family: string;
+    };
+    readonly alphabets: {
+      readonly latin: string;
+      readonly arabic: string;
+      readonly digits: string;
+      readonly trueFalse: string;
+    };
+    readonly placements: {
+      readonly internal: string;
+      readonly header: string;
+      readonly external: string;
+    };
+    readonly selects: { readonly one: string; readonly many: string };
+    readonly families: { readonly A: string; readonly LETTER: string };
+    readonly stats: {
+      readonly paper: string;
+      readonly questions: string;
+      readonly fill: string;
+      readonly rows: string;
+    };
+    readonly statNotes: {
+      readonly paper: string;
+      readonly questions: string;
+      readonly fill: string;
+      readonly rows: string;
+    };
+    readonly refusals: { readonly doesNotFit: string; readonly other: string };
+  };
   readonly settings: { title: string; help: string; language: string; languageHelp: string };
 }
 
@@ -128,6 +191,66 @@ export const COPY: Readonly<Record<string, Copy>> = {
       language: 'لغة الواجهة',
       languageHelp: 'يبدّل لغة الواجهة ويبقيك في الشاشة نفسها.',
     },
+    builder: {
+      title: 'منشئ النماذج',
+      titleHelp: 'ابنِ ورقة إجابة بمقاسك، ثم نزّلها PDF.',
+      choicesTitle: 'الاختيارات',
+      choicesHelp: 'غيّر خياراً واحداً، وتتبعه الورقة أدناه.',
+      outcomeTitle: 'الورقة الناتجة',
+      outcomeHelp: 'ما تنتجه اختياراتك الآن، محسوباً بمحرك التخطيط نفسه لا موصوفاً.',
+      download: 'نزّل PDF',
+      missing: 'غير محدد',
+      rowsDefault: 'تباعد الصفوف الاعتيادي',
+      rowsDense: 'ضُمّت الصفوف لتتسع الورقة',
+      keyVersionCost:
+        'خانة النسخة تكبّر الورقة أحياناً: اختبار من عشرين سؤالاً ينتقل من A5 إلى A4.',
+      fields: {
+        name: 'اسم الورقة',
+        questions: 'عدد الأسئلة',
+        choices: 'خيارات كل سؤال',
+        alphabet: 'رموز الخيارات',
+        placement: 'موضع الحرف',
+        select: 'نمط الإجابة',
+        studentId: 'خانات رقم الطالب',
+        keyVersions: 'نسخ المفتاح',
+        family: 'عائلة المقاس',
+      },
+      help: {
+        name: 'يُطبع على حافة الورقة لتميّزها بالعين.',
+        questions: 'من سؤال واحد إلى مئتين.',
+        choices: 'من خيارين إلى عشرة لكل سؤال.',
+        alphabet: 'يختار الحروف أو الأرقام التي تحملها الفقاعات.',
+        placement: 'يقرر أين يُطبع حرف الخيار، وهو يغيّر عرض الصف.',
+        select: 'يسمح بإجابة واحدة أو بأكثر من إجابة في السؤال.',
+        studentId: 'طول شبكة رقم الطالب، وصفر يعني بلا شبكة.',
+        keyVersions: 'عدد نسخ المفتاح، وصفر يعني بلا خانة نسخة.',
+        family: 'يختار بين مقاسات A ومقاسات Letter.',
+      },
+      alphabets: {
+        latin: 'حروف لاتينية A B C',
+        arabic: 'حروف عربية أ ب ج',
+        digits: 'أرقام 0 1 2',
+        trueFalse: 'صواب وخطأ',
+      },
+      placements: {
+        internal: 'داخل الفقاعة',
+        header: 'فوق العمود مرة واحدة',
+        external: 'بجانب الفقاعة',
+      },
+      selects: { one: 'إجابة واحدة', many: 'أكثر من إجابة' },
+      families: { A: 'مقاسات A', LETTER: 'مقاسات Letter' },
+      stats: { paper: 'المقاس', questions: 'الأسئلة', fill: 'امتلاء الصفحة', rows: 'تباعد الصفوف' },
+      statNotes: {
+        paper: 'أصغر مقاس يتسع لها',
+        questions: 'كما اخترتها',
+        fill: 'الصفحة شبه الفارغة تبدو خطأً',
+        rows: 'المسافة بين صف وصف',
+      },
+      refusals: {
+        doesNotFit: 'لا يتسع لها أي مقاس في هذه العائلة. المطلوب مقابل المتاح:',
+        other: 'اختيار خارج المدى المسموح. راجع القيم أعلاه.',
+      },
+    },
   },
   en: {
     brand: 'TransferChecker',
@@ -199,6 +322,67 @@ export const COPY: Readonly<Record<string, Copy>> = {
       help: 'Sets the interface language and your account details.',
       language: 'Interface language',
       languageHelp: 'Switches the interface language and keeps you on the same screen.',
+    },
+    builder: {
+      title: 'Sheet builder',
+      titleHelp: 'Build an answer sheet to your own shape, then download it as a PDF.',
+      choicesTitle: 'Choices',
+      choicesHelp: 'Change one choice and the sheet below follows it.',
+      outcomeTitle: 'The resulting sheet',
+      outcomeHelp:
+        'What your choices produce now, computed by the layout engine rather than described.',
+      download: 'Download PDF',
+      missing: 'Not set',
+      rowsDefault: 'The usual row spacing',
+      rowsDense: 'Rows were tightened to make it fit',
+      keyVersionCost:
+        'A version box can grow the paper: a twenty question quiz moves from A5 to A4.',
+      fields: {
+        name: 'Sheet name',
+        questions: 'Questions',
+        choices: 'Options per question',
+        alphabet: 'Option symbols',
+        placement: 'Letter position',
+        select: 'Answer mode',
+        studentId: 'Student number digits',
+        keyVersions: 'Key versions',
+        family: 'Paper family',
+      },
+      help: {
+        name: 'Printed on the edge of the sheet so you can tell two apart by eye.',
+        questions: 'From one question to two hundred.',
+        choices: 'From two options to ten, per question.',
+        alphabet: 'Chooses the letters or digits the bubbles carry.',
+        placement: 'Decides where the option letter is printed, which changes the row width.',
+        select: 'Allows one answer, or more than one, per question.',
+        studentId: 'How long the student number grid is. Zero means no grid.',
+        keyVersions: 'How many key versions. Zero means no version box.',
+        family: 'Chooses between A sizes and Letter sizes.',
+      },
+      alphabets: {
+        latin: 'Latin letters A B C',
+        arabic: 'Arabic letters أ ب ج',
+        digits: 'Digits 0 1 2',
+        trueFalse: 'True and false',
+      },
+      placements: {
+        internal: 'Inside the bubble',
+        header: 'Once above the column',
+        external: 'Beside the bubble',
+      },
+      selects: { one: 'One answer', many: 'More than one answer' },
+      families: { A: 'A sizes', LETTER: 'Letter sizes' },
+      stats: { paper: 'Size', questions: 'Questions', fill: 'Page fill', rows: 'Row spacing' },
+      statNotes: {
+        paper: 'The smallest size that holds it',
+        questions: 'As you chose them',
+        fill: 'A mostly blank page reads as a mistake',
+        rows: 'The distance from one row to the next',
+      },
+      refusals: {
+        doesNotFit: 'No size in this family holds it. Needed against available:',
+        other: 'A choice is outside the allowed range. Check the values above.',
+      },
     },
   },
 };

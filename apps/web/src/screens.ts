@@ -1,4 +1,4 @@
-// The five screens, and the one shape they share.
+// The six screens, and the one shape they share.
 //
 // List to detail with tabs, which is what the products this class is judged
 // against all settled on, and which is also design system rule 16: everything
@@ -23,6 +23,7 @@ import type { Column } from '@transferchecker/ui';
 import type { Copy } from './copy';
 import type { Dashboard } from './data';
 import { examScreen } from './exam-screen';
+import { sheetScreen } from './sheet-screen';
 import { pathOf } from './routes';
 import type { Screen } from './routes';
 
@@ -168,6 +169,8 @@ export function screen(
       return studentsScreen(copy, data);
     case 'sheets':
       return sheetsScreen(copy);
+    case 'sheet':
+      return sheetScreen(copy);
     case 'settings':
       return settingsScreen(copy, locale, locales);
   }

@@ -154,6 +154,9 @@ importers:
       '@transferchecker/grading':
         specifier: workspace:*
         version: link:../../packages/grading
+      '@transferchecker/sheet-spec':
+        specifier: workspace:*
+        version: link:../../packages/sheet-spec
       '@transferchecker/ui':
         specifier: workspace:*
         version: link:../../packages/ui
