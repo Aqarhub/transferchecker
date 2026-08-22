@@ -95,22 +95,34 @@ describe('the database refuses to be the only line of defence it is not', () => 
   // design rather than an omission: nothing a signed in client does needs to
   // read a refresh token. The test names it so the absence cannot be mistaken
   // for a table somebody forgot.
-  it('gives every table a policy except the one that must reach nobody', async () => {
+  it('gives every table exactly the policies the two-role model names', async () => {
     await actAsOwner(client);
     const found = await rows<{ tablename: string; roles: string; cmd: string }>(
       client,
       `select tablename, roles::text as roles, cmd from pg_policies where schemaname = 'public'`,
     );
-    const seen = found.map((policy) => policy.tablename);
-    const expected = [...TABLES.map(([name]) => name), 'token_families'];
-    expect([...seen].sort()).toEqual([...expected].sort());
+    // Two hats, two fences. Tenant policies stand where they always did, and
+    // migration 0006 adds the auth service's own on the tables auth work
+    // touches. The three secret tables still carry NO tenant policy: what
+    // changed is that the auth service is now somebody, not that a client is.
+    const tenant = found.filter((policy) => policy.roles === '{authenticated}');
+    const service = found.filter((policy) => policy.roles === '{tc_auth}');
+    expect(found).toHaveLength(tenant.length + service.length);
+    expect([...tenant.map((policy) => policy.tablename)].sort()).toEqual(
+      [...TABLES.map(([name]) => name), 'token_families'].sort(),
+    );
+    expect([...service.map((policy) => policy.tablename)].sort()).toEqual([
+      'consents',
+      'credentials',
+      'login_attempts',
+      'orgs',
+      'refresh_tokens',
+      'token_families',
+      'users',
+    ]);
     for (const unreachable of ['refresh_tokens', 'credentials', 'login_attempts']) {
-      expect(seen).not.toContain(unreachable);
+      expect(tenant.map((policy) => policy.tablename)).not.toContain(unreachable);
     }
-    // `to authenticated` on every one. Without it the policy is evaluated for
-    // anon as well, on a role that must never see a row.
-    for (const policy of found)
-      expect([policy.tablename, policy.roles]).toEqual([policy.tablename, '{authenticated}']);
     for (const policy of found)
       expect([policy.tablename, policy.cmd]).toEqual([policy.tablename, 'ALL']);
   });
@@ -122,7 +134,10 @@ describe('the database refuses to be the only line of defence it is not', () => 
     await actAsOwner(client);
     const found = await rows<{ qual: string; with_check: string }>(
       client,
-      `select qual, with_check from pg_policies where schemaname = 'public'`,
+      // Tenant policies only: the auth role's `using (true)` is its documented
+      // shape and reads no claim at all.
+      `select qual, with_check from pg_policies
+       where schemaname = 'public' and roles::text = '{authenticated}'`,
     );
     for (const policy of found) {
       expect(policy.qual).toContain('app_metadata');

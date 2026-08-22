@@ -16,24 +16,30 @@ export type { Database } from './database';
 export { keyOf, keyRow } from './keys';
 export type { AnswerKeyRow, NewAnswerKeyRow } from './keys';
 
-export { examDataOf, examsOf, rosterOf } from './queries';
+export { declaredForm, storedForm } from './form';
+
+export { examDataOf, examsOf, profileOf, rosterOf } from './queries';
 export type { ExamData, ExamSummary, ScanRecord } from './queries';
 
 export { createAccount, planAccount } from './signup';
 
-export { hashToken, refreshSession, revokeFamily, startSession } from './session';
+export { endSession, hashToken, refreshSession, revokeFamily, startSession } from './session';
 
 export {
   ARGON2,
   DECOY_HASH,
+  accountEmail,
   attemptLogin,
+  beginConfirmation,
+  confirmEmail,
   emailKey,
   forgetStaleAttempts,
+  hashConfirmationToken,
   hashPassword,
   setPassword,
   verifyPassword,
 } from './credentials';
-export type { LoginAttempt, LoginResult } from './credentials';
+export type { ConfirmOutcome, LoginAttempt, LoginResult } from './credentials';
 
 export { auditIsolation, probeIsolation } from './audit';
 export { diagnose, explain } from './diagnose';
@@ -41,12 +47,15 @@ export { assertUnprivileged } from './connect';
 export type { Diagnosis } from './diagnose';
 export type { Check } from './audit';
 
-export { REQUEST_ROLE, asAnonymous, asTenant } from './tenant';
+export { AUTH_ROLE, REQUEST_ROLE, asAnonymous, asAuthService, asTenant } from './tenant';
 export type { Claims } from './tenant';
-export type { RefreshInput, StartSession } from './session';
+export type { RefreshInput, RefreshResult, StartSession } from './session';
 
 export { REVOCATIONS } from './schema/sessions';
 export type { AccountPlan, AccountRows, LiveVersions, SignupIds } from './signup';
+
+export { MAX_BATCH, PULL_LIMIT, PushBatchSchema, SYNC_SKEW_MS, pullSync, pushSync } from './sync';
+export type { EntityCount, PullPage, PushBatch, PushReport } from './sync';
 
 export { DEMO_KEY, seedDemo } from './seed';
 export type { DemoIds } from './seed';

@@ -30,6 +30,9 @@ catalogs:
     eslint:
       specifier: 10.8.1
       version: 10.8.1
+    jose:
+      specifier: 6.2.9
+      version: 6.2.9
     postgres:
       specifier: 3.4.9
       version: 3.4.9
@@ -80,6 +83,37 @@ importers:
       typescript-eslint:
         specifier: 'catalog:'
         version: 8.67.0(eslint@10.8.1)(typescript@6.0.3)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@types/node@24.13.3)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.23.12))
+
+  apps/server:
+    dependencies:
+      '@transferchecker/account':
+        specifier: workspace:*
+        version: link:../../packages/account
+      '@transferchecker/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@electric-sql/pglite@0.5.5)(postgres@3.4.9)
+      postgres:
+        specifier: 'catalog:'
+        version: 3.4.9
+    devDependencies:
+      '@electric-sql/pglite':
+        specifier: 'catalog:'
+        version: 0.5.5
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.12
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vitest:
         specifier: 'catalog:'
         version: 4.1.10(@types/node@24.13.3)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.23.12))
@@ -139,6 +173,9 @@ importers:
 
   packages/account:
     dependencies:
+      jose:
+        specifier: 'catalog:'
+        version: 6.2.9
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -1500,6 +1537,9 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
+  jose@6.2.9:
+    resolution: {integrity: sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA==}
+
   json-buffer@3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
 
@@ -2735,6 +2775,8 @@ snapshots:
       is-extglob: 2.1.1
 
   isexe@2.0.0: {}
+
+  jose@6.2.9: {}
 
   json-buffer@3.0.1: {}
 

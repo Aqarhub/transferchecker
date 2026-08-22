@@ -10,7 +10,7 @@
 // grade a paper offline. This row is for showing a teacher a list of the sheets
 // they have made and for printing another copy.
 
-import { pgTable, jsonb, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, pgTable, jsonb, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { isolate } from '../policy';
 import { orgs } from './orgs';
 
@@ -27,6 +27,20 @@ export const templates = pgTable(
     spec: jsonb('spec').notNull(),
 
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+
+    /**
+     * The device's clock when the teacher last edited this row. Last write
+     * wins compares THIS, per PLAN.md section 6, and it never orders a list.
+     * The default only covers rows born on the server, like the seed's.
+     */
+    clientTs: timestamp('client_ts', { withTimezone: true }).notNull().defaultNow(),
+
+    /** The server's clock when sync last wrote this row. The pull cursor. */
+    syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  () => [isolate('templates')],
+  (table) => [
+    // The delta pull filters on the organisation and walks the cursor.
+    index('idx_templates_org_synced').on(table.orgId, table.syncedAt),
+    isolate('templates'),
+  ],
 );

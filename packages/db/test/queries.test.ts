@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { gradeStored, maxPointsOf, totalPointsOf } from '@transferchecker/grading';
 import type { PGlite } from '@electric-sql/pglite';
 import { DEMO_KEY, seedDemo } from '../src/seed';
-import { examDataOf, examsOf, rosterOf } from '../src/queries';
+import { examDataOf, examsOf, profileOf, rosterOf } from '../src/queries';
 import { keyRow } from '../src/keys';
 import { actAs, actAsOwner } from '../src/local';
 import type { Database } from '../src/database';
@@ -41,6 +41,15 @@ describe('the exam list', () => {
 
   it('returns nothing for an organisation with no exams', async () => {
     expect(await examsOf(db, ORG_B)).toEqual([]);
+  });
+});
+
+describe('the profile', () => {
+  it('returns the signed in person and nobody else', async () => {
+    const mine = await profileOf(db, ORG_A, USER_A);
+    expect(mine).toEqual({ email: 'teacher@example.sa', locale: 'ar', country: 'SA' });
+    // The wrong organisation gets the same nothing an absent account gets.
+    expect(await profileOf(db, ORG_B, USER_A)).toBeNull();
   });
 });
 
@@ -162,5 +171,75 @@ describe('re-grading, which is what the string storage is for', () => {
        where table_schema = 'public' and column_name like '%max%'`,
     );
     expect(columns[0]?.n).toBe(0);
+  });
+});
+
+describe('the version box, stored and read back in all three of its states', () => {
+  it('returns what each seeded paper declared, with the blank box as null', async () => {
+    const data = await examDataOf(db, ORG_A, EXAM_A);
+    const declared = (data?.scans ?? []).map((scan) => scan.form);
+    // Five papers said A. The sixth is the owner's own case: a standard50,
+    // which prints the box on every copy, with the box left blank. It must come
+    // back null, never the empty string the column holds and never undefined,
+    // because undefined is the state that would excuse it from the fault.
+    expect(declared.filter((form) => form === 'A')).toHaveLength(5);
+    const unmatched = data?.scans.find((scan) => scan.studentExtId === null);
+    expect(unmatched?.form).toBeNull();
+  });
+
+  it('keeps a sheet that prints no box distinct from a box left blank', async () => {
+    // Written raw, as the sync layer one day will: SQL NULL is the no-box
+    // state. If the query layer folded it into the blank-box state, this exact
+    // read would refuse every quick20 in the product once grading sees it.
+    await client.exec(
+      `insert into scans (id, org_id, exam_id, student_ext_id, form, answers, marks,
+                          score, total, device_id, client_ts)
+       values ('99999999-9999-4999-8999-999999999999', '${ORG_A}', '${EXAM_A}', '00007',
+               null, '021301132021', 'cccccccccccc', 0, 0, 'demo-device', now())`,
+    );
+    const data = await examDataOf(db, ORG_A, EXAM_A);
+    const added = data?.scans.find((scan) => scan.id === '99999999-9999-4999-8999-999999999999');
+    if (added === undefined) throw new Error('the inserted scan did not come back');
+    expect(added.form).toBeUndefined();
+  });
+
+  // The whole round exists for this case, so it is pinned through the real
+  // storage, not only through the pure function: a paper that named form B is
+  // returned by examDataOf unfiltered, and grading it against the A key that
+  // the caller viewed raises the mismatch fault instead of a silent grade.
+  it('carries a foreign form through storage and out as a mismatch fault', async () => {
+    await client.exec(
+      `insert into scans (id, org_id, exam_id, student_ext_id, form, answers, marks,
+                          score, total, device_id, client_ts)
+       values ('77777777-7777-4777-8777-777777777777', '${ORG_A}', '${EXAM_A}', '00099',
+               'B', '021301132021', 'cccccccccccc', 0, 0, 'demo-device', now())`,
+    );
+    const data = await examDataOf(db, ORG_A, EXAM_A);
+    const foreign = data?.scans.find((scan) => scan.id === '77777777-7777-4777-8777-777777777777');
+    if (foreign === undefined || data === null) throw new Error('the B paper did not come back');
+    expect(foreign.form).toBe('B');
+    const grade = gradeStored(data.key, foreign.answers, foreign.marks, foreign.form);
+    expect(grade?.formFault).toBe('mismatch');
+    expect(grade?.needsReview).toBe(true);
+  });
+
+  it('refuses a form longer than any key can be, which is a device writing garbage', async () => {
+    // The bound is pinned from BOTH sides. Four characters is the grading
+    // schema's own ceiling and must be accepted, or tightening the constraint
+    // to something narrower would pass every other test in this suite.
+    await client.exec(
+      `insert into scans (id, org_id, exam_id, student_ext_id, form, answers, marks,
+                          score, total, device_id, client_ts)
+       values ('66666666-6666-4666-8666-666666666666', '${ORG_A}', '${EXAM_A}', '00007',
+               'ABCD', '021301132021', 'cccccccccccc', 0, 0, 'demo-device', now())`,
+    );
+    await expect(
+      client.exec(
+        `insert into scans (id, org_id, exam_id, student_ext_id, form, answers, marks,
+                            score, total, device_id, client_ts)
+         values ('88888888-8888-4888-8888-888888888888', '${ORG_A}', '${EXAM_A}', '00007',
+                 'ABCDE', '021301132021', 'cccccccccccc', 0, 0, 'demo-device', now())`,
+      ),
+    ).rejects.toThrow(/scans_form_length/);
   });
 });

@@ -15,6 +15,7 @@
 
 import { gradeStored } from '@transferchecker/grading';
 import type { AnswerKey } from '@transferchecker/grading';
+import { storedForm } from './form';
 import { keyRow } from './keys';
 import { answerKeys } from './schema/answer-keys';
 import { exams } from './schema/exams';
@@ -61,16 +62,29 @@ const ROSTER: readonly { extId: string; name: string }[] = [
  * `?` is a question the student left and `!` is one the machine would not
  * decide. Both are here because they are the two states a dashboard built on
  * happy paths gets wrong, and the design system has a rule about each.
+ *
+ * `form` is in `formOf`'s vocabulary and `storedForm` translates it on the way
+ * in. The demo exam is a standard50, which prints a version box on every copy,
+ * so no paper here is `undefined`: five said A and one left the box blank,
+ * which is the exact paper the owner photographed and the reason the fault
+ * exists as a state at all.
  */
-const PAPERS: readonly { extId: string | null; answers: string; marks: string; day: number }[] = [
-  { extId: '00007', answers: '021301132021', marks: 'cccccccccccb', day: 14 },
-  { extId: '00099', answers: '02130113202?', marks: 'ccccccccccbb', day: 14 },
-  { extId: '00318', answers: '0213011!2021', marks: 'ccccccdccccb', day: 14 },
-  { extId: '00713', answers: '331301132021', marks: 'eccccccccccb', day: 15 },
-  { extId: '01024', answers: '021311132001', marks: 'ccccuccccccb', day: 15 },
-  // No identifier: the grid was unreadable, so the paper is stored unmatched
-  // rather than guessed onto a pupil.
-  { extId: null, answers: '3213?1132021', marks: 'ccccbccccccb', day: 15 },
+const PAPERS: readonly {
+  extId: string | null;
+  form: string | null;
+  answers: string;
+  marks: string;
+  day: number;
+}[] = [
+  { extId: '00007', form: 'A', answers: '021301132021', marks: 'cccccccccccb', day: 14 },
+  { extId: '00099', form: 'A', answers: '02130113202?', marks: 'ccccccccccbb', day: 14 },
+  { extId: '00318', form: 'A', answers: '0213011!2021', marks: 'ccccccdccccb', day: 14 },
+  { extId: '00713', form: 'A', answers: '331301132021', marks: 'eccccccccccb', day: 15 },
+  { extId: '01024', form: 'A', answers: '021311132001', marks: 'ccccuccccccb', day: 15 },
+  // No identifier and no form: the grid was unreadable and the version box was
+  // left blank, so the paper is stored unmatched rather than guessed onto a
+  // pupil, and its grade must come back needing review rather than clean.
+  { extId: null, form: null, answers: '3213?1132021', marks: 'ccccbccccccb', day: 15 },
 ];
 
 export interface DemoIds {
@@ -134,12 +148,13 @@ export async function seedDemo(db: Database, ids: DemoIds): Promise<void> {
       // zero so the difference between a stored score and a recomputed one is a
       // real difference when the key is later edited, which is the whole reason
       // re-grading without rescanning works.
-      const grade = gradeStored(DEMO_KEY, paper.answers, paper.marks);
+      const grade = gradeStored(DEMO_KEY, paper.answers, paper.marks, paper.form);
       return {
         id: nextId(),
         orgId: ids.orgId,
         examId: ids.examId,
         studentExtId: paper.extId,
+        form: storedForm(paper.form),
         answers: paper.answers,
         marks: paper.marks,
         score: grade?.score ?? 0,

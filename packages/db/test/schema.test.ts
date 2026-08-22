@@ -100,6 +100,9 @@ describe('the tables the plan asks for', () => {
 describe('the columns section 5 names', () => {
   it('keys a question by points rather than by a letter', () => {
     expect([...columnsOf(schema.answerKeys)].sort()).toEqual([
+      // client_ts and synced_at are the sync pair from migration 0007: the
+      // device's stamp last-write-wins compares, and the server's pull cursor.
+      'client_ts',
       'exam_id',
       'extras',
       'form_code',
@@ -107,6 +110,7 @@ describe('the columns section 5 names', () => {
       'key',
       'org_id',
       'points',
+      'synced_at',
       'tags',
     ]);
     expect(sql).toMatch(/"points" real\[\] NOT NULL/);
@@ -166,6 +170,10 @@ describe('the migrations', () => {
       '0001_tables',
       '0002_grants',
       '0003_credentials',
+      '0004_scan_form',
+      '0005_email_confirmation',
+      '0006_auth_role',
+      '0007_sync',
     ]);
   });
 

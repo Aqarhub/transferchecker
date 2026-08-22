@@ -17,7 +17,8 @@
 // sheet does not change: the paper carries its own version and the scan is bound
 // to a template. It is stated here because it is a real cost, not a free win.
 
-import { index, pgTable, real, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { check, index, pgTable, real, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { isolate } from '../policy';
 import { exams } from './exams';
 import { orgs } from './orgs';
@@ -56,6 +57,23 @@ export const scans = pgTable(
      */
     studentExtId: text('student_ext_id'),
 
+    /**
+     * The printed form the paper declared, in three states, exactly the three
+     * `formOf` in core-omr returns. NULL means the sheet prints no version box,
+     * so there was nothing to say. The empty string means it prints one and the
+     * paper did not answer it, or answered twice. A short string is what the
+     * paper said.
+     *
+     * The empty string is a sentinel and it is not decoration: fold it into
+     * NULL and re-grading cannot tell a quick20, which never declares a form,
+     * from a standard50 whose box was left blank, and either every quick20 is
+     * refused or the blank box goes back to grading silently against whichever
+     * key the caller held. That silent grade is the defect this column exists
+     * to close. `storedForm` and `declaredForm` in `../form.ts` are the only
+     * translation, in both directions.
+     */
+    form: text('form'),
+
     /** One symbol per question. `0..9`, `?` for left blank, `!` for undecided. */
     answers: text('answers').notNull(),
 
@@ -82,6 +100,16 @@ export const scans = pgTable(
     // into a sequential scan of the whole table.
     index('idx_scans_org_exam').on(table.orgId, table.examId),
     index('idx_scans_org_created').on(table.orgId, table.createdAt.desc()),
+    // AnswerKeySchema in grading caps a form at four characters, so a value
+    // longer than that is not a rare form, it is a device writing garbage into
+    // a column that decides which key grades a paper. Stated precisely: the
+    // four is the GRADING schema's ceiling. The key TABLE's `form_code` is
+    // `char(1)` today, so a stored key cannot name a multi-character form yet
+    // and a 2-4 character paper can only ever grade as `mismatch`; widening
+    // that column is a migration for the day a stock sheet grows a second
+    // version column. The character set is deliberately not constrained: a
+    // custom sheet chooses its own version symbols.
+    check('scans_form_length', sql`char_length(${table.form}) <= 4`),
     isolate('scans'),
   ],
 );

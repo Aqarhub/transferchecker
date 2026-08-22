@@ -35,5 +35,18 @@ export type { Family, RefreshInput, RefreshOutcome, RefusalReason, TokenRecord }
 export { BASE_DELAY_MS, FREE_ATTEMPTS, MAX_DELAY_MS, checkLogin, delayAfter } from './login';
 export type { Attempts, LoginInput, LoginOutcome, LoginRefusal } from './login';
 
+export {
+  ACCESS_LIFETIME_MS,
+  AUDIENCE,
+  CLOCK_TOLERANCE_MS,
+  ISSUER,
+  accessClaims,
+  issueAccessToken,
+  verifyAccessToken,
+} from './token';
+export type { AccessInput, SigningKey, VerifyOutcome, VerifyRefusal } from './token';
+
+export { CONFIRMATION_LIFETIME_MS, confirmationFresh } from './confirmation';
+
 export { ConsentSchema, PolicyVersionSchema, consentFor, isCurrent, outstanding } from './consent';
 export type { Consent } from './consent';

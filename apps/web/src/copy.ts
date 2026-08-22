@@ -86,7 +86,7 @@ export const COPY: Readonly<Record<string, Copy>> = {
       stats: [
         { label: 'الأوراق', note: 'مصحّحة في هذا الاختبار' },
         { label: 'المتوسط', note: 'من الدرجة الكاملة' },
-        { label: 'تحتاج مراجعة', note: 'ورقة فيها سؤال معروض' },
+        { label: 'تحتاج مراجعة', note: 'ورقة تنتظر نظرة قبل اعتماد درجتها' },
         { label: 'لم تُحسم', note: 'أسئلة لم تقرأها الآلة' },
       ],
       missing: 'غير محدد',
@@ -157,7 +157,7 @@ export const COPY: Readonly<Record<string, Copy>> = {
       stats: [
         { label: 'Papers', note: 'marked in this exam' },
         { label: 'Mean', note: 'out of the full mark' },
-        { label: 'Needs review', note: 'papers with a flagged question' },
+        { label: 'Needs review', note: 'papers waiting on a look before the grade stands' },
         { label: 'Unresolved', note: 'questions the machine would not read' },
       ],
       missing: 'Not set',

@@ -84,7 +84,11 @@ export function dashboardOf(data: ExamData): Dashboard {
   const byId = new Map(data.roster.map((student) => [student.id, student]));
 
   const papers: Paper[] = data.scans.flatMap((scan) => {
-    const grade = gradeStored(data.key, scan.answers, scan.marks);
+    // The scan's own declared form rides into the grade, which is the last leg
+    // of the end to end wiring: a paper whose version box was blank, or named
+    // a different form than this key, comes out needing review here too, not
+    // only on the device that scanned it.
+    const grade = gradeStored(data.key, scan.answers, scan.marks, scan.form);
     if (grade === null) return [];
     return [
       {

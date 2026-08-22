@@ -209,4 +209,15 @@ describe('the printed form, which is the one fault that costs every question', (
     expect([grade.unresolved, grade.blanks, grade.reviews]).toEqual([0, 0, 0]);
     expect(grade.needsReview).toBe(true);
   });
+
+  // Re-grading runs over what the database stored, months after the scan. If
+  // the stored path dropped the form, the device would raise the fault and the
+  // dashboard's re-grade would clear it, on the same paper.
+  it('carries the form through the stored path, which is what re-grading uses', () => {
+    expect(gradeStored(key, '012', 'ccc', 'A')?.formFault).toBe('none');
+    expect(gradeStored(key, '012', 'ccc', null)?.formFault).toBe('unreadable');
+    expect(gradeStored(key, '012', 'ccc', 'B')?.formFault).toBe('mismatch');
+    // And absent stays absent: a sheet with no version box re-grades clean.
+    expect(gradeStored(key, '012', 'ccc')?.formFault).toBe('none');
+  });
 });

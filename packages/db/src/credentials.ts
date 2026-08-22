@@ -19,9 +19,9 @@
 // [measured] and a synchronous one would stall every other request for that long.
 
 import { createHash } from 'node:crypto';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import { hash, verify } from '@node-rs/argon2';
-import { checkLogin, delayAfter } from '@transferchecker/account';
+import { checkLogin, confirmationFresh, delayAfter } from '@transferchecker/account';
 import type { LoginOutcome } from '@transferchecker/account';
 import { credentials, loginAttempts } from './schema/credentials';
 import { users } from './schema/users';
@@ -208,4 +208,99 @@ export async function setPassword(
 export async function forgetStaleAttempts(db: Database, now: number): Promise<void> {
   const horizon = new Date(now - delayAfter(Number.MAX_SAFE_INTEGER) - 60_000);
   await db.delete(loginAttempts).where(sql`${loginAttempts.lastFailureAt} < ${horizon}`);
+}
+
+/**
+ * The address a user id belongs to, for minting claims on a refresh.
+ *
+ * The refresh endpoint holds a rotated family and nothing else: the client
+ * never says who it is, and the access token's claims carry the email the way
+ * GoTrue's do. Read fresh from `users` rather than copied into the session
+ * row, so an address corrected in the profile is the one the next token says.
+ */
+export async function accountEmail(db: Database, userId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return row?.email ?? null;
+}
+
+/**
+ * What goes in `confirmation_token_hash`: the SHA-256 of the token, never the
+ * token. The same reasoning as `hashToken` for refresh tokens: 256 bits of our
+ * own randomness has no dictionary, so an unsalted fast hash is exactly right,
+ * and a stolen backup of the column can confirm nobody because the lookup only
+ * goes one way.
+ */
+export const hashConfirmationToken = (token: string): string =>
+  createHash('sha256').update(token, 'utf8').digest('hex');
+
+/**
+ * Records that a confirmation link is out, at signup or on a resend.
+ *
+ * OVERWRITES any previous link, which is the supersession rule: the newest
+ * email is the one whose link works. That is also the whole revocation story a
+ * confirmation needs, since the token grants nothing but an idempotent
+ * `confirmed_at`.
+ */
+export async function beginConfirmation(
+  db: Database,
+  input: { readonly userId: string; readonly token: string; readonly now: number },
+): Promise<void> {
+  await db
+    .update(credentials)
+    .set({
+      confirmationTokenHash: hashConfirmationToken(input.token),
+      confirmationSentAt: new Date(input.now),
+    })
+    .where(eq(credentials.userId, input.userId));
+}
+
+export type ConfirmOutcome =
+  /** The mailbox is proven and `confirmed_at` was just written. */
+  | 'confirmed'
+  /** Proven before this click. Shown as success: link scanners click first. */
+  | 'already'
+  | 'expired'
+  /** No outstanding link matches. Also what a superseded link reads as. */
+  | 'unknown';
+
+/**
+ * The confirm endpoint's whole decision, from the raw token in the link.
+ *
+ * The row is found BY the token's hash, so the URL carries the token and
+ * nothing else: no email and no user id for a referrer header to leak. The
+ * hash is NOT cleared on success, deliberately: corporate mail scanners open
+ * links before people do, and burning the link on that first automated click
+ * would show the actual teacher an error for a mailbox that just proved
+ * itself. The link stays answerable until it expires or a resend replaces it,
+ * and the second answer is `already`, which renders as success.
+ */
+export async function confirmEmail(
+  db: Database,
+  input: { readonly token: string; readonly now: number },
+): Promise<ConfirmOutcome> {
+  const [row] = await db
+    .select({
+      userId: credentials.userId,
+      sentAt: credentials.confirmationSentAt,
+      confirmedAt: credentials.confirmedAt,
+    })
+    .from(credentials)
+    .where(eq(credentials.confirmationTokenHash, hashConfirmationToken(input.token)))
+    .limit(1);
+  if (row === undefined) return 'unknown';
+  if (row.sentAt === null) return 'unknown';
+  if (!confirmationFresh(row.sentAt.getTime(), input.now)) return 'expired';
+  if (row.confirmedAt !== null) return 'already';
+
+  // Guarded by `isNull` so a concurrent double click cannot move an already
+  // written timestamp: the first writer wins and the second reads `already`.
+  await db
+    .update(credentials)
+    .set({ confirmedAt: new Date(input.now) })
+    .where(and(eq(credentials.userId, row.userId), isNull(credentials.confirmedAt)));
+  return 'confirmed';
 }

@@ -29,7 +29,35 @@ describe('a database somebody has broken', () => {
     const { client, db } = await freshDatabase();
     await client.exec('drop policy scans_isolation on scans');
     const checks = await auditIsolation(db);
-    expect(checks.find((check) => check.name.includes('has a policy'))?.ok).toBe(false);
+    expect(checks.find((check) => check.name.includes('exactly the roles'))?.ok).toBe(false);
+  });
+
+  it('notices an auth policy dropped, which is the same model from the other side', async () => {
+    const { client, db } = await freshDatabase();
+    await client.exec('drop policy credentials_auth on credentials');
+    const checks = await auditIsolation(db);
+    const check = checks.find((entry) => entry.name.includes('exactly the roles'));
+    expect(check?.ok).toBe(false);
+    expect(check?.detail).toContain('credentials');
+  });
+
+  it('notices a policy quietly widened to a role the model does not name', async () => {
+    const { client, db } = await freshDatabase();
+    await client.exec(`create policy scans_extra on scans as permissive for all to tc_auth
+      using (true) with check (true)`);
+    const checks = await auditIsolation(db);
+    const check = checks.find((entry) => entry.name.includes('exactly the roles'));
+    expect(check?.ok).toBe(false);
+    expect(check?.detail).toContain('scans');
+  });
+
+  it('notices the auth role being granted grading data', async () => {
+    const { client, db } = await freshDatabase();
+    await client.exec('grant select on scans to tc_auth');
+    const checks = await auditIsolation(db);
+    const check = checks.find((entry) => entry.name.includes('nothing on grading'));
+    expect(check?.ok).toBe(false);
+    expect(check?.detail).toContain('scans');
   });
 
   it('notices row level security turned off', async () => {
