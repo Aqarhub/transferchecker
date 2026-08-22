@@ -44,6 +44,7 @@ import { sql } from 'drizzle-orm';
 import type { BreachCheck } from './hibp';
 import type { KeyRing } from './keys';
 import type { Mailer } from './mailer';
+import { confirmationMessage, mailLanguage } from './message';
 import type { Handler, Reply, Request } from './http';
 
 /** Thirty days, the lifetime the session tests already assume for a device. */
@@ -54,6 +55,11 @@ export interface Dependencies {
   readonly keys: KeyRing;
   readonly clock: () => number;
   readonly mailer: Mailer;
+  /**
+   * Where a failed send is reported. Never with the address or the link: an
+   * email address is PII and a confirmation link is a credential.
+   */
+  readonly log: (line: string) => void;
   readonly breached: BreachCheck;
   /** The live policy versions a signup must have agreed to. */
   readonly policy: { readonly privacy: string; readonly terms: string };
@@ -167,10 +173,28 @@ export function routes(deps: Dependencies): Readonly<Record<string, Handler>> {
       throw error;
     }
 
-    await deps.mailer.sendConfirmation(
-      checked.account.email,
-      `${deps.origin}/auth/confirm#${confirmation}`,
-    );
+    // THE ACCOUNT IS ALREADY COMMITTED, SO THE SEND MUST NOT BE ABLE TO UNDO
+    // IT. Letting a rejection out here returns 500 to somebody whose account,
+    // password and confirmation token were all written a line earlier, and
+    // whose retry then answers 409 email-taken: an address stranded by a mail
+    // queue, unrecoverable from the outside. The null mailer never rejects, so
+    // this only ever bites once a real provider is plugged in, which is exactly
+    // the kind of defect that arrives already in production.
+    //
+    // The failure is logged rather than swallowed, and the person is not stuck:
+    // login works unconfirmed and reports `confirmed: false`, so only cloud
+    // sync waits. A resend endpoint is the follow-up round, named in SERVER.md.
+    try {
+      await deps.mailer.send(
+        confirmationMessage(
+          checked.account.email,
+          mailLanguage(checked.account.language),
+          `${deps.origin}/auth/confirm#${confirmation}`,
+        ),
+      );
+    } catch {
+      deps.log('mailer: confirmation send failed, the account was still created');
+    }
     return { status: 201, body: { userId: ids.userId } };
   };
 

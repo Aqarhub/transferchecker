@@ -105,6 +105,9 @@ importers:
       '@electric-sql/pglite':
         specifier: 'catalog:'
         version: 0.5.5
+      '@transferchecker/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.3

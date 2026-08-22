@@ -17,20 +17,29 @@ import { prepare } from '@transferchecker/db/local';
 import { app } from '../src/http';
 import { keyRing } from '../src/keys';
 import { routes } from '../src/routes';
-import type { Mailer } from '../src/mailer';
+import type { Mailer, Message } from '../src/mailer';
+import { MAIL_COPY } from '../src/message';
+import { LANGUAGES } from '../src/settings';
 
 const T0 = Date.UTC(2026, 7, 22, 10, 0, 0);
 const PASSWORD = 'ورقة تُصحَّح في الصف لا في البيت';
 const BREACHED = 'correct horse battery staple!';
 
 const clock = { now: T0 };
-const sent: { email: string; link: string }[] = [];
+const sent: Message[] = [];
+/** Flipped by the one test that asks what a broken mail provider does. */
+const mail = { fails: false };
 const mailer: Mailer = {
-  sendConfirmation: (email, link) => {
-    sent.push({ email, link });
+  send: (message) => {
+    if (mail.fails) return Promise.reject(new Error('provider is down'));
+    sent.push(message);
     return Promise.resolve();
   },
 };
+
+/** The link out of a recorded message, read from the plain text part. */
+const linkOf = (message: Message | undefined): string =>
+  message?.text.split('\n').find((line) => line.startsWith('https://')) ?? '';
 
 let server: Server | undefined;
 let origin = '';
@@ -73,9 +82,12 @@ beforeAll(async () => {
       keys,
       clock: () => clock.now,
       mailer,
+      log: () => undefined,
       breached: (password) => Promise.resolve(password === BREACHED),
       policy: { privacy: '2026-08-01', terms: '2026-08-01' },
-      languages: ['ar', 'en'],
+      // The real list, so a signup in a published language is exercised here
+      // exactly as production accepts it rather than in a two entry stand-in.
+      languages: LANGUAGES,
       origin: 'https://example.sa',
     }),
   });
@@ -113,8 +125,8 @@ describe('the whole journey, over the wire', () => {
     const response = await post('/auth/signup', SIGNUP);
     expect(response.status).toBe(201);
     expect(sent).toHaveLength(1);
-    expect(sent[0]?.email).toBe('teacher@example.sa');
-    expect(sent[0]?.link).toContain('https://example.sa/auth/confirm#');
+    expect(sent[0]?.to).toBe('teacher@example.sa');
+    expect(linkOf(sent[0])).toContain('https://example.sa/auth/confirm#');
   });
 
   it('refuses the same address a second time, which every mainstream signup does', async () => {
@@ -144,7 +156,7 @@ describe('the whole journey, over the wire', () => {
   });
 
   it('confirms the mailbox with the token from the email, idempotently', async () => {
-    const token = sent[0]?.link.split('#')[1] ?? '';
+    const token = linkOf(sent[0]).split('#')[1] ?? '';
     const first = await post('/auth/confirm', { token });
     expect(first.status).toBe(200);
     const again = await post('/auth/confirm', { token });
@@ -409,5 +421,45 @@ describe('sync over the wire', () => {
   it('refuses a pull with no cursor at all', async () => {
     const response = await get('/sync/pull', { authorization: `Bearer ${accessToken}` });
     expect(response.status).toBe(400);
+  });
+});
+
+describe('the confirmation mail, from signup to the message', () => {
+  it('is composed in the language the person chose, not the default', async () => {
+    // The defect this guards: `language` is collected and validated at signup
+    // and was then dropped at the transport boundary, so the only email an
+    // Arabic first product sends would have arrived in whatever language the
+    // provider adapter's author happened to write.
+    const before = sent.length;
+    await post('/auth/signup', {
+      ...SIGNUP,
+      email: 'turkish@example.sa',
+      language: 'tr',
+    });
+    const message = sent[before];
+    expect(message?.to).toBe('turkish@example.sa');
+    expect(message?.subject).toBe(MAIL_COPY.tr.subject);
+    expect(message?.html).toContain('lang="tr"');
+  });
+
+  it('still creates the account when the provider is down', async () => {
+    // The account, the password and the confirmation token are all committed
+    // before the send. Letting a rejection out returns 500 to somebody whose
+    // retry then answers 409, and the address is stranded with no way back in.
+    mail.fails = true;
+    const response = await post('/auth/signup', {
+      ...SIGNUP,
+      email: 'unreachable@example.sa',
+    });
+    mail.fails = false;
+    expect(response.status).toBe(201);
+
+    // And the person is not locked out: login works, unconfirmed.
+    const login = await post('/auth/login', {
+      email: 'unreachable@example.sa',
+      password: PASSWORD,
+    });
+    expect(login.status).toBe(200);
+    expect((await json(login))['confirmed']).toBe(false);
   });
 });

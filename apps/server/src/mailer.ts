@@ -1,18 +1,31 @@
-// Sending the confirmation email, behind the narrowest possible interface.
+// Sending mail, behind the narrowest possible interface.
 //
 // WHICH PROVIDER SENDS IT IS A BUSINESS DECISION THE OWNER HAS NOT MADE YET
 // (DirectMail on SCCC for residency, or Resend, or SES; options and prices are
-// with him). Nothing else in this round depends on the answer, so the server
-// ships with the interface and a null implementation, and the day the choice
-// lands, one file implements `Mailer` and one line in `main.ts` swaps it in.
+// with him). Nothing else depends on the answer, so the server ships with the
+// interface and a null implementation, and the day the choice lands, one file
+// implements `Mailer` and one line in `main.ts` swaps it in.
 //
-// The interface deliberately takes a finished link rather than a token, so no
-// implementation ever learns how tokens are built, and it returns void rather
-// than a status: a signup must not fail because a mail queue hiccuped, and the
-// person can always ask for a resend.
+// THE INTERFACE TAKES A FINISHED MESSAGE, NOT AN ADDRESS AND A TOKEN. An
+// adapter transports; it never composes. That keeps three things out of the
+// provider's reach: which language a teacher reads (`message.ts` carries it),
+// how a confirmation token becomes a link, and whether the plain text part
+// exists at all. Switching provider then changes no word anybody reads.
+//
+// AND EVERY MESSAGE CARRIES BOTH PARTS. The plain text is not a courtesy: some
+// clients refuse HTML outright, and an HTML only message is a well known spam
+// signal. `message.ts` builds both from one copy table so they cannot drift.
+//
+// `send` resolves to nothing, and the caller must not let a rejection reach the
+// person: a signup that already wrote an account must not fail because a mail
+// queue hiccuped. `routes.ts` is where that is enforced.
+
+import type { Message } from './message';
+
+export type { Message } from './message';
 
 export interface Mailer {
-  sendConfirmation(email: string, link: string): Promise<void>;
+  send(message: Message): Promise<void>;
 }
 
 /**
@@ -23,7 +36,9 @@ export interface Mailer {
 export function nullMailer(log: (line: string) => void): Mailer {
   let warned = false;
   return {
-    sendConfirmation: () => {
+    // The message is deliberately not read: this implementation exists to say
+    // nothing was sent, and reading it would only invite logging it.
+    send: () => {
       if (!warned) {
         warned = true;
         log('mailer: no provider configured, confirmation emails are NOT being sent');

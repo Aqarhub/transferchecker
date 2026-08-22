@@ -42,8 +42,11 @@ async function main(): Promise<void> {
       keys: await keyRing(settings.keyId, settings.privateKey, settings.retiredKeys),
       clock: () => Date.now(),
       // The provider is the owner's pending business decision; until it lands
-      // the null mailer says plainly that nothing is being sent.
+      // the null mailer says plainly that nothing is being sent. What it would
+      // send is already composed in `message.ts`, so the decision costs one
+      // adapter file and no copy.
       mailer: nullMailer(log),
+      log,
       breached: settings.hibp ? hibpCheck() : noBreachCheck(),
       policy: settings.policy,
       languages: LANGUAGES,
