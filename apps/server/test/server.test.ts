@@ -32,7 +32,7 @@ const mailer: Mailer = {
   },
 };
 
-let server: Server;
+let server: Server | undefined;
 let origin = '';
 
 const post = (path: string, body?: unknown, headers: Record<string, string> = {}) =>
@@ -66,7 +66,7 @@ beforeAll(async () => {
     pair.privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64'),
   );
 
-  server = app({
+  const started = app({
     log: () => undefined,
     routes: routes({
       db: drizzle(client),
@@ -79,10 +79,11 @@ beforeAll(async () => {
       origin: 'https://example.sa',
     }),
   });
+  server = started;
   await new Promise<void>((resolve) => {
-    server.listen(0, '127.0.0.1', resolve);
+    started.listen(0, '127.0.0.1', resolve);
   });
-  const address = server.address();
+  const address = started.address();
   if (address === null || typeof address === 'string') throw new Error('no port');
   origin = `http://127.0.0.1:${String(address.port)}`;
 });
@@ -90,6 +91,14 @@ beforeAll(async () => {
 afterAll(
   () =>
     new Promise<void>((resolve) => {
+      // `beforeAll` can fail before the server exists, and closing nothing then
+      // throws a TypeError that is reported beside the real failure and reads
+      // like the cause of it. Teardown stays quiet when there is nothing to
+      // close, so the one error shown is the one that happened.
+      if (server === undefined) {
+        resolve();
+        return;
+      }
       server.close(() => {
         resolve();
       });
