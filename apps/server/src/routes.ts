@@ -28,6 +28,7 @@ import {
   asTenant,
   attemptLogin,
   beginConfirmation,
+  confirmationState,
   confirmEmail,
   createAccount,
   endSession,
@@ -49,6 +50,18 @@ import type { Handler, Reply, Request } from './http';
 
 /** Thirty days, the lifetime the session tests already assume for a device. */
 export const REFRESH_LIFETIME_MS = 30 * 24 * 60 * 60_000;
+
+/**
+ * The floor between two confirmation mails to the same mailbox.
+ *
+ * Not a security control: a resend goes to the address on the token's own
+ * account, so there is nobody else to flood. It stops a client in a retry loop
+ * from burning the provider's quota and teaching a mailbox that this domain
+ * repeats itself, which is a deliverability cost paid by every later message.
+ * A minute, because the honest reason to press resend is that a mail has not
+ * arrived, and mail that is coming has arrived within one.
+ */
+export const RESEND_FLOOR_MS = 60_000;
 
 export interface Dependencies {
   readonly db: Database;
@@ -373,6 +386,60 @@ export function routes(deps: Dependencies): Readonly<Record<string, Handler>> {
     return { status: 200, body: { ...page } };
   };
 
+  const resendConfirmation: Handler = async (request) => {
+    // AUTHENTICATED, AND THAT IS THE DESIGN. A resend that took an address in
+    // the body would answer "does this address have an account here" to anyone
+    // who asked, and would send mail signed by our domain to a mailbox chosen
+    // by a stranger. The token names the account, so a person can only ever
+    // resend to themselves. Login works unconfirmed, so this is reachable by
+    // exactly the people who need it.
+    const verified = await bearer(request);
+    if (!verified.ok) return { status: 401, body: { error: verified.reason } };
+
+    const profile = await asTenant(
+      deps.db,
+      { userId: verified.userId, orgId: verified.orgId },
+      (tx) => profileOf(tx, verified.orgId, verified.userId),
+    );
+    if (profile === null) return { status: 401, body: { error: 'unknown-account' } };
+
+    const now = deps.clock();
+    const state = await asAuthService(deps.db, (tx) => confirmationState(tx, verified.userId));
+    // Already proven: nothing to send, and 204 rather than an error because
+    // the caller asked for a state that already holds.
+    if (state.confirmed) return { status: 204, body: {} };
+    if (state.sentAt !== null && now - state.sentAt < RESEND_FLOOR_MS) {
+      return {
+        status: 429,
+        body: { error: 'too-soon', retryInMs: RESEND_FLOOR_MS - (now - state.sentAt) },
+      };
+    }
+
+    const confirmation = token();
+    await asAuthService(deps.db, (tx) =>
+      beginConfirmation(tx, { userId: verified.userId, token: confirmation, now }),
+    );
+
+    // AND HERE THE FAILURE IS REPORTED, WHERE SIGNUP SWALLOWS IT. The two are
+    // not inconsistent: a failed signup mail leaves an account that still
+    // works, so 500 would strand it for nothing, while a failed resend has
+    // already replaced the outstanding link, so answering 204 would claim a
+    // message that was never sent and leave the person waiting for it.
+    try {
+      await deps.mailer.send(
+        confirmationMessage(
+          profile.email,
+          mailLanguage(profile.locale),
+          `${deps.origin}/auth/confirm#${confirmation}`,
+        ),
+      );
+    } catch {
+      deps.log('mailer: confirmation resend failed');
+      return { status: 502, body: { error: 'send-failed' } };
+    }
+    return { status: 204, body: {} };
+  };
+
   const health: Handler = async () => {
     await deps.db.execute(sql`select 1`);
     return { status: 200, body: { ok: true } };
@@ -384,6 +451,7 @@ export function routes(deps: Dependencies): Readonly<Record<string, Handler>> {
     'POST /auth/refresh': refresh,
     'POST /auth/signout': signout,
     'POST /auth/confirm': confirm,
+    'POST /auth/resend-confirmation': resendConfirmation,
     'POST /sync/push': push,
     'GET /sync/pull': pull,
     'GET /me': me,

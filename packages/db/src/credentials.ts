@@ -258,6 +258,35 @@ export async function beginConfirmation(
     .where(eq(credentials.userId, input.userId));
 }
 
+/**
+ * What a resend needs to know before it burns the outstanding link.
+ *
+ * Two facts, and both decide a different refusal: an account already proven
+ * needs no new link at all, and one that got a link seconds ago needs a wait
+ * rather than a second copy. Read here rather than in the route because these
+ * columns live on `credentials`, which only the auth service role may touch.
+ *
+ * A missing row reads as unconfirmed with no link out, which is the safe way
+ * round: the caller then issues one instead of refusing a real account.
+ */
+export async function confirmationState(
+  db: Database,
+  userId: string,
+): Promise<{ readonly confirmed: boolean; readonly sentAt: number | null }> {
+  const [row] = await db
+    .select({
+      confirmedAt: credentials.confirmedAt,
+      sentAt: credentials.confirmationSentAt,
+    })
+    .from(credentials)
+    .where(eq(credentials.userId, userId))
+    .limit(1);
+  return {
+    confirmed: row?.confirmedAt != null,
+    sentAt: row?.sentAt == null ? null : row.sentAt.getTime(),
+  };
+}
+
 export type ConfirmOutcome =
   /** The mailbox is proven and `confirmed_at` was just written. */
   | 'confirmed'

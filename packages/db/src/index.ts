@@ -31,6 +31,7 @@ export {
   accountEmail,
   attemptLogin,
   beginConfirmation,
+  confirmationState,
   confirmEmail,
   emailKey,
   forgetStaleAttempts,

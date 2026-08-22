@@ -20,6 +20,7 @@ import { routes } from '../src/routes';
 import type { Mailer, Message } from '../src/mailer';
 import { MAIL_COPY } from '../src/message';
 import { LANGUAGES } from '../src/settings';
+import { RESEND_FLOOR_MS } from '../src/routes';
 
 const T0 = Date.UTC(2026, 7, 22, 10, 0, 0);
 const PASSWORD = 'ورقة تُصحَّح في الصف لا في البيت';
@@ -461,5 +462,101 @@ describe('the confirmation mail, from signup to the message', () => {
     });
     expect(login.status).toBe(200);
     expect((await json(login))['confirmed']).toBe(false);
+  });
+});
+
+describe('resending the confirmation link', () => {
+  const EMAIL = 'resend@example.sa';
+  let access = '';
+  let firstLink = '';
+
+  it('needs a token, because an address in the body would answer who exists', async () => {
+    const anonymous = await post('/auth/resend-confirmation');
+    expect(anonymous.status).toBe(401);
+  });
+
+  it('is reachable by an account that has not confirmed yet', async () => {
+    const before = sent.length;
+    await post('/auth/signup', { ...SIGNUP, email: EMAIL, language: 'fr' });
+    firstLink = linkOf(sent[before]);
+    expect(firstLink).not.toBe('');
+
+    const login = await post('/auth/login', { email: EMAIL, password: PASSWORD });
+    const body = await json(login);
+    expect(body['confirmed']).toBe(false);
+    access = body['accessToken'] as string;
+  });
+
+  it('refuses a second copy within the floor, and says how long to wait', async () => {
+    const response = await post('/auth/resend-confirmation', undefined, {
+      authorization: `Bearer ${access}`,
+    });
+    expect(response.status).toBe(429);
+    const body = await json(response);
+    expect(body['error']).toBe('too-soon');
+    expect(body['retryInMs']).toBeGreaterThan(0);
+    expect(body['retryInMs']).toBeLessThanOrEqual(RESEND_FLOOR_MS);
+  });
+
+  it('sends a new link past the floor, and kills the old one', async () => {
+    clock.now = T0 + RESEND_FLOOR_MS;
+    const before = sent.length;
+    const response = await post('/auth/resend-confirmation', undefined, {
+      authorization: `Bearer ${access}`,
+    });
+    expect(response.status).toBe(204);
+
+    const second = sent[before];
+    expect(second?.to).toBe(EMAIL);
+    // The language is the one this account signed up in, read back from the
+    // profile rather than assumed, so a resend cannot switch a teacher's mail
+    // into another language.
+    expect(second?.subject).toBe(MAIL_COPY.fr.subject);
+
+    const newLink = linkOf(second);
+    expect(newLink).not.toBe(firstLink);
+
+    // The superseded link is dead. Storing one hash means issuing a new one is
+    // what revokes the old, and that has to be true on the wire, not in theory.
+    const stale = await post('/auth/confirm', { token: firstLink.split('#')[1] ?? '' });
+    expect(stale.status).toBe(400);
+
+    const fresh = await post('/auth/confirm', { token: newLink.split('#')[1] ?? '' });
+    expect(fresh.status).toBe(200);
+    clock.now = T0;
+  });
+
+  it('does nothing and says so for an account already confirmed', async () => {
+    clock.now = T0 + 2 * RESEND_FLOOR_MS;
+    const before = sent.length;
+    const response = await post('/auth/resend-confirmation', undefined, {
+      authorization: `Bearer ${access}`,
+    });
+    clock.now = T0;
+    expect(response.status).toBe(204);
+    // No second copy: the mailbox was proven a moment ago and another link
+    // would be a message with nothing to do.
+    expect(sent).toHaveLength(before);
+  });
+
+  it('reports a failed send rather than claiming one, because the old link is gone', async () => {
+    const before = sent.length;
+    await post('/auth/signup', { ...SIGNUP, email: 'stuck@example.sa' });
+    const login = await post('/auth/login', {
+      email: 'stuck@example.sa',
+      password: PASSWORD,
+    });
+    const theirs = (await json(login))['accessToken'] as string;
+
+    clock.now = T0 + RESEND_FLOOR_MS;
+    mail.fails = true;
+    const response = await post('/auth/resend-confirmation', undefined, {
+      authorization: `Bearer ${theirs}`,
+    });
+    mail.fails = false;
+    clock.now = T0;
+
+    expect(response.status).toBe(502);
+    expect(sent).toHaveLength(before + 1);
   });
 });
