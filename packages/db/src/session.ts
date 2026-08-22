@@ -79,16 +79,31 @@ export interface RefreshInput {
   readonly lifetimeMs: number;
 }
 
+export interface RefreshResult {
+  readonly outcome: RefreshOutcome;
+  /**
+   * Present only on success: whose session this is, read from the family row.
+   *
+   * Carried out because the caller's next act is minting an access token, and
+   * the claims need a user and an organisation the CLIENT never supplied. The
+   * family row is the one place that binds a refresh token to both, so the
+   * answer comes from the same transaction that rotated the token rather than
+   * from a second lookup that could race a revocation.
+   */
+  readonly userId?: string;
+  readonly orgId?: string;
+}
+
 /**
  * Exchanges a refresh token, or refuses and says why.
  *
- * Returns the account layer's own outcome unchanged, so a caller reads one
- * vocabulary whether the decision came from memory or from a table. On `reused`
- * the family has already been revoked by the time this returns: the alarm and
- * the response are in the same transaction, because a thief who is told "no" and
- * left holding a live family has lost nothing.
+ * Returns the account layer's own outcome unchanged inside the result, so a
+ * caller reads one vocabulary whether the decision came from memory or from a
+ * table. On `reused` the family has already been revoked by the time this
+ * returns: the alarm and the response are in the same transaction, because a
+ * thief who is told "no" and left holding a live family has lost nothing.
  */
-export async function refreshSession(db: Database, input: RefreshInput): Promise<RefreshOutcome> {
+export async function refreshSession(db: Database, input: RefreshInput): Promise<RefreshResult> {
   const presentedId = hashToken(input.presented);
 
   return db.transaction(async (tx) => {
@@ -101,14 +116,14 @@ export async function refreshSession(db: Database, input: RefreshInput): Promise
     // An unknown token is refused without touching anything. Note that this is
     // also what a token from a family whose rows were purged looks like, and
     // both answers are the same to the caller on purpose.
-    if (row === undefined) return { ok: false, reason: 'unknown-token' };
+    if (row === undefined) return { outcome: { ok: false, reason: 'unknown-token' } };
 
     const [family] = await tx
       .select()
       .from(tokenFamilies)
       .where(eq(tokenFamilies.id, row.familyId))
       .limit(1);
-    if (family === undefined) return { ok: false, reason: 'unknown-token' };
+    if (family === undefined) return { outcome: { ok: false, reason: 'unknown-token' } };
 
     const record: TokenRecord = {
       id: row.id,
@@ -145,7 +160,7 @@ export async function refreshSession(db: Database, input: RefreshInput): Promise
             and(eq(refreshTokens.familyId, outcome.revokeFamily), isNull(refreshTokens.usedAt)),
           );
       }
-      return outcome;
+      return { outcome };
     }
 
     await tx
@@ -159,8 +174,27 @@ export async function refreshSession(db: Database, input: RefreshInput): Promise
       expiresAt: new Date(outcome.issue.expiresAt),
       createdAt: new Date(input.now),
     });
-    return outcome;
+    return { outcome, userId: family.userId, orgId: family.orgId };
   });
+}
+
+/**
+ * Ends the session a presented refresh token belongs to, silently.
+ *
+ * Silent on an unknown token BY DESIGN: a sign-out endpoint that answers
+ * differently for a token it recognises is an oracle for testing stolen
+ * tokens, and the caller's next act is identical either way, which is
+ * forgetting the token. Ending a session is the owner's deliberate act, so
+ * the family is revoked as `signed-out`, not as a theft.
+ */
+export async function endSession(db: Database, presented: string, now: number): Promise<void> {
+  const [row] = await db
+    .select({ familyId: refreshTokens.familyId })
+    .from(refreshTokens)
+    .where(eq(refreshTokens.id, hashToken(presented)))
+    .limit(1);
+  if (row === undefined) return;
+  await revokeFamily(db, row.familyId, now);
 }
 
 /** Ending a session deliberately, which is not a theft and is not recorded as one. */

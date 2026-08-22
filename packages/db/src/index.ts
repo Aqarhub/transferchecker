@@ -23,7 +23,7 @@ export type { ExamData, ExamSummary, ScanRecord } from './queries';
 
 export { createAccount, planAccount } from './signup';
 
-export { hashToken, refreshSession, revokeFamily, startSession } from './session';
+export { endSession, hashToken, refreshSession, revokeFamily, startSession } from './session';
 
 export {
   ARGON2,
@@ -46,9 +46,9 @@ export { assertUnprivileged } from './connect';
 export type { Diagnosis } from './diagnose';
 export type { Check } from './audit';
 
-export { REQUEST_ROLE, asAnonymous, asTenant } from './tenant';
+export { AUTH_ROLE, REQUEST_ROLE, asAnonymous, asAuthService, asTenant } from './tenant';
 export type { Claims } from './tenant';
-export type { RefreshInput, StartSession } from './session';
+export type { RefreshInput, RefreshResult, StartSession } from './session';
 
 export { REVOCATIONS } from './schema/sessions';
 export type { AccountPlan, AccountRows, LiveVersions, SignupIds } from './signup';

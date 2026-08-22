@@ -56,14 +56,44 @@ function text(row: Record<string, unknown>, column: string): string {
 }
 
 /**
- * The tables that must have no policy and no privilege at all.
+ * The tables no CLIENT may reach at all.
  *
- * A refresh token, a password hash and a failure counter are things the server
- * handles. No signed in teacher has a use for any of them, so they are reachable
- * by nobody rather than by the right organisation.
+ * A refresh token, a password hash and a failure counter are things the auth
+ * service handles. No signed in teacher has a use for any of them, so no
+ * client role holds a privilege or a policy on them. Since migration 0006 the
+ * auth service's own role reaches them through named policies, which is a
+ * different statement and is audited as one below.
  */
 const UNREACHABLE = ['refresh_tokens', 'credentials', 'login_attempts'] as const;
 const EXPECTED_TABLES = 13;
+
+/**
+ * Which roles each table's policies name, exactly.
+ *
+ * This map IS the authorization model, written where the audit can hold the
+ * live database against it: tenant tables answer to `authenticated` alone, the
+ * auth-only tables answer to `tc_auth` alone, and the tables both halves touch
+ * (signup writes them, teachers read them) carry one policy for each. A policy
+ * for any role this map does not name is a fence somebody moved.
+ */
+const EXPECTED_POLICY_ROLES: Readonly<Record<string, readonly string[]>> = {
+  answer_keys: ['authenticated'],
+  consents: ['authenticated', 'tc_auth'],
+  credentials: ['tc_auth'],
+  exams: ['authenticated'],
+  login_attempts: ['tc_auth'],
+  orgs: ['authenticated', 'tc_auth'],
+  refresh_tokens: ['tc_auth'],
+  scans: ['authenticated'],
+  students: ['authenticated'],
+  templates: ['authenticated'],
+  token_families: ['authenticated', 'tc_auth'],
+  usage: ['authenticated'],
+  users: ['authenticated', 'tc_auth'],
+};
+
+/** Grading data the AUTH ROLE must hold nothing on: the fence's other side. */
+const GRADING_TABLES = ['answer_keys', 'exams', 'scans', 'students', 'templates', 'usage'] as const;
 
 export async function auditIsolation(db: Queryable): Promise<Check[]> {
   const checks: Check[] = [];
@@ -92,33 +122,47 @@ export async function auditIsolation(db: Queryable): Promise<Check[]> {
     await db.execute(sql`select tablename, roles::text as roles, cmd, qual, with_check
       from pg_policies where schemaname = 'public' order by tablename`),
   );
-  const covered = new Set(policies.map((row) => text(row, 'tablename')));
-  const wronglyCovered = UNREACHABLE.filter((table) => covered.has(table));
-  add(
-    'every table has a policy except the ones that must reach nobody',
-    covered.size === EXPECTED_TABLES - UNREACHABLE.length && wronglyCovered.length === 0,
-    wronglyCovered.length === 0
-      ? `${String(covered.size)} covered, ${UNREACHABLE.join(' and ')} deliberately not`
-      : `should have no policy: ${wronglyCovered.join(', ')}`,
-  );
 
-  const wrongRole = policies.filter((row) => text(row, 'roles') !== '{authenticated}');
+  // The whole model at once: per table, the exact set of roles its policies
+  // name. Catches a missing policy, an extra one, and a policy that quietly
+  // moved to a wider role, in one comparison a person can read.
+  const namedRoles = new Map<string, string[]>();
+  for (const row of policies) {
+    const table = text(row, 'tablename');
+    const roles = text(row, 'roles').replace(/[{}]/g, '').split(',').filter(Boolean);
+    namedRoles.set(table, [...(namedRoles.get(table) ?? []), ...roles].sort());
+  }
+  const modelBreaks = Object.entries(EXPECTED_POLICY_ROLES).filter(
+    ([table, expected]) => (namedRoles.get(table) ?? []).join(',') !== expected.join(','),
+  );
+  const unexpectedTables = [...namedRoles.keys()].filter(
+    (table) => EXPECTED_POLICY_ROLES[table] === undefined,
+  );
   add(
-    'every policy applies to authenticated and to nobody else',
-    wrongRole.length === 0,
-    wrongRole.length === 0
-      ? 'all authenticated'
-      : wrongRole.map((r) => text(r, 'tablename')).join(', '),
+    'every table answers to exactly the roles the model names',
+    modelBreaks.length === 0 && unexpectedTables.length === 0,
+    modelBreaks.length === 0 && unexpectedTables.length === 0
+      ? `${String(Object.keys(EXPECTED_POLICY_ROLES).length)} tables as modelled`
+      : [
+          ...modelBreaks.map(
+            ([table, expected]) =>
+              `${table}: has {${(namedRoles.get(table) ?? []).join(',')}}, model says {${expected.join(',')}}`,
+          ),
+          ...unexpectedTables.map((table) => `${table}: not in the model at all`),
+        ].join('; '),
   );
 
   // The single most dangerous thing that could be wrong. `user_metadata` is
   // writable by the user, so a policy reading it hands out any organisation.
+  // Scoped to the TENANT policies: the auth role's `using (true)` is its
+  // documented shape, not a claim read.
   const badClaim = policies.filter(
     (row) =>
-      !text(row, 'qual').includes('app_metadata') || text(row, 'qual').includes('user_metadata'),
+      text(row, 'roles') === '{authenticated}' &&
+      (!text(row, 'qual').includes('app_metadata') || text(row, 'qual').includes('user_metadata')),
   );
   add(
-    'every policy reads app_metadata and never user_metadata',
+    'every tenant policy reads app_metadata and never user_metadata',
     badClaim.length === 0,
     badClaim.length === 0
       ? 'all app_metadata'
@@ -139,7 +183,7 @@ export async function auditIsolation(db: Queryable): Promise<Check[]> {
     await db.execute(sql`select table_name, count(*)::int as n
       from information_schema.role_table_grants
       where grantee in ('anon','authenticated')
-        and table_name in ('refresh_tokens','credentials','login_attempts')
+        and table_name in (${sql.raw(UNREACHABLE.map((table) => `'${table}'`).join(', '))})
       group by table_name`),
   );
   add(
@@ -148,6 +192,25 @@ export async function auditIsolation(db: Queryable): Promise<Check[]> {
     onSecrets.length === 0
       ? 'none of the three is reachable'
       : onSecrets.map((row) => `${text(row, 'table_name')}: ${text(row, 'n')}`).join(', '),
+  );
+
+  // The fence's other side: a compromise of the auth path must not read one
+  // grade. Grants, not policies, because a table with no grant is unreachable
+  // whatever a policy would have admitted.
+  const authReach = rowsOf(
+    await db.execute(
+      sql`select table_name from information_schema.role_table_grants
+        where grantee = 'tc_auth'
+          and table_name in (${sql.raw(GRADING_TABLES.map((table) => `'${table}'`).join(', '))})
+        group by table_name`,
+    ),
+  );
+  add(
+    'the auth role holds nothing on grading data',
+    authReach.length === 0,
+    authReach.length === 0
+      ? 'no grading table is reachable'
+      : authReach.map((row) => text(row, 'table_name')).join(', '),
   );
 
   const functions = rowsOf(

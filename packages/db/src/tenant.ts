@@ -68,6 +68,29 @@ export function asTenant<T>(
   });
 }
 
+/** The auth service's hat. Policies of its own, and still never the owner. */
+export const AUTH_ROLE = 'tc_auth';
+
+/**
+ * Runs `work` as the authentication service.
+ *
+ * The role's fence is migration 0006: explicit grants and `using (true)`
+ * policies on the auth tables alone, and nothing at all on grading data, so
+ * the code inside can check a password or rotate a token for ANY account and
+ * still cannot read a single scan. No claims are injected because the auth
+ * service is not somebody: "which account" is the question its queries exist
+ * to answer, not a fact a token already settled.
+ *
+ * Transaction scoped for the same reason `asTenant` is: a pooled connection
+ * must hand the next request a connection wearing no leftover hat.
+ */
+export function asAuthService<T>(db: Database, work: (tx: Database) => Promise<T>): Promise<T> {
+  return db.transaction(async (tx) => {
+    await tx.execute(sql.raw(`set local role ${AUTH_ROLE}`));
+    return work(tx);
+  });
+}
+
 /**
  * The same, for a caller holding a token that names no organisation.
  *

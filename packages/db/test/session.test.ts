@@ -66,13 +66,17 @@ describe('what the table holds', () => {
 
 describe('exchanging a token', () => {
   it('issues a successor and marks the presented one used', async () => {
-    const outcome = await refreshSession(db, {
+    const { outcome, userId, orgId } = await refreshSession(db, {
       presented: 'token-one',
       successor: 'token-two',
       now: T0 + 1000,
       lifetimeMs: LIFETIME,
     });
     expect(outcome.ok).toBe(true);
+    // Whose session this is rides out with the success, because the caller's
+    // next act is minting an access token and the client never says who it is.
+    expect(userId).toBe(USER_A);
+    expect(orgId).toBe(ORG_A);
 
     const stored = await rows<{ id: string; used: boolean }>(
       client,
@@ -85,7 +89,7 @@ describe('exchanging a token', () => {
   });
 
   it('refuses a token nobody issued, without writing anything', async () => {
-    const outcome = await refreshSession(db, {
+    const { outcome } = await refreshSession(db, {
       presented: 'never-issued',
       successor: 'token-two',
       now: T0 + 1000,
@@ -100,7 +104,7 @@ describe('exchanging a token', () => {
   });
 
   it('refuses an expired token', async () => {
-    const outcome = await refreshSession(db, {
+    const { outcome } = await refreshSession(db, {
       presented: 'token-one',
       successor: 'token-two',
       now: T0 + LIFETIME + 1,
@@ -119,7 +123,7 @@ describe('reuse, which is the whole reason rotation is worth doing', () => {
       lifetimeMs: LIFETIME,
     });
 
-    const outcome = await refreshSession(db, {
+    const { outcome } = await refreshSession(db, {
       presented: 'token-one',
       successor: 'token-three',
       now: T0 + 2000,
@@ -157,7 +161,7 @@ describe('reuse, which is the whole reason rotation is worth doing', () => {
       now: T0 + 2,
       lifetimeMs: LIFETIME,
     });
-    const outcome = await refreshSession(db, {
+    const { outcome } = await refreshSession(db, {
       presented: 'token-two',
       successor: 'token-four',
       now: T0 + 3,
@@ -178,7 +182,7 @@ describe('reuse, which is the whole reason rotation is worth doing', () => {
       now: T0 + 1,
       lifetimeMs: LIFETIME,
     });
-    const outcome = await refreshSession(db, {
+    const { outcome } = await refreshSession(db, {
       presented: 'token-one',
       successor: 'token-five',
       now: T0 + LIFETIME + 10_000,
@@ -196,7 +200,7 @@ describe('signing out', () => {
       'select revoked_reason from token_families',
     );
     expect(family[0]?.revoked_reason).toBe('signed-out');
-    const outcome = await refreshSession(db, {
+    const { outcome } = await refreshSession(db, {
       presented: 'token-one',
       successor: 'token-two',
       now: T0 + 6000,
