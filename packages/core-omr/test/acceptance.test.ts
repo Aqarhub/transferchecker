@@ -196,6 +196,21 @@ describe('criterion 2: the scan fits its time budget', () => {
     // ever fell into that loop, this number would jump from under three to
     // around seven.
     //
+    // AND "UNDER THE SAME LOAD" IS WHY THE SAMPLES ARE PAIRED. Best of three
+    // from each side separately does not satisfy that premise: the two sides
+    // are timed at different moments, and the SHORTER one has the better chance
+    // of catching a clean scheduling quantum in three tries. Under a full
+    // `turbo run test` on four cores that asymmetry is large [measured]: across
+    // eight monorepo runs, best-of-three over best-of-three ranged 2.90 to 4.72
+    // and once reached 6.12, failing this assertion on an engine that had not
+    // changed, while the median of PAIRED ratios over the same runs stayed
+    // inside 2.56 to 3.59. One run shows it plainly: bare samples 154, 103, 57,
+    // 50, 143 against full samples 261, 223, 255, 430, 408, where the bare side
+    // found its clean quantum and the full side never did.
+    //
+    // Pairing costs nothing and hides nothing: a real regression moves every
+    // pair, so the median moves with it.
+    //
     // NOT measured on Hermes, not once. Hermes is slower than Node at typed
     // array work, so the hundred question sheet may land near the budget there
     // and the perturbation set is the first thing to trade away if it does.
@@ -224,19 +239,19 @@ describe('criterion 2: the scan fits its time budget', () => {
       run();
       return performance.now() - started;
     };
-    const bare = Math.min(
-      time(() => void scanSheet(frame, { perturb: false })),
-      time(() => void scanSheet(frame, { perturb: false })),
-      time(() => void scanSheet(frame, { perturb: false })),
-    );
-    const full = Math.min(
-      time(() => void scanSheet(frame)),
-      time(() => void scanSheet(frame)),
-      time(() => void scanSheet(frame)),
-    );
+    // Five pairs, each half measured back to back against the other so both
+    // meet the same machine, and the median so one preempted pair cannot decide
+    // the verdict.
+    const ratios: number[] = [];
+    for (let sample = 0; sample < 5; sample += 1) {
+      const bare = time(() => void scanSheet(frame, { perturb: false }));
+      const full = time(() => void scanSheet(frame));
+      expect(bare).toBeGreaterThan(0);
+      ratios.push(full / bare);
+    }
+    ratios.sort((left, right) => left - right);
 
     expect(scanSheet(frame).kind).toBe('ok');
-    expect(bare).toBeGreaterThan(0);
-    expect(full / bare).toBeLessThan(6);
+    expect(ratios[2] ?? Number.POSITIVE_INFINITY).toBeLessThan(6);
   });
 });
