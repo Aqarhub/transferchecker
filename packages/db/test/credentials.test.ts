@@ -8,10 +8,12 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { FREE_ATTEMPTS } from '@transferchecker/account';
+import { CONFIRMATION_LIFETIME_MS, FREE_ATTEMPTS } from '@transferchecker/account';
 import {
   DECOY_HASH,
   attemptLogin,
+  beginConfirmation,
+  confirmEmail,
   emailKey,
   forgetStaleAttempts,
   hashPassword,
@@ -224,5 +226,73 @@ describe('what a signed in client can reach', () => {
   it('leaves the decoy hash a real one, so it costs real time', async () => {
     expect(DECOY_HASH).toMatch(/^\$argon2id\$v=19\$m=19456,t=2,p=1\$/);
     expect(await verifyPassword(DECOY_HASH, PASSWORD)).toBe(false);
+  });
+});
+
+describe('confirming the mailbox', () => {
+  const TOKEN = 'JBSWY3DPEHPK3PXP_JBSWY3DPEHPK3PXP_JBSWY3DPE';
+
+  it('confirms once, and reports every later click as already, timestamp untouched', async () => {
+    await beginConfirmation(db, { userId: USER_A, token: TOKEN, now: T0 });
+    expect(await confirmEmail(db, { token: TOKEN, now: T0 + 60_000 })).toBe('confirmed');
+    const first = await rows<{ confirmed_at: Date }>(
+      client,
+      'select confirmed_at from credentials',
+    );
+
+    // Corporate mail scanners click before people do, so the link is not
+    // burned on first use. The person's own later click reads as success and
+    // moves nothing.
+    expect(await confirmEmail(db, { token: TOKEN, now: T0 + 120_000 })).toBe('already');
+    const second = await rows<{ confirmed_at: Date }>(
+      client,
+      'select confirmed_at from credentials',
+    );
+    expect(second[0]?.confirmed_at.getTime()).toBe(first[0]?.confirmed_at.getTime());
+  });
+
+  it('flips what the login reports, which is what gates cloud sync', async () => {
+    const before = await attemptLogin(db, { email: EMAIL, password: PASSWORD, now: T0 });
+    expect(before.outcome).toEqual({ ok: true, confirmed: false });
+
+    await beginConfirmation(db, { userId: USER_A, token: TOKEN, now: T0 });
+    await confirmEmail(db, { token: TOKEN, now: T0 + 1_000 });
+
+    const after = await attemptLogin(db, { email: EMAIL, password: PASSWORD, now: T0 + 2_000 });
+    expect(after.outcome).toEqual({ ok: true, confirmed: true });
+  });
+
+  it('refuses a link older than a day, to the millisecond the account layer names', async () => {
+    await beginConfirmation(db, { userId: USER_A, token: TOKEN, now: T0 });
+    expect(await confirmEmail(db, { token: TOKEN, now: T0 + CONFIRMATION_LIFETIME_MS })).toBe(
+      'expired',
+    );
+    const kept = await rows<{ confirmed_at: Date | null }>(
+      client,
+      'select confirmed_at from credentials',
+    );
+    expect(kept[0]?.confirmed_at).toBeNull();
+  });
+
+  it('lets a resend kill the old link, which is the whole revocation story', async () => {
+    await beginConfirmation(db, { userId: USER_A, token: TOKEN, now: T0 });
+    await beginConfirmation(db, { userId: USER_A, token: 'a-second-token', now: T0 + 60_000 });
+
+    expect(await confirmEmail(db, { token: TOKEN, now: T0 + 120_000 })).toBe('unknown');
+    expect(await confirmEmail(db, { token: 'a-second-token', now: T0 + 120_000 })).toBe(
+      'confirmed',
+    );
+  });
+
+  it('answers unknown for a token nobody issued, and stores only hashes', async () => {
+    await beginConfirmation(db, { userId: USER_A, token: TOKEN, now: T0 });
+    expect(await confirmEmail(db, { token: 'guessed', now: T0 + 1_000 })).toBe('unknown');
+
+    const stored = await rows<{ confirmation_token_hash: string }>(
+      client,
+      'select confirmation_token_hash from credentials',
+    );
+    expect(stored[0]?.confirmation_token_hash).not.toContain(TOKEN);
+    expect(stored[0]?.confirmation_token_hash).toMatch(/^[0-9a-f]{64}$/);
   });
 });

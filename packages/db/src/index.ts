@@ -29,13 +29,16 @@ export {
   ARGON2,
   DECOY_HASH,
   attemptLogin,
+  beginConfirmation,
+  confirmEmail,
   emailKey,
   forgetStaleAttempts,
+  hashConfirmationToken,
   hashPassword,
   setPassword,
   verifyPassword,
 } from './credentials';
-export type { LoginAttempt, LoginResult } from './credentials';
+export type { ConfirmOutcome, LoginAttempt, LoginResult } from './credentials';
 
 export { auditIsolation, probeIsolation } from './audit';
 export { diagnose, explain } from './diagnose';

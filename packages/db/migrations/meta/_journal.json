@@ -36,6 +36,13 @@
       "when": 1787335183876,
       "tag": "0004_scan_form",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787356762790,
+      "tag": "0005_email_confirmation",
+      "breakpoints": true
     }
   ]
 }

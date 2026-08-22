@@ -77,6 +77,10 @@ describe('the migrations and the schema describe the same database', () => {
       .filter((column) => column.is_nullable === 'YES')
       .map((column) => `${column.table_name}.${column.column_name}`);
     expect([...nullable].sort()).toEqual([
+      // Null is "no link is out" and "never sent": a fresh account has neither
+      // an outstanding confirmation token nor a moment one was mailed.
+      'credentials.confirmation_sent_at',
+      'credentials.confirmation_token_hash',
       'credentials.confirmed_at',
       'login_attempts.last_failure_at',
       'refresh_tokens.used_at',

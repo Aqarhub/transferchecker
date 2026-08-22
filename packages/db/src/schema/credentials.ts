@@ -12,7 +12,7 @@
 // signed in teacher does requires reading a password hash or a failure counter.
 // A password is verified by the auth endpoint, which runs on the server.
 
-import { index, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { orgs } from './orgs';
 import { users } from './users';
 
@@ -50,8 +50,28 @@ export const credentials = pgTable(
 
     /** When the password was last set. Shown to the owner, never to anybody else. */
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+
+    /**
+     * SHA-256 of the outstanding confirmation token, or null when none is out.
+     *
+     * The hash and never the token: the column is a lock the emailed link
+     * opens, so a leaked backup of this table can confirm nobody. One
+     * outstanding link per account, and a resend OVERWRITES it, which is the
+     * supersession every surveyed implementation converges on: the newest
+     * email is the one whose link works, and a link that leaked last week
+     * dies the moment a fresh one is requested.
+     */
+    confirmationTokenHash: text('confirmation_token_hash'),
+
+    /** When that link was sent. The freshness rule lives in packages/account. */
+    confirmationSentAt: timestamp('confirmation_sent_at', { withTimezone: true }),
   },
-  () => [],
+  (table) => [
+    // The confirm endpoint holds only the raw token from the link, so the row
+    // is found BY the hash. Unique as well as indexed: 256 bits of randomness
+    // never collide, so two rows sharing a hash is a bug worth refusing.
+    uniqueIndex('credentials_confirmation').on(table.confirmationTokenHash),
+  ],
 ).enableRLS();
 
 export const loginAttempts = pgTable(
