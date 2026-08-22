@@ -11,6 +11,7 @@ import type { PGlite } from '@electric-sql/pglite';
 import { CONFIRMATION_LIFETIME_MS, FREE_ATTEMPTS } from '@transferchecker/account';
 import {
   DECOY_HASH,
+  accountEmail,
   attemptLogin,
   beginConfirmation,
   confirmEmail,
@@ -226,6 +227,13 @@ describe('what a signed in client can reach', () => {
   it('leaves the decoy hash a real one, so it costs real time', async () => {
     expect(DECOY_HASH).toMatch(/^\$argon2id\$v=19\$m=19456,t=2,p=1\$/);
     expect(await verifyPassword(DECOY_HASH, PASSWORD)).toBe(false);
+  });
+});
+
+describe('the address behind a user id', () => {
+  it('answers for a real account and stays silent for a ghost', async () => {
+    expect(await accountEmail(db, USER_A)).toBe(EMAIL);
+    expect(await accountEmail(db, '99999999-9999-4999-8999-999999999999')).toBeNull();
   });
 });
 

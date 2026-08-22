@@ -211,6 +211,23 @@ export async function forgetStaleAttempts(db: Database, now: number): Promise<vo
 }
 
 /**
+ * The address a user id belongs to, for minting claims on a refresh.
+ *
+ * The refresh endpoint holds a rotated family and nothing else: the client
+ * never says who it is, and the access token's claims carry the email the way
+ * GoTrue's do. Read fresh from `users` rather than copied into the session
+ * row, so an address corrected in the profile is the one the next token says.
+ */
+export async function accountEmail(db: Database, userId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return row?.email ?? null;
+}
+
+/**
  * What goes in `confirmation_token_hash`: the SHA-256 of the token, never the
  * token. The same reasoning as `hashToken` for refresh tokens: 256 bits of our
  * own randomness has no dictionary, so an unsalted fast hash is exactly right,

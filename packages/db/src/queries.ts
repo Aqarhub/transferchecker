@@ -22,6 +22,7 @@ import { answerKeys } from './schema/answer-keys';
 import { exams } from './schema/exams';
 import { scans } from './schema/scans';
 import { students } from './schema/students';
+import { users } from './schema/users';
 import type { Database } from './database';
 
 export interface ExamSummary {
@@ -68,6 +69,27 @@ export async function examsOf(db: Database, orgId: string): Promise<ExamSummary[
     .where(eq(exams.orgId, orgId))
     .orderBy(desc(exams.createdAt));
   return rows;
+}
+
+/**
+ * One signed in person's own profile, for the screen that shows who they are.
+ *
+ * Filtered on the organisation as well as the id, like every read here: the
+ * policy already hides other organisations, and the explicit filter is what
+ * lets the planner use the leading index and keeps the query correct under a
+ * key that bypasses row level security.
+ */
+export async function profileOf(
+  db: Database,
+  orgId: string,
+  userId: string,
+): Promise<{ email: string; locale: string; country: string } | null> {
+  const [row] = await db
+    .select({ email: users.email, locale: users.locale, country: users.country })
+    .from(users)
+    .where(and(eq(users.orgId, orgId), eq(users.id, userId)))
+    .limit(1);
+  return row ?? null;
 }
 
 /** The class roster, ordered by the identifier the school uses. */

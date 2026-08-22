@@ -44,7 +44,7 @@ export {
   issueAccessToken,
   verifyAccessToken,
 } from './token';
-export type { AccessInput, VerifyOutcome, VerifyRefusal } from './token';
+export type { AccessInput, SigningKey, VerifyOutcome, VerifyRefusal } from './token';
 
 export { CONFIRMATION_LIFETIME_MS, confirmationFresh } from './confirmation';
 

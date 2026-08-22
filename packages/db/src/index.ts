@@ -18,7 +18,7 @@ export type { AnswerKeyRow, NewAnswerKeyRow } from './keys';
 
 export { declaredForm, storedForm } from './form';
 
-export { examDataOf, examsOf, rosterOf } from './queries';
+export { examDataOf, examsOf, profileOf, rosterOf } from './queries';
 export type { ExamData, ExamSummary, ScanRecord } from './queries';
 
 export { createAccount, planAccount } from './signup';
@@ -28,6 +28,7 @@ export { endSession, hashToken, refreshSession, revokeFamily, startSession } fro
 export {
   ARGON2,
   DECOY_HASH,
+  accountEmail,
   attemptLogin,
   beginConfirmation,
   confirmEmail,

@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { gradeStored, maxPointsOf, totalPointsOf } from '@transferchecker/grading';
 import type { PGlite } from '@electric-sql/pglite';
 import { DEMO_KEY, seedDemo } from '../src/seed';
-import { examDataOf, examsOf, rosterOf } from '../src/queries';
+import { examDataOf, examsOf, profileOf, rosterOf } from '../src/queries';
 import { keyRow } from '../src/keys';
 import { actAs, actAsOwner } from '../src/local';
 import type { Database } from '../src/database';
@@ -41,6 +41,15 @@ describe('the exam list', () => {
 
   it('returns nothing for an organisation with no exams', async () => {
     expect(await examsOf(db, ORG_B)).toEqual([]);
+  });
+});
+
+describe('the profile', () => {
+  it('returns the signed in person and nobody else', async () => {
+    const mine = await profileOf(db, ORG_A, USER_A);
+    expect(mine).toEqual({ email: 'teacher@example.sa', locale: 'ar', country: 'SA' });
+    // The wrong organisation gets the same nothing an absent account gets.
+    expect(await profileOf(db, ORG_B, USER_A)).toBeNull();
   });
 });
 

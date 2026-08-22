@@ -14,7 +14,13 @@
 import type { SQL } from 'drizzle-orm';
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
-export type Database = PgDatabase<PgQueryResultHKT>;
+// The schema parameter is `Record<string, unknown>` rather than the default
+// `Record<string, never>` because the two real drivers disagree: PGlite's
+// drizzle instance types its (unused) full schema as `never` values and the
+// postgres-js one as `unknown`, and only the wider of the two accepts both.
+// Nothing in this package touches the relational query API the parameter
+// feeds, so the widening changes what assigns, not what runs.
+export type Database = PgDatabase<PgQueryResultHKT, Record<string, unknown>>;
 
 /**
  * The two things a deployment check needs, and nothing more.
