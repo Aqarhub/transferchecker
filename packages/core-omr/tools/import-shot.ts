@@ -28,13 +28,16 @@ import type { StockTemplate } from '@transferchecker/sheet-spec';
 import {
   ManifestSchema,
   ManifestShapeSchema,
+  PaperShapeSchema,
   REFUSALS,
   SHOT_ANGLES,
   SHOT_LIGHTING,
   SHOT_SOURCES,
+  ShotSchema,
 } from './golden/manifest';
 import type { Manifest, PaperEntry, Shot } from './golden/manifest';
-import { defaultRoot } from './golden/papers';
+import { ROOT_ENV, defaultRoot } from './golden/papers';
+import { decodeHint } from './golden/decode-hint';
 import { readPgm } from './golden/pgm';
 
 /** `--name value` pairs and bare positional arguments, with no dependency. */
@@ -58,6 +61,9 @@ function parseArgs(argv: readonly string[]): { flags: Map<string, string>; rest:
   return { flags, rest };
 }
 
+/** The stock geometries a paper can be printed from. */
+const TEMPLATES = ['quick20', 'standard50', 'full100'] as const satisfies readonly StockTemplate[];
+
 const { flags, rest } = parseArgs(process.argv.slice(2));
 const need = (name: string): string => {
   const value = flags.get(name);
@@ -79,7 +85,22 @@ const oneOf = <T extends string>(name: string, allowed: readonly T[], fallback: 
   return found;
 };
 
-const root = flags.get('root') === undefined ? defaultRoot() : resolve(flags.get('root') ?? '');
+// THE ROOT IS NEVER GUESSED. `defaultRoot()` points at `test/golden`, which is
+// tracked: manifest.json, spec.json and truth.json are all in git there. An
+// import that falls back to it rewrites a tracked fixture and drops untracked
+// .pgm bytes beside it, so a forgotten flag turns the checks red for a reason
+// that reads nothing like a forgotten flag. Reading the set back still defaults
+// (the loader is supposed to find the fixture); writing to it does not.
+const rootFlag = flags.get('root');
+if (rootFlag === undefined && (process.env[ROOT_ENV] ?? '') === '') {
+  process.stderr.write(
+    'say where the papers go, because the default is a tracked fixture:\n' +
+      '  --root /somewhere/outside/this/repository\n' +
+      `  or export ${ROOT_ENV}=/somewhere/outside/this/repository\n`,
+  );
+  process.exit(2);
+}
+const root = rootFlag === undefined ? defaultRoot() : resolve(rootFlag);
 const paperId = need('paper');
 const dryRun = flags.get('dry-run') === 'true';
 const maxWidth = flags.get('max-width') ?? '';
@@ -106,6 +127,7 @@ function toPgm(input: string): Uint8Array {
   if (viaSharp.status !== 3) {
     process.stderr.write(viaSharp.stderr.toString());
     process.stderr.write(`could not decode ${input}\n`);
+    process.stderr.write(decodeHint(input));
     process.exit(1);
   }
 
@@ -143,6 +165,72 @@ function toPgm(input: string): Uint8Array {
   process.exit(3);
 }
 
+// WHAT THE OPERATOR TYPED IS CHECKED BEFORE ANYTHING IS WRITTEN.
+//
+// These limits already existed and were already enforced, but only by the
+// `safeParse` at the very end, AFTER the shots, the spec, the truth and the
+// manifest were all on disk. So a `--pen` of forty one characters wrote a
+// manifest the loader then refused to read, and said so in a paragraph whose
+// first line is "not complete yet, which is expected": a rejected keystroke
+// dressed as normal progress. Length limits are the operator's business and
+// incompleteness is not, so they are separated here and answered differently.
+//
+// The fields come from the same schemas the loader reads with, picked rather
+// than restated, so a limit cannot be enforced here at one number and there at
+// another.
+const TYPED_PAPER = PaperShapeSchema.pick({
+  id: true,
+  printer: true,
+  printScale: true,
+  pen: true,
+  why: true,
+});
+const TYPED_SHOT = ShotSchema.pick({ device: true, capturedAt: true, why: true });
+/** Which flag a reader should go and change, per field. */
+const FLAG_OF: Readonly<Record<string, string>> = {
+  id: '--paper',
+  printer: '--printer',
+  printScale: '--print-scale',
+  pen: '--pen',
+  why: '--why',
+  device: '--device',
+  capturedAt: '--captured',
+};
+
+const printScale = Number(flags.get('print-scale') ?? '1');
+if (!Number.isFinite(printScale)) {
+  process.stderr.write(`--print-scale must be a number, and 'fit to page' usually means 0.94\n`);
+  process.exit(2);
+}
+const why = flags.get('why') ?? 'an ordinary capture';
+
+const typed = [
+  TYPED_PAPER.safeParse({
+    id: paperId,
+    printer: flags.get('printer') ?? 'unrecorded',
+    printScale,
+    pen: flags.get('pen') ?? 'unrecorded',
+    why,
+  }),
+  // Checked as well as the paper because ONE `--why` feeds both and their
+  // limits differ, so a note between the two lengths would pass as a paper and
+  // be written as an unreadable shot.
+  TYPED_SHOT.safeParse({
+    device: need('device'),
+    capturedAt: need('captured'),
+    why,
+  }),
+];
+const rejected = typed.flatMap((result) => (result.success ? [] : result.error.issues));
+if (rejected.length > 0) {
+  process.stderr.write('nothing was imported, because these were refused:\n');
+  for (const issue of rejected) {
+    const field = String(issue.path[0] ?? '');
+    process.stderr.write(`  ${FLAG_OF[field] ?? field}: ${issue.message}\n`);
+  }
+  process.exit(2);
+}
+
 const paperDir = join(root, 'papers', paperId);
 const shotsDir = join(paperDir, 'shots');
 if (!dryRun) mkdirSync(shotsDir, { recursive: true });
@@ -163,11 +251,20 @@ const write = (path: string, data: string | Uint8Array): void => {
 const specPath = join(paperDir, 'spec.json');
 let specJson = existsSync(specPath) ? readFileSync(specPath, 'utf8') : '';
 if (specJson === '') {
-  const template = oneOf<StockTemplate>(
-    'template',
-    ['quick20', 'standard50', 'full100'],
-    'standard50',
-  );
+  // REQUIRED, AND ONLY HERE. This branch runs once per paper, and what it
+  // writes is the geometry every truth is read against ever after: the comment
+  // above says the spec is written once because a spec that changes under a
+  // photograph makes every truth wrong. A silent default therefore does not
+  // pick a convenience, it records a `quick20` on the owner's desk as a
+  // `standard50` and poisons a paper in the set that arms the accuracy gate.
+  if (flags.get('template') === undefined) {
+    process.stderr.write(
+      `--template is required the first time a paper is imported, and decides its geometry forever:\n` +
+        `  --template ${TEMPLATES.join(' | ')}\n`,
+    );
+    process.exit(2);
+  }
+  const template = oneOf<StockTemplate>('template', TEMPLATES, 'standard50');
   specJson = asJson(
     stockTemplate(template, {
       name: flags.get('name') ?? 'Golden',
@@ -180,6 +277,35 @@ if (specJson === '') {
   write(specPath, specJson);
 }
 const spec = SheetSpecSchema.parse(JSON.parse(specJson));
+
+// A SECOND IMPORT THAT NAMES A DIFFERENT TEMPLATE IS A MISTAKE, NOT A NO-OP.
+// The branch above only runs while `spec.json` is absent, so on every later
+// shot the flag was read and thrown away in silence. An operator who typed the
+// wrong one saw the import succeed and had no way to learn that the geometry on
+// disk disagreed with the paper in their hand.
+const named = flags.get('template');
+if (named !== undefined && existsSync(specPath)) {
+  const found = TEMPLATES.find((candidate) => candidate === named);
+  if (found === undefined) {
+    process.stderr.write(`--template must be one of ${TEMPLATES.join(', ')}\n`);
+    process.exit(2);
+  }
+  const asNamed = stockTemplate(found, {
+    name: flags.get('name') ?? 'Golden',
+    branding: 'TRANSFERCHECKER.COM',
+    studentName: 'Name',
+    studentId: 'Student ID',
+    keyVersion: 'Key',
+  });
+  if (asNamed.questions.length !== spec.questions.length) {
+    process.stderr.write(
+      `${paperId} was recorded with ${String(spec.questions.length)} questions and ` +
+        `--template ${found} has ${String(asNamed.questions.length)}.\n` +
+        'One of the two is the wrong paper. Nothing was imported.\n',
+    );
+    process.exit(2);
+  }
+}
 
 // A truth file every question is present in, all of them unread. A person fills
 // the letters in; nothing here ever guesses one.
@@ -243,7 +369,7 @@ for (const [index, input] of rest.entries()) {
     // A shot taken to be refused says which refusal it expects, so criterion 16
     // can ask whether the reported cause matched the defect that was aimed at it.
     expect: oneOf('expect', REFUSALS, 'graded'),
-    why: flags.get('why') ?? 'an ordinary capture',
+    why,
   });
   process.stdout.write(`${input} -> ${file} ${String(image.width)}x${String(image.height)}\n`);
 }
@@ -251,11 +377,6 @@ for (const [index, input] of rest.entries()) {
 const encoder = new TextEncoder();
 const specBytes = encoder.encode(specJson);
 const truthBytes = encoder.encode(truthJson);
-const printScale = Number(flags.get('print-scale') ?? '1');
-if (!Number.isFinite(printScale)) {
-  process.stderr.write(`--print-scale must be a number, and 'fit to page' usually means 0.94\n`);
-  process.exit(2);
-}
 const entry: PaperEntry = {
   id: paperId,
   kind: 'real',
@@ -265,7 +386,7 @@ const entry: PaperEntry = {
   spec: { sha256: hashOf(specBytes), bytes: specBytes.byteLength },
   truth: { sha256: hashOf(truthBytes), bytes: truthBytes.byteLength },
   shots,
-  why: flags.get('why') ?? 'an ordinary paper',
+  why,
 };
 
 const held = manifest.papers.find((paper) => paper.id === paperId);
@@ -284,6 +405,9 @@ write(manifestPath, asJson(updated));
 // this is a warning and never a refusal to write.
 const checked = ManifestSchema.safeParse(updated);
 if (!checked.success) {
+  // Only completeness can reach here now: every field the operator typed was
+  // checked before the first byte was written, so this paragraph means what it
+  // says rather than covering a rejected keystroke as well.
   process.stdout.write(
     `\nthe manifest is not complete yet, which is expected while shots are still arriving:\n`,
   );
