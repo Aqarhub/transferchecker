@@ -283,7 +283,122 @@ describe('the shell itself', () => {
     });
     expect(malformed.status).toBe(400);
 
-    const oversized = await post('/auth/login', { email: 'a@b.sa', password: 'x'.repeat(40_000) });
+    const oversized = await post('/auth/login', { email: 'a@b.sa', password: 'x'.repeat(300_000) });
     expect(oversized.status).toBe(413);
+  });
+});
+
+describe('sync over the wire', () => {
+  const TEMPLATE = 'dddddddd-2222-4222-8222-dddddddddddd';
+  const EXAM = 'eeeeeeee-2222-4222-8222-eeeeeeeeeeee';
+  let accessToken = '';
+  let cursor = 0;
+
+  const batch = {
+    templates: [{ id: TEMPLATE, spec: { template: 'quick20' }, clientTs: T0 - 5_000 }],
+    exams: [
+      {
+        id: EXAM,
+        title: 'اختبار المزامنة',
+        templateId: TEMPLATE,
+        formCount: 1,
+        clientTs: T0 - 4_000,
+      },
+    ],
+    scans: [
+      {
+        id: '44444444-aaaa-4aaa-8aaa-444444444444',
+        examId: EXAM,
+        studentExtId: '00007',
+        answers: '0123',
+        marks: 'cccc',
+        score: 4,
+        total: 4,
+        deviceId: 'Pixel 8a',
+        clientTs: T0 - 1_000,
+      },
+    ],
+    usage: [{ month: '2026-08-01', papersGraded: 1 }],
+  };
+
+  it('pushes a batch under the bearer token and reports what it wrote', async () => {
+    const login = await post('/auth/login', { email: SIGNUP.email, password: PASSWORD });
+    accessToken = (await json(login))['accessToken'] as string;
+
+    const response = await post('/sync/push', batch, {
+      authorization: `Bearer ${accessToken}`,
+    });
+    expect(response.status).toBe(200);
+    const report = await json(response);
+    expect(report['scans']).toEqual({ written: 1, skipped: 0 });
+    expect(report['exams']).toEqual({ written: 1, skipped: 0 });
+    expect(typeof report['serverTime']).toBe('number');
+
+    const replay = await post('/sync/push', batch, {
+      authorization: `Bearer ${accessToken}`,
+    });
+    expect(((await json(replay))['scans'] as Record<string, unknown>)['written']).toBe(0);
+  });
+
+  it('pulls the delta and then nothing after its own cursor', async () => {
+    // The clock steps past the skew window so the second pull is really empty.
+    clock.now = T0 + 60_000;
+    const first = await get('/sync/pull?after=0', { authorization: `Bearer ${accessToken}` });
+    expect(first.status).toBe(200);
+    const page = await json(first);
+    expect((page['scans'] as unknown[]).length).toBeGreaterThan(0);
+    cursor = page['cursor'] as number;
+
+    const second = await get(`/sync/pull?after=${String(cursor)}`, {
+      authorization: `Bearer ${accessToken}`,
+    });
+    const empty = await json(second);
+    expect(empty['scans']).toEqual([]);
+    expect(empty['exams']).toEqual([]);
+    clock.now = T0;
+  });
+
+  it('refuses a push with no token, an oversized batch, and a forged organisation', async () => {
+    expect((await post('/sync/push', batch)).status).toBe(401);
+
+    const oversized = {
+      scans: Array.from({ length: 101 }, (_, at) => ({
+        ...(batch.scans[0] ?? {}),
+        id: `55555555-aaaa-4aaa-8aaa-${String(at).padStart(12, '0')}`,
+      })),
+    };
+    const refused = await post('/sync/push', oversized, {
+      authorization: `Bearer ${accessToken}`,
+    });
+    expect(refused.status).toBe(400);
+
+    const forged = await post(
+      '/sync/push',
+      { scans: [{ ...batch.scans[0], orgId: 'not-mine' }] },
+      { authorization: `Bearer ${accessToken}` },
+    );
+    expect(forged.status).toBe(400);
+  });
+
+  it('shows a second organisation nothing of the first, end to end', async () => {
+    await post('/auth/signup', { ...SIGNUP, email: 'neighbour@example.sa' });
+    const login = await post('/auth/login', {
+      email: 'neighbour@example.sa',
+      password: PASSWORD,
+    });
+    const theirs = (await json(login))['accessToken'] as string;
+
+    clock.now = T0 + 60_000;
+    const page = await json(await get('/sync/pull?after=0', { authorization: `Bearer ${theirs}` }));
+    clock.now = T0;
+    expect(page['scans']).toEqual([]);
+    expect(page['exams']).toEqual([]);
+    expect(page['templates']).toEqual([]);
+    expect(page['usage']).toEqual([]);
+  });
+
+  it('refuses a pull with no cursor at all', async () => {
+    const response = await get('/sync/pull', { authorization: `Bearer ${accessToken}` });
+    expect(response.status).toBe(400);
   });
 });

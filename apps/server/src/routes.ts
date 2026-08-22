@@ -22,6 +22,7 @@ import {
   verifyAccessToken,
 } from '@transferchecker/account';
 import {
+  PushBatchSchema,
   accountEmail,
   asAuthService,
   asTenant,
@@ -31,6 +32,8 @@ import {
   createAccount,
   endSession,
   profileOf,
+  pullSync,
+  pushSync,
   refreshSession,
   setPassword,
   startSession,
@@ -41,7 +44,7 @@ import { sql } from 'drizzle-orm';
 import type { BreachCheck } from './hibp';
 import type { KeyRing } from './keys';
 import type { Mailer } from './mailer';
-import type { Handler, Reply } from './http';
+import type { Handler, Reply, Request } from './http';
 
 /** Thirty days, the lifetime the session tests already assume for a device. */
 export const REFRESH_LIFETIME_MS = 30 * 24 * 60 * 60_000;
@@ -68,6 +71,15 @@ const token = (): string => randomBytes(32).toString('base64url');
  * rarely the outermost one; 23505 is PostgreSQL's unique-violation class and
  * the constraint name pins it to the one column this route expects to collide.
  */
+/** Every message down the cause chain, for matching wrapped driver errors. */
+function messageChain(error: unknown): string {
+  const parts: string[] = [];
+  for (let current: unknown = error; isRecord(current); current = current['cause']) {
+    if (typeof current['message'] === 'string') parts.push(current['message']);
+  }
+  return parts.join(' | ');
+}
+
 function isEmailTaken(error: unknown): boolean {
   for (let current = error; isRecord(current); current = current['cause']) {
     const message = typeof current['message'] === 'string' ? current['message'] : '';
@@ -261,14 +273,23 @@ export function routes(deps: Dependencies): Readonly<Record<string, Handler>> {
       : { status: 400, body: { error: 'invalid-token' } };
   };
 
-  const me: Handler = async (request) => {
+  /**
+   * The one gate every tenant endpoint passes: a Bearer token, verified
+   * against the ring with the injected clock. Data, never an exception, so a
+   * route's refusal is one line.
+   */
+  const bearer = async (
+    request: Request,
+  ): Promise<
+    Awaited<ReturnType<typeof verifyAccessToken>> | { ok: false; reason: 'missing-token' }
+  > => {
     const header = request.authorization ?? '';
-    if (!header.startsWith('Bearer ')) return { status: 401, body: { error: 'missing-token' } };
-    const verified = await verifyAccessToken(
-      header.slice('Bearer '.length),
-      deps.keys.verifyKeys,
-      deps.clock(),
-    );
+    if (!header.startsWith('Bearer ')) return { ok: false, reason: 'missing-token' };
+    return verifyAccessToken(header.slice('Bearer '.length), deps.keys.verifyKeys, deps.clock());
+  };
+
+  const me: Handler = async (request) => {
+    const verified = await bearer(request);
     if (!verified.ok) return { status: 401, body: { error: verified.reason } };
 
     // The whole point of this endpoint: the SAME claims the token carried go
@@ -282,6 +303,52 @@ export function routes(deps: Dependencies): Readonly<Record<string, Handler>> {
     return { status: 200, body: { ...profile, orgId: verified.orgId } };
   };
 
+  const push: Handler = async (request) => {
+    const verified = await bearer(request);
+    if (!verified.ok) return { status: 401, body: { error: verified.reason } };
+
+    const parsed = PushBatchSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return {
+        status: 400,
+        body: { error: 'invalid', problems: parsed.error.issues.map((issue) => issue.message) },
+      };
+    }
+
+    try {
+      const report = await asTenant(
+        deps.db,
+        { userId: verified.userId, orgId: verified.orgId },
+        (tx) => pushSync(tx, verified.orgId, parsed.data, deps.clock()),
+      );
+      return { status: 200, body: { ...report } };
+    } catch (error) {
+      // The one refusal row level security raises through a push: an id that
+      // collides with a row this organisation may not touch. The batch is
+      // refused whole so the device retries it unchanged after fixing itself.
+      if (error instanceof Error && /row-level security|violates row/i.test(messageChain(error))) {
+        return { status: 409, body: { error: 'conflict' } };
+      }
+      throw error;
+    }
+  };
+
+  const pull: Handler = async (request) => {
+    const verified = await bearer(request);
+    if (!verified.ok) return { status: 401, body: { error: verified.reason } };
+
+    const raw = request.query.get('after') ?? '';
+    const after = Number(raw);
+    if (raw === '' || !Number.isFinite(after) || after < 0) {
+      return { status: 400, body: { error: 'missing-cursor' } };
+    }
+
+    const page = await asTenant(deps.db, { userId: verified.userId, orgId: verified.orgId }, (tx) =>
+      pullSync(tx, verified.orgId, after, deps.clock()),
+    );
+    return { status: 200, body: { ...page } };
+  };
+
   const health: Handler = async () => {
     await deps.db.execute(sql`select 1`);
     return { status: 200, body: { ok: true } };
@@ -293,6 +360,8 @@ export function routes(deps: Dependencies): Readonly<Record<string, Handler>> {
     'POST /auth/refresh': refresh,
     'POST /auth/signout': signout,
     'POST /auth/confirm': confirm,
+    'POST /sync/push': push,
+    'GET /sync/pull': pull,
     'GET /me': me,
     'GET /health': health,
   };

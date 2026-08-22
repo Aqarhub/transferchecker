@@ -54,6 +54,9 @@ export type { RefreshInput, RefreshResult, StartSession } from './session';
 export { REVOCATIONS } from './schema/sessions';
 export type { AccountPlan, AccountRows, LiveVersions, SignupIds } from './signup';
 
+export { MAX_BATCH, PULL_LIMIT, PushBatchSchema, SYNC_SKEW_MS, pullSync, pushSync } from './sync';
+export type { EntityCount, PullPage, PushBatch, PushReport } from './sync';
+
 export { DEMO_KEY, seedDemo } from './seed';
 export type { DemoIds } from './seed';
 

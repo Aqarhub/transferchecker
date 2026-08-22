@@ -16,7 +16,17 @@
 // because a teacher needs to know a question's ceiling, and it is not stored
 // because storing what can be computed opens a door to two answers disagreeing.
 
-import { pgTable, char, index, jsonb, real, text, unique, uuid } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  char,
+  index,
+  jsonb,
+  real,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import type { StoredKey } from '@transferchecker/grading';
 import { isolate } from '../policy';
 import { exams } from './exams';
@@ -56,6 +66,16 @@ export const answerKeys = pgTable(
 
     /** Sparse. `{"6":["كسور","معيار-3.2"]}`, with a GIN index for the tag report. */
     tags: jsonb('tags').$type<StoredKey['tags']>().notNull(),
+
+    /**
+     * The device's clock when the teacher last edited this row. Last write
+     * wins compares THIS, per PLAN.md section 6, and it never orders a list.
+     * The default only covers rows born on the server, like the seed's.
+     */
+    clientTs: timestamp('client_ts', { withTimezone: true }).notNull().defaultNow(),
+
+    /** The server's clock when sync last wrote this row. The pull cursor. */
+    syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     // One key per form per exam. Without it a second key for form A can be
@@ -66,6 +86,8 @@ export const answerKeys = pgTable(
     // index rather than a scan of every key in the organisation.
     index('answer_keys_tags').using('gin', table.tags),
     index('answer_keys_org').on(table.orgId),
+    // The delta pull filters on the organisation and walks the cursor.
+    index('idx_answer_keys_org_synced').on(table.orgId, table.syncedAt),
     isolate('answer_keys'),
   ],
 );

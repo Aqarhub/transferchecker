@@ -5,7 +5,7 @@
 // itself optional. The serial number a teacher already writes on the sheet is
 // enough to hand a paper back, so `name` is nullable and means it.
 
-import { pgTable, text, unique, uuid } from 'drizzle-orm/pg-core';
+import { index, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { isolate } from '../policy';
 import { orgs } from './orgs';
 
@@ -29,11 +29,23 @@ export const students = pgTable(
 
     /** Optional, and the plan says so. A serial number identifies a paper. */
     name: text('name'),
+
+    /**
+     * The device's clock when the teacher last edited this row. Last write
+     * wins compares THIS, per PLAN.md section 6, and it never orders a list.
+     * The default only covers rows born on the server, like the seed's.
+     */
+    clientTs: timestamp('client_ts', { withTimezone: true }).notNull().defaultNow(),
+
+    /** The server's clock when sync last wrote this row. The pull cursor. */
+    syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     // What makes `scans.student_ext_id` mean anything. Two students sharing a
     // number in one organisation would silently split one pupil's papers in two.
     unique('students_ext_id').on(table.orgId, table.extId),
+    // The delta pull filters on the organisation and walks the cursor.
+    index('idx_students_org_synced').on(table.orgId, table.syncedAt),
     isolate('students'),
   ],
 );

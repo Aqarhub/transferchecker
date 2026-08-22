@@ -18,7 +18,10 @@
 import { createServer } from 'node:http';
 import type { IncomingMessage, Server, ServerResponse } from 'node:http';
 
-export const BODY_LIMIT = 32 * 1024;
+// Sized by the sync batch, the largest legitimate request in the product: a
+// hundred scans with two strings apiece lands well under this, and everything
+// auth-shaped is a hundred times smaller.
+export const BODY_LIMIT = 256 * 1024;
 
 export interface Reply {
   readonly status: number;
@@ -29,6 +32,8 @@ export interface Request {
   readonly body: unknown;
   /** The Authorization header, verbatim, or undefined. The only header read. */
   readonly authorization?: string;
+  /** The query string, parsed. Handlers read named values, never the raw URL. */
+  readonly query: URLSearchParams;
 }
 
 export type Handler = (request: Request) => Promise<Reply>;
@@ -72,7 +77,8 @@ function readBody(request: IncomingMessage): Promise<Buffer> {
 export function app(options: AppOptions): Server {
   return createServer((incoming: IncomingMessage, outgoing: ServerResponse) => {
     const started = process.hrtime.bigint();
-    const route = `${incoming.method ?? ''} ${(incoming.url ?? '').split('?')[0] ?? ''}`;
+    const [path = '', rawQuery = ''] = (incoming.url ?? '').split('?');
+    const route = `${incoming.method ?? ''} ${path}`;
 
     const reply = (result: Reply): void => {
       const body = JSON.stringify(result.body);
@@ -116,7 +122,13 @@ export function app(options: AppOptions): Server {
 
       try {
         const header = incoming.headers.authorization;
-        reply(await handler({ body, ...(header === undefined ? {} : { authorization: header }) }));
+        reply(
+          await handler({
+            body,
+            query: new URLSearchParams(rawQuery),
+            ...(header === undefined ? {} : { authorization: header }),
+          }),
+        );
       } catch (error) {
         // The one place an exception becomes a response. Nothing about the
         // error reaches the client; the class name reaches the log, which is
