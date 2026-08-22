@@ -57,6 +57,76 @@ ${options.body}
 </section>`;
 }
 
+/**
+ * What a field asks for. Three kinds cover every question the sheet builder
+ * and the key editor have: a count, a piece of text, and one of a short list.
+ */
+export type FieldControl =
+  | { readonly kind: 'number'; readonly value: number; readonly min: number; readonly max: number }
+  | { readonly kind: 'text'; readonly value: string; readonly maxLength: number }
+  | {
+      readonly kind: 'choice';
+      readonly value: string;
+      readonly options: readonly { readonly value: string; readonly label: string }[];
+    };
+
+export interface FieldOptions {
+  /** Ties the label to the control. Unique within a screen. */
+  readonly id: string;
+  readonly label: string;
+  /** Rule 10, mandatory: one sentence saying what this changes. */
+  readonly help: string;
+  readonly control: FieldControl;
+  /**
+   * What this value is currently costing, in the product's own terms.
+   *
+   * The sheet builder is the reason this exists: asking for key versions moves
+   * a twenty question quiz from A5 to A4 [measured], and a teacher who is not
+   * told that finds out at the printer.
+   */
+  readonly note?: string;
+}
+
+/** The control itself. Split out so each kind returns rather than assigns. */
+function inputOf(id: string, control: FieldControl): string {
+  const named = `id="${esc(id)}" name="${esc(id)}"`;
+  if (control.kind === 'number') {
+    // `num` is rule 3: every number is monospaced and tabular, everywhere.
+    return `<input class="field-input num" ${named} type="number" inputmode="numeric" value="${String(control.value)}" min="${String(control.min)}" max="${String(control.max)}">`;
+  }
+  if (control.kind === 'text') {
+    return `<input class="field-input" ${named} type="text" value="${esc(control.value)}" maxlength="${String(control.maxLength)}">`;
+  }
+  const options = control.options
+    .map(
+      (choice) =>
+        `<option value="${esc(choice.value)}"${choice.value === control.value ? ' selected' : ''}>${esc(choice.label)}</option>`,
+    )
+    .join('');
+  return `<select class="field-input" ${named}>${options}</select>`;
+}
+
+/**
+ * One labelled control.
+ *
+ * The help marker is a sibling of the label rather than inside it, because a
+ * `<button>` inside a `<label>` is activated by clicking the label text, so the
+ * tooltip would open every time somebody aimed at the field.
+ *
+ * These render as real form controls carrying their current value, and nothing
+ * here wires them to anything: the dashboard is a static generator and every
+ * control on every screen is in the same state, waiting for a runtime. What is
+ * being built and checked now is the markup, the labelling and the layout in
+ * eight languages, which is the part a runtime cannot fix later.
+ */
+export function field(options: FieldOptions): string {
+  const { id, control } = options;
+  const head = `<div class="field-head"><label for="${esc(id)}">${esc(options.label)}</label>${help(options.help, options.label)}</div>`;
+  const note = options.note === undefined ? '' : `<p class="field-note">${esc(options.note)}</p>`;
+
+  return `<div class="field">${head}${inputOf(id, control)}${note}</div>`;
+}
+
 export type Emphasis = 'primary' | 'quiet' | 'danger';
 
 /**

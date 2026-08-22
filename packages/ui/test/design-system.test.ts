@@ -204,7 +204,7 @@ describe('rules 12 and 13: one icon family, and a 44 pixel touch area', () => {
   });
 
   it('gives every control at least 44 pixels of touch', () => {
-    for (const selector of ['.btn', '.tab', '.nav-item']) {
+    for (const selector of ['.btn', '.tab', '.nav-item', '.field-input']) {
       const block = blocks().find((entry) => entry.selector === selector);
       // 36 is allowed on `.nav-item`, and only there: a desktop sidebar row is a
       // mouse target, and 44 in that column wastes a third of its width. The

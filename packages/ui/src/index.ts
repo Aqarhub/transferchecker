@@ -11,8 +11,26 @@ export type { Bar, BarChartOptions } from './chart';
 export { ICON_NAMES, icon } from './icons';
 export { LOCALES, localeOf, ltr, pseudo } from './locale';
 export type { Direction, LocaleInfo } from './locale';
-export { bubble, button, esc, help, marksStrip, resetHelpIds, section, stat, table } from './parts';
-export type { Column, Emphasis, Outcome, SectionOptions } from './parts';
+export {
+  bubble,
+  button,
+  esc,
+  field,
+  help,
+  marksStrip,
+  resetHelpIds,
+  section,
+  stat,
+  table,
+} from './parts';
+export type {
+  Column,
+  Emphasis,
+  FieldControl,
+  FieldOptions,
+  Outcome,
+  SectionOptions,
+} from './parts';
 export { screenHeader, shell, tabs } from './shell';
 export type { HeaderOptions, NavItem, ShellOptions, SyncState } from './shell';
 export { contrast, hexToRgb, palette, tokensCss, tokensPath } from './tokens';

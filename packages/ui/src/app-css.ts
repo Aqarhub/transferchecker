@@ -170,6 +170,26 @@ tbody tr:last-child th, tbody tr:last-child td { border-block-end: 0; }
 .btn-danger { color: var(--review); border-color: var(--review); }
 .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
 
+/* A labelled control. The builder and the key editor are made of these. */
+.field { display: flex; flex-direction: column; gap: var(--s-2); }
+.field-head { display: flex; align-items: center; gap: var(--s-2); }
+.field-head label { font-size: var(--t-sm); color: var(--graphite-2); }
+.field-input {
+  min-block-size: 44px; padding-inline: var(--s-3);
+  border: 1px solid var(--hairline); border-radius: var(--r-1);
+  background: var(--surface); color: var(--graphite);
+  font: inherit; font-size: var(--t-sm); inline-size: 100%;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.field-input:hover { border-color: var(--graphite-2); }
+/* A consequence of the current value, not a hint about how to fill it in. */
+.field-note { margin: 0; font-size: var(--t-sm); color: var(--graphite-2); }
+/* The columns collapse on a phone rather than shrinking a 44px control. */
+.field-grid {
+  display: grid; gap: var(--s-4);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 /* The mandatory explanation marker beside every control and section title. */
 .help { position: relative; display: inline-flex; }
 .help-dot {
