@@ -64,6 +64,9 @@ export {
 } from './code/index';
 export type { DecodedCode, QrMatrix } from './code/index';
 
+export { ALPHABETS, CHOICE_RANGE, GRID_RANGE, QUESTION_RANGE, buildSheet } from './build';
+export type { AlphabetName, BuildRefusal, BuildResult, SheetChoices } from './build';
+
 export { STOCK_TEMPLATES, stockQuestionCount, stockTemplate } from './templates';
 export type { StockTemplate, TemplateText } from './templates';
 
